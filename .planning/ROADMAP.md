@@ -53,7 +53,21 @@ Plans:
   3. A RabbitMQ topology (exchanges/queues/routing keys) exists for every domain event named across F1–F11, ready for services to publish/consume as they are built.
   4. A Keycloak realm is provisioned with roles/clients, and Spring Cloud Gateway is the sole externally-reachable ingress, validating every request's JWT against the realm — no backend service is directly externally addressable and no service stores its own passwords.
   5. A React + TypeScript SPA shell exists with routing, Keycloak PKCE login wiring, and placeholder routes for every planned screen (calendar/list views, admin CRUD, feeds, display board), ready for feature-specific screens to be built into it in later phases.
-**Plans**: TBD
+**Plans**: 12 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Scaffold booking-service (Maven, Flyway DDL, Docker, K8s, context-boot test)
+- [ ] 02-02-PLAN.md — Scaffold locations-resources-service
+- [ ] 02-03-PLAN.md — Scaffold custom-field-service
+- [ ] 02-04-PLAN.md — Scaffold users-permissions-service (no credential storage)
+- [ ] 02-05-PLAN.md — Scaffold notifications-service
+- [ ] 02-06-PLAN.md — Scaffold feeds-service
+- [ ] 02-07-PLAN.md — Scaffold settings-service (singleton + seed row)
+- [ ] 02-08-PLAN.md — Scaffold audit-log-service (immutability REVOKE)
+- [ ] 02-09-PLAN.md — Keycloak realm export + RabbitMQ topology definitions
+- [ ] 02-10-PLAN.md — Spring Cloud Gateway (routing, JWT validation, fail-closed, rate limiting)
+- [ ] 02-11-PLAN.md — React+TypeScript SPA shell (routing, nav, Keycloak PKCE wiring)
+- [ ] 02-12-PLAN.md — docker-compose integration: full-stack boot + network/DB isolation audit
 
 ### Phase 3: Identity & Access Control
 **Goal**: Users can authenticate and self-manage their accounts, and every protected action is gated by a confirmed permission, so access control behaves equivalently to the legacy system without anyone silently gaining or losing access during the re-platform.
@@ -132,7 +146,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Legacy Functional Audit | 0/TBD | Complete | 2026-10-07 |
-| 2. Platform Foundation & Infrastructure | 0/TBD | Not started | - |
+| 2. Platform Foundation & Infrastructure | 0/12 | Not started | - |
 | 3. Identity & Access Control | 0/TBD | Not started | - |
 | 4. Reference Data, Extensibility & Configuration | 0/TBD | Not started | - |
 | 5. Core Booking & Approval Workflow | 0/TBD | Not started | - |
