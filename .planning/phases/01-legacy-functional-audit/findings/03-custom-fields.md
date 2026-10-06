@@ -76,3 +76,94 @@ All views live under `views/customfields/` (8 files) plus `views/common/form/_cu
 - **`views/common/form/_customfields.cfm`** (15 lines) — the actual injection point used by booking/location forms to render their custom fields: loops the `customfields` query and builds `[field id=N]` for every row, then calls `processShortCodes()` to expand them via the `field` shortcode. This is the consumer-side counterpart to the admin-side `fieldpicker.cfm` — it always renders **every** custom field defined for the current parentmodel (no per-instance subset selection at render time; subsetting is only a Template-authoring concept via the picker).
 - **`views/shortcodes/field.cfm`** (185 lines) — the actual field-type `cfswitch` (fetched because it is the only place a `field_type`-driven render decision is made, and directly answers whether `options[]`/`required` are enforced). For `fieldtype EQ "custom"`: switches on `attr.type` with cases `textfield`, `select`, `textarea`, `radio`, `checkbox`, plus a `cfdefaultcase` that renders `"Incorrect Field Type Specified"` for any other value — **this is strong secondary confirmation of the exact 5-value type enum** (matches `_form.cfm`'s `<select>` options exactly, no discrepancy found). `required` only ever reaches this shortcode as a boolean that's merged into `fieldValues.required` (passed through to the Wheels form-helper tag, e.g. `textFieldTag(required=true)`), which at most adds an HTML5 `required` attribute / Wheels-level client validation — **there is no server-side re-check of `required` when a value is actually saved** (see `Controller.updateCustomFields` above, which saves unconditionally).
 - **`views/shortcodes/output.cfm`** (54 lines) — the read-only `[output id=N]` counterpart; looks up the stored `Customfieldvalue.value` for a custom field, or a system-field value off `variables[modeltype][id]` for system fields, and renders it with light formatting (date auto-format via `isDate()`, otherwise `autolink()`). No type-specific formatting for `select`/`radio`/`checkbox` beyond "treat the stored string as text, auto-link it if applicable" — i.e. output rendering does **not** re-interpret `options[]` to show a human label, it shows the raw stored value verbatim.
+
+## Customfield model
+
+**File:** `models/Customfield.cfc`
+
+```
+component extends="Model" hint=""
+{
+	public void function init() {
+		hasMany(name="customfieldjoins");
+		property(name="sortorder", defaultValue=0);
+	}
+}
+```
+
+This is the **entire** file — 10 lines of actual code. Confirmed exactly as present, no more, no less:
+- One association: `hasMany(name="customfieldjoins")` — **no `dependent=` option is passed**, which in CFWheels ORM defaults to no automatic cascade behavior on the parent's deletion (see Open Questions — retention policy).
+- One declared property default: `sortorder` defaults to `0`.
+- **No validations of any kind are declared on this model** — no `validatesPresenceOf`, no `validatesInclusionOf` for `type` or `parentmodel`, no `validatesFormatOf` for `options`. Every piece of "validation" a user experiences (type enum, required-checkbox, parentmodel enum) is **UI-only**, enforced solely by the `<select>` option lists in `_form.cfm` and `index.cfm` — nothing stops a row with an arbitrary `type` or `parentmodel` string from existing if inserted directly (e.g. via SQL, a future migration script, or a bug elsewhere) — the `output.cfm`/`field.cfm` shortcode renderers would simply hit their `cfdefaultcase` ("Incorrect Field Type Specified") for such a row.
+- Table schema (`install/new-installation.sql` lines 32-44) confirms the full column set and matches every field referenced above: `id` (PK, autoincrement), `name` (`varchar(255)`, `NOT NULL`), `parentmodel` (`varchar(255)`, `NOT NULL`), `type` (`varchar(50)`, `NOT NULL`), `options` (`longtext`, nullable), `class` (`varchar(255)`, nullable), `description` (`varchar(255)`, nullable), `sortorder` (`smallint(5)`, `NOT NULL DEFAULT 0`), `required` (`tinyint(1)`, `NOT NULL DEFAULT 0`). **No DB-level `CHECK`/`ENUM` constraint on `type` or `parentmodel`** — confirms the "UI-only enum" finding above at the schema level, not just the ORM level.
+
+## Customfieldjoin model
+
+**File:** `models/Customfieldjoin.cfc`
+
+```
+component extends="Model" hint=""
+{
+	public void function init() {
+		belongsTo(name="customfield", joinType="left");
+		belongsTo(name="customfieldvalue", joinType="left");
+	}
+}
+```
+
+This is the **entire** file — the join is a thin, association-only class exactly as the plan predicted from file size. **Confirmed: this is the per-record-instance join, not a Customfield↔Location or Customfield↔Event model-level association.**
+
+Table schema (`install/new-installation.sql` lines 21-27):
+```sql
+CREATE TABLE `customfieldjoins` (
+  `customfieldsid` int(11) NOT NULL,
+  `customfieldchildid` int(11) NOT NULL,
+  `customfieldvalueid` int(11) NOT NULL,
+  PRIMARY KEY (`customfieldsid`,`customfieldchildid`,`customfieldvalueid`)
+);
+```
+Three columns, composite PK, **no foreign-key constraints declared** (consistent with the install script's blanket `SET FOREIGN_KEY_CHECKS=0;` at the top and no FK clauses anywhere in the file — this schema relies entirely on ORM-level association integrity, not DB-enforced referential integrity).
+
+Cross-referencing `Controller.updateCustomFields()` (base `Controller.cfc` lines 83-98), the three columns resolve to:
+- `customfieldsid` → the `Customfield` definition's `id` (which field)
+- `customfieldchildid` → the **id of the specific model-instance record** the value belongs to (an `Event.id` or a `Location.id`, depending on the Customfield's `parentmodel`) — **this is the per-instance context link**, distinct from the `parentmodel`-type-level scoping on `Customfield` itself
+- `customfieldvalueid` → the `Customfieldvalue.id` holding the actual stored value
+
+So the full shape is two-tier: **`Customfield.parentmodel`** scopes a field definition to a model *type* (`event` or `location`, applies to every instance of that type identically), and **`Customfieldjoin.customfieldchildid`** scopes one *value* to one specific instance of that type. There is no third tier scoping a field to, e.g., one specific Location only — a custom field defined with `parentmodel="location"` applies to **every** Location.
+
+## Customfieldvalue model
+
+**File:** `models/Customfieldvalue.cfc`
+
+```
+component extends="Model" hint=""
+{
+	public void function init() {
+		hasMany(name="customfieldjoins");
+	}
+}
+```
+
+Entire file — again association-only, no validations, no declared properties beyond the implicit table columns. Table schema (`install/new-installation.sql` lines 49-54):
+```sql
+CREATE TABLE `customfieldvalues` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `value` longtext,
+  PRIMARY KEY (`id`)
+);
+```
+Confirmed: **this is the per-booking(-instance) value store** exactly as the plan's context expected — one row per stored value, linked to its owning record-instance (Event or Location row) only indirectly through a `Customfieldjoin` row (there is no direct `eventid`/`locationid` column on `Customfieldvalue` itself; the join table is the only path from a value back to its owning instance). `value` is untyped `longtext` — whatever string representation the field's `type` produces (plain text, a JSON-ish key string for radio/checkbox/select, or a date string) is stored identically; the column itself carries no type information.
+
+## Open Questions (custom-fields)
+
+Cross-referenced against PRD Open Question #6 and FRD F5 §Process steps 1, 2, 5. All five required items below have an explicit, cited verdict — none are left ambiguous.
+
+1. **Exact supported `field_type` set** — **RESOLVED.** Exactly five values: `textfield`, `select`, `textarea`, `radio`, `checkbox`. Confirmed twice, independently: the admin form's `<select>` options (`views/customfields/_form.cfm` line 10) and the render-time `cfswitch` cases in `views/shortcodes/field.cfm` (lines 109-139 for the "custom" branch) — both lists match exactly, with the shortcode's `cfdefaultcase` rendering "Incorrect Field Type Specified" for anything else. No `numeric` or `date` type exists for custom fields (system fields separately support `datepicker`/`colourpicker`, but those are declared per-model, not part of the `Customfield` table's type enum).
+
+2. **Whether `options[]` is required/enforced for choice-based types** — **RESOLVED — not enforced.** `options` is a free-form `longtext` column with **no DB constraint, no model validation** (`models/Customfield.cfc` has zero `validatesX` calls), and **no server-side JSON-shape check** anywhere in the controller or shortcode renderers audited. The admin UI (`_form.cfm`) provides an Ace JSON editor and inline documentation of the expected shape (array of single-key `{"key":"label"}` objects) as a courtesy, but nothing stops saving `select`/`radio`/`checkbox` with empty, malformed, or non-JSON `options` — the failure mode in that case is a runtime error/blank render in `views/shortcodes/field.cfm` (e.g. `arraylen(tempArray)` on a non-array) rather than a save-time validation rejection.
+
+3. **The exact join/context model (per-Location vs. "all bookings")** — **RESOLVED — neither, it's a third shape: per-model-type, not per-instance, not global-across-types.** `Customfield.parentmodel` is constrained (UI-only, via `application.rbs.modeltypes = "event,location"` set in `events/onapplicationstart.cfm` line 14) to exactly `event` or `location`. A field tagged `parentmodel="location"` applies identically to **every** Location record (not one specific Location) — there is no per-instance definition scoping. The actual per-instance link is at the **value** layer: `Customfieldjoin.customfieldchildid` ties one stored `Customfieldvalue` to one specific Event-or-Location row id (`controllers/Controller.cfc` `getCustomFields`/`updateCustomFields`, lines 18-98). So: field *definitions* are global-per-type; field *values* are per-instance. The FRD's "unconfirmed" framing (a specific Location vs. all bookings) maps onto this as: it is **always** "all bookings/locations of that type" — a narrower per-Location-instance definition scope does not exist in the legacy system at all.
+
+4. **Whether required/optional + type-specific validation is enforced** — **RESOLVED — not enforced server-side, UI-only at best.** `Customfield.required` (a `tinyint(1)` flag) only ever reaches `views/shortcodes/field.cfm` (lines 98-104), where it conditionally adds `required=true` to the struct passed into a Wheels form-helper tag (e.g. `textFieldTag(required=true)`) — this is, at most, an HTML5 `required` attribute on the rendered `<input>`, trivially bypassable by submitting the form field directly or via a non-browser client. The actual save path, `Controller.updateCustomFields()` (`controllers/Controller.cfc` lines 83-98), unconditionally creates/updates a `Customfieldvalue.value` for whatever was submitted — it never checks `customfield.required`, never checks `customfield.type` against the submitted value's shape, and never rejects a missing/empty value. This fully confirms — with citation — the FRD's interim placeholder ("all custom fields are optional, free-text-validated only") is **accurate for "optional"** but overstates the validation: there is **no** validation at all, free-text or otherwise, server-side.
+
+5. **Retention policy: does deleting a Customfield definition purge or retain historical Customfieldvalue rows** — **RESOLVED — retains (orphans), does not purge.** `Customfields.delete()` (`controllers/Customfields.cfc` lines 79-87) calls only `customfield.delete()` on the `Customfield` row. `Customfield.cfc`'s `hasMany(name="customfieldjoins")` declaration passes **no `dependent=` argument** (CFWheels syntax for cascade behavior, e.g. `dependent="deleteAll"`), so the framework default (no automatic cascade) applies. Neither `Customfieldjoin` nor `Customfieldvalue` rows are touched by this delete — they become orphaned (a `Customfieldjoin.customfieldsid` pointing at a now-nonexistent `Customfield.id`). This is further corroborated by the schema itself: the `customfieldjoins`/`customfieldvalues` tables declare **no foreign-key constraints** (`install/new-installation.sql`, consistent with the file's blanket `SET FOREIGN_KEY_CHECKS=0`), so even a direct SQL delete would not cascade. Historical `Customfieldvalue.value` data therefore survives a definition's deletion indefinitely, unreachable through the normal `getCustomFields()` query (which inner-depends on `customfields.parentmodel = objectname`, i.e. joins from the *Customfield* side) but still physically present in the `customfieldvalues` table.
