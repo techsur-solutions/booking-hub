@@ -2,7 +2,7 @@
   "generator_version": "init-dev-server@1",
   "catalog_entry": null,
   "generated_at": "2026-10-06T18:56:00Z",
-  "inspection_inputs_hash": "7c370d9536d7d0d6a0f7cd7f9826692acd93e4fb05ba46f7b630b879740343d3",
+  "inspection_inputs_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "inspection_inputs": {
     "matched_globs": [],
     "manifest_signatures": [],
