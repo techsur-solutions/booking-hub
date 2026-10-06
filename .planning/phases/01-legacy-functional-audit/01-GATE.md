@@ -3,10 +3,11 @@ phase: 01
 gate_status: passed_with_warnings
 build_command: "none (docs-only audit phase, no build manifest at repo root)"
 test_command: "none (docs-only audit phase, no test runner at repo root)"
-last_updated: 2026-10-06T17:04:04Z
+last_updated: 2026-10-06T17:04:21Z
 tests_disabled_during_fixes: none
 shadowed_sources: 0
 review_blockers_open: 0
+boot_smoke: skipped
 waves:
   - wave: 1
     build: skipped
