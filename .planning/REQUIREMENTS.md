@@ -134,26 +134,28 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| F0 | Phase [TBD] | Pending |
-| F12 | Phase [TBD] | Pending |
-| F1 | Phase [TBD] | Pending |
-| F2 | Phase [TBD] | Pending |
-| F3 | Phase [TBD] | Pending |
-| F4 | Phase [TBD] | Pending |
-| F5 | Phase [TBD] | Pending |
-| F6 | Phase [TBD] | Pending |
-| F7 | Phase [TBD] | Pending |
-| F8 | Phase [TBD] | Pending |
-| F9 | Phase [TBD] | Pending |
-| F10 | Phase [TBD] | Pending |
-| F11 | Phase [TBD] | Pending |
-| F13 | Phase [TBD] | Pending |
+| F0 | Phase 1 — Legacy Functional Audit | Pending |
+| F12 | Phase 2 — Platform Foundation & Infrastructure | Pending |
+| F6 | Phase 3 — Identity & Access Control | Pending |
+| F7 | Phase 3 — Identity & Access Control | Pending |
+| F4 | Phase 4 — Reference Data, Extensibility & Configuration | Pending |
+| F5 | Phase 4 — Reference Data, Extensibility & Configuration | Pending |
+| F10 | Phase 4 — Reference Data, Extensibility & Configuration | Pending |
+| F1 | Phase 5 — Core Booking & Approval Workflow | Pending |
+| F2 | Phase 5 — Core Booking & Approval Workflow | Pending |
+| F3 | Phase 5 — Core Booking & Approval Workflow | Pending |
+| F8 | Phase 6 — Notifications & Audit Logging | Pending |
+| F11 | Phase 6 — Notifications & Audit Logging | Pending |
+| F9 | Phase 7 — Public Feeds | Pending |
+| F13 | Phase 8 — Regression Verification & Test Traceability | Pending |
 
 **Coverage:**
 - v1 requirements: 14 top-level (F0–F13), 54 testable sub-requirements total
-- Mapped to phases: 0 (pending roadmap creation)
-- Unmapped: 14 ⚠️ (to be resolved by roadmapper in Step 8)
+- Mapped to phases: 14/14 ✓
+- Unmapped: 0 ✓
+
+**Phase note:** F10 (Settings) is mapped to Phase 4 rather than alongside F9 in Phase 7, because F3's auto-approve logic has a hard functional dependency on the `approveBooking` flag at booking-creation time (TechArch §1.5) — Phase 5 (Core Booking) requires it to exist first. F9 (Public Feeds) has no such upstream dependency beyond approved-booking data and location filtering, so it remains a standalone later phase as a pure read-only projection.
 
 ---
 *Requirements defined: 2026-10-06*
-*Last updated: 2026-10-06 after initial definition from validated spec docs*
+*Last updated: 2026-10-06 after roadmap creation — 14/14 requirements mapped to 8 phases*
