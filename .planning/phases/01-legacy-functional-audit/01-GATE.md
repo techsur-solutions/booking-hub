@@ -43,3 +43,11 @@ Final regression gate, re-run after the code-review fix loop (3 iterations, 0 un
 
 This is the phase's regression statement: the entire suite — none exists for this docs-only phase — ran green (trivially, by absence) on the final tree, including all code-review fixer commits. No gaps introduced by the review/fix cycle.
 
+
+## Backend pre-push gate
+
+- Status: skipped
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=2a69c358d5b5910eff44cbcb07529128dd4cc4bd test_files=0 skip_marks=0 shadow_files=0
+```
