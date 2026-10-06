@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 01-04-PLAN.md
-last_updated: "2026-10-06T16:06:27.372Z"
+stopped_at: Completed 01-05-PLAN.md
+last_updated: "2026-10-06T16:06:58.109Z"
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-10-06)
 
 Phase: 01 (legacy-functional-audit) — EXECUTING
 Plan: 4 of 6 (complete) — next: 01-05
-Current Plan: 5
+Current Plan: 6
 Total Plans in Phase: 6
 
 Progress: [█░░░░░░░░░] 17%
@@ -55,6 +55,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 01-legacy-functional-audit P01 | 25 min | 2 tasks | 1 files |
 | Phase 01-legacy-functional-audit P02 | 18min | 2 tasks | 1 files |
 | Phase 01-legacy-functional-audit P04 | 35 min | 2 tasks | 1 files |
+| Phase 01-legacy-functional-audit P05 | 25 min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,9 @@ Recent decisions affecting current work:
 - [Phase 01-legacy-functional-audit]: [Phase 01-04]: PRD Open Question #9 resolved as NOT exhaustive: 17 total permission flags exist (6 PRD-named + 11 more), 15 actively enforced, 2 defined-but-dead (allowiCal, allowRSS) — full cross-controller inventory in findings/04-identity-access.md
 - [Phase 01-legacy-functional-audit]: [Phase 01-04]: Remember-me cookie confirmed as a 360-day email-prefill convenience (not a session-duration extension); underlying session-timeout depends on an unconfirmed ColdFusion/Lucee engine default absent from this codebase's config
 - [Phase 01-legacy-functional-audit]: [Phase 01-04]: Password complexity baseline confirmed from models/User.cfc regex: >=6 chars, >=1 digit, >=1 lowercase letter, no uppercase/symbol requirement — new system's policy must be no weaker
+- [Phase 01-legacy-functional-audit]: PRD Open Question #7 corrected: legacy Api.cfc feeds are token-gated (per-user apitoken), not role/allowAPI-gated — allowAPI only gates the feed-listing index page and is granted to all roles by default
+- [Phase 01-legacy-functional-audit]: PRD Open Question #8 resolved: logfiles table has no before/after value columns at all (message+data free text only); write-side coverage is a confirmed subset (Sessions/PasswordResets/Cookie helpers) plus incidental logging via a global logFlash after-filter on any flash message
+- [Phase 01-legacy-functional-audit]: PRD Open Question #10 resolved: all 5 per-environment settings files ship empty; only one functional (non-config) difference exists codebase-wide — production serves minified JS, all else unminified. Maintenance mode is a full unconditional lockout for all users including admins, no bypass mechanism found
 
 ### Pending Todos
 
@@ -91,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-06T16:06:27.371Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-10-06T16:06:58.107Z
+Stopped at: Completed 01-05-PLAN.md
 Resume file: None
