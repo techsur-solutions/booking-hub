@@ -2,15 +2,15 @@
 pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 5
+current_plan: 6
 status: unknown
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-10-06T16:03:41.591Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-10-06T16:05:06.291Z"
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 6
-  completed_plans: 2
+  completed_plans: 3
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-10-06)
 
 Phase: 01 (legacy-functional-audit) — EXECUTING
 Plan: 4 of 6
-Current Plan: 5
+Current Plan: 6
 Total Plans in Phase: 6
 
 Progress: [█░░░░░░░░░] 17%
@@ -53,6 +53,7 @@ Progress: [█░░░░░░░░░] 17%
 
 *Updated after each plan completion*
 | Phase 01-legacy-functional-audit P01 | 25 min | 2 tasks | 1 files |
+| Phase 01-legacy-functional-audit P02 | 18min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [Phase 01-03]: Custom-fields join/context model confirmed as two-tier: parentmodel scopes field definitions to exactly 2 model types (event, location), Customfieldjoin.customfieldchildid scopes values to specific instances — no per-Location-instance definition scoping exists
 - [Phase 01-legacy-functional-audit]: PRD Open Question #2 interim decision (hard block without allowApproveBooking, soft warning with it) is corrected, not confirmed: legacy Bookings.check() is unconditionally non-blocking/informational for every user regardless of permission; create()/update() perform no server-side conflict validation at all — Direct code citation from controllers/Bookings.cfc: check(), create(), update() — see findings/01-booking-core.md
 - [Phase 01-legacy-functional-audit]: No recurring-booking series concept exists past creation time: Bookings.create()'s repeat-loop creates independent sibling rows with no linking id; update()/delete() always target a single row — resolves PRD Open Question #1 — Direct code citation from controllers/Bookings.cfc: create(), update(), delete(); models/Event.cfc: registerSystemFields()
+- [Phase 01-legacy-functional-audit]: FRD deletion-in-use interim assumption corrected: Locations/Resources are TRUE HARD DELETES (no deletedAt column on either table) with no booking-reference guard and no DB foreign keys anywhere in schema — orphan-allow-via-hard-delete, not soft-delete-intact-references as FRD assumed
+- [Phase 01-legacy-functional-audit]: FRD Resource field-set and Location layout-metadata assumptions corrected: Resource has 5 fields (name, type, description, isunique, restrictlocations) sourced from DB schema since the model declares none itself; Location's 'layout' field is actually named 'layouts' (plural), free-text, and programmatically disconnected from Event.layoutstyle
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-06T16:03:41.590Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-10-06T16:05:06.290Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
