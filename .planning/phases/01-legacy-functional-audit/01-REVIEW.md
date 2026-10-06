@@ -39,6 +39,7 @@ None.
 - **File:** `.planning/STATE.md:96`
 - **Evidence:** STATE.md's F0 sign-off gate bullet reads: *"`baseline-inventory.md` (F13 seed, **111 rows**) are complete and handed off."* This was accurate at iteration-1 time (baseline-inventory.md genuinely had 111 rows then) but the W1 fix (commit 89101a0) added BF-112 and BF-113, bringing the real count to 113. STATE.md was not touched by either fix commit and still asserts the pre-fix figure. This is a minor, non-blocking documentation drift — STATE.md's row count is descriptive color in a historical sign-off bullet, not something any downstream phase parses or depends on for a count-match — but it is a fix-introduced inconsistency between two files that iteration 1 did not flag because it was accurate at the time.
 - **Fix direction:** Update STATE.md:96's "111 rows" to "113 rows" to keep it consistent with the now-current baseline-inventory.md footer.
+- **Resolution:** fixed (d628a02) — re-verified actual baseline-inventory.md row count via `grep -c '| BF-'` = 113 before editing; updated STATE.md:96 "111 rows" → "113 rows".
 
 ## Cross-file seams checked
 
