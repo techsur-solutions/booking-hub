@@ -25,7 +25,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 ### Phase 1: Legacy Functional Audit
 **Goal**: A documented, end-to-end functional audit of the legacy RoomBooking repository exists before any service implementation begins, so every subsequent phase builds against confirmed behavior rather than assumption.
-**Status**: In progress
+**Status**: Verified
 **Depends on**: Nothing (first phase)
 **Requirements**: F0 (F0.1, F0.2, F0.3, F0.4, F0.5)
 **Success Criteria** (what must be TRUE):
@@ -131,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Legacy Functional Audit | 0/TBD | In progress | - |
+| 1. Legacy Functional Audit | 0/TBD | Verified | - |
 | 2. Platform Foundation & Infrastructure | 0/TBD | Not started | - |
 | 3. Identity & Access Control | 0/TBD | Not started | - |
 | 4. Reference Data, Extensibility & Configuration | 0/TBD | Not started | - |
