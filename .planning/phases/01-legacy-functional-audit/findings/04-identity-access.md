@@ -130,3 +130,61 @@ Source: `neokoenig/RoomBooking` (GitHub, branch `master`). All citations referen
 - **Role association:** `role` is a plain string column directly on `users` (not a join table), `DEFAULT 'user'` per schema. **No database-level referential integrity** ties `users.role` to the `permissions` table's role-columns — a mistyped/unknown role value falls through `checkPermission()`'s `structKeyExists` guard (events/functions.cfm:153) to **no permission granted**, i.e. the legacy system already deny-by-defaults on an unrecognized role, which is consistent with the new system's F7.4 requirement and worth deliberately preserving.
 - `generateToken()` (models/User.cfc:79-81) — lower-cased UUID with dashes stripped. Used for **both** `passwordResetToken` (active, see PasswordResets controller) and `emailConfirmationToken` (models/User.cfc:63-65, `setEmailConfirmationToken()` — the method's own doc comment reads **"(not actually used)"**, and no controller action anywhere in the codebase calls it — confirmed dead/unused code, not a functioning email-confirmation feature).
 
+---
+
+## Permission Flag Inventory (cross-controller scan)
+
+**Method:** fetched and scanned all 12 legacy controllers (`Api.cfc`, `Bookings.cfc`, `Customfields.cfc`, `Eventdata.cfc`, `Locations.cfc`, `Logfiles.cfc`, `PasswordResets.cfc`, `Permissions.cfc`, `Resources.cfc`, `Sessions.cfc`, `Settings.cfc`, `Users.cfc`) for every `filters(through="checkPermissionAndRedirect", permission="...")` declaration and every inline `checkPermission("...")` call (including inside view templates). Cross-referenced against the full seed list in `install/new-installation.sql` (`INSERT INTO permissions ...`), which defines **17** named flags total — the authoritative ground-truth list of what flags *exist*, independent of whether code currently references them.
+
+| Flag | Gates | Citation |
+|------|-------|----------|
+| accessApplication | **Base/global filter — applies to every controller that calls `super.init()`** (all except `Sessions.cfc` and `Api.cfc`, which explicitly skip `super.init()`) | controllers/Controller.cfc:9 |
+| accessCalendar | `Bookings.cfc` (whole controller, no except); `Eventdata.cfc` (whole controller: `getevents`, `getevent`); `Locations.cfc` (whole controller **except** `list,view`) | controllers/Bookings.cfc:11; controllers/Eventdata.cfc:11; controllers/Locations.cfc:14 |
+| allowRoomBooking | `Bookings.cfc`, all actions **except** `index,list,day,building,location,check` (i.e. required for create/edit/update/delete/approve/deny/etc., not required for the various calendar *viewing* actions) | controllers/Bookings.cfc:12 |
+| viewRoomBooking | `Bookings.cfc`, **only** `list,view` | controllers/Bookings.cfc:13 |
+| allowApproveBooking | `Bookings.cfc`, **only** `approve,deny` | controllers/Bookings.cfc:14 |
+| bypassApproveBooking | `Bookings.cfc` — **inline** `checkPermission()` call (not a filter) inside `create()`, only consulted when `application.rbs.setting.approveBooking` is also true; if both are true the newly-created event is auto-marked `status="approved"` | controllers/Bookings.cfc:233 |
+| accessCustomfields | `Customfields.cfc` (whole controller, no except — includes the `fieldpicker` ajax action) | controllers/Customfields.cfc:10 |
+| accessLocations | `Locations.cfc`, all actions **except** `list,view` | controllers/Locations.cfc:13 |
+| accesslogfiles | `Logfiles.cfc` (whole controller); **also** an inline `checkPermission("accessLogfiles")` call inside a view template gating the "Activity" link on the admin user table | controllers/Logfiles.cfc:11; views/users/_usertable.cfm:39 |
+| accessPermissions | `Permissions.cfc` (whole controller, no except) | controllers/Permissions.cfc:10 |
+| accessresources | `Resources.cfc` (whole controller, no except — includes the `checkavailability` ajax action) | controllers/Resources.cfc:12 |
+| accessSettings | `Settings.cfc` (whole controller, no except) | controllers/Settings.cfc:10 |
+| accessUsers | `Users.cfc`, all actions **except** `myaccount,updateaccount,updatepassword` | controllers/Users.cfc:11 |
+| updateOwnAccount | `Users.cfc`, **only** `myaccount,updateaccount,updatepassword` — the self-service counterpart to `accessUsers` | controllers/Users.cfc:12 |
+| allowAPI | `Api.cfc`, **only** `index` | controllers/Api.cfc:11 |
+| allowiCal | **No code reference found anywhere** (no filter, no inline check, no view reference) — DB seed notes column reads "Reserved for future use" | install/new-installation.sql:161 (seed row only; confirmed unused by grep across all 12 controllers + all reviewed views) |
+| allowRSS | **No code reference found anywhere** — same as above, DB seed notes column reads "Reserved for future use" | install/new-installation.sql:163 (seed row only; confirmed unused) |
+
+**Unguarded / partially-unguarded actions found during the scan (explicit absence-of-gate findings, per F7.4):**
+- `Sessions.cfc` — **entirely ungated** by any permission flag (does not call `super.init()`, declares no `checkPermissionAndRedirect` filter at all). This is **by design**: login/logout/forgetme must work for anonymous visitors. Not a gap.
+- `PasswordResets.cfc` — gated only by the baseline `accessApplication` (via `super.init()`), which the seed data grants to the `guest` role (`guest=1` for `accessApplication`) — so anonymous users are not blocked. No reset-specific permission flag exists; access control here is purely token-based (the emailed reset token), not role-based. Not a gap, but worth noting no role-flag protects this flow — it is intentionally public-by-design.
+- `Api.cfc` — **split enforcement**: the `index` action requires the `allowAPI` permission flag but is **not** covered by the `f_isValidAPIRequest` token filter (`except="index"`); conversely, `display`, `rss2`, and `ical` actions **are** covered by `f_isValidAPIRequest` (require a valid per-user `apitoken` query-string value) but have **no permission-flag check at all** — meaning any holder of *any* valid user's API token can hit `rss2`/`ical`/`display` regardless of that user's role/permissions. This directly supports the PRD's interim "fully public feeds" decision — confirmed from source as token-gated-only, not role-gated, for the feed-rendering actions. (See also `findings/05-platform-settings.md` for the dedicated `Api.cfc`/`Settings.cfc` audit.)
+- `Bookings.cfc` — the calendar-viewing actions (`index,list,day,building,location,check`) require only `accessCalendar`, not `allowRoomBooking`/`viewRoomBooking` — i.e. a logged-in user with baseline calendar access can see the various calendar views without either of the more specific booking-view/booking-create flags; `viewRoomBooking` only additionally restricts `list` and `view` (the most data-complete views), not the ajax/basic calendar renders.
+- `Locations.cfc` — `list` and `view` actions require **only** the base `accessApplication` (via `super.init()`), explicitly excepted from both `accessLocations` and `accessCalendar` — these are the public-facing, read-only location views.
+
+**Verdict on PRD Open Question #9 (permission matrix completeness):** **RESOLVED — NOT EXHAUSTIVE, as PRD/PROJECT.md already suspected.** The legacy system defines **17** permission flags (per the `permissions` table seed data), of which **15 are actively enforced** somewhere in the controller/view code (the 6 PRD-named flags **plus 9 more**: `accessApplication`, `accessCustomFields`, `accessLocations`, `accessLogfiles`, `accessResources`, `accessSettings`, `accessUsers`, `updateOwnAccount`, `bypassApproveBooking`), and **2 are defined but entirely unreferenced/dead** (`allowiCal`, `allowRSS` — both explicitly labelled "Reserved for future use" in their own seed data). Phase 3's deny-by-default permission baseline must account for all 15 active flags, not just the 6 originally named; the 2 reserved-but-unused flags should be explicitly decided (carry forward as reserved, or drop) rather than silently ported.
+
+---
+
+## Open Questions (identity-access)
+
+1. **PRD Open Question #9 — permission matrix completeness:** **RESOLVED.** See verdict directly above — 17 flags total, 15 active, 2 unused/reserved (`allowiCal`, `allowRSS`).
+
+2. **Initial-credential mechanism:** **RESOLVED.** Admin sets the password directly (plaintext, typed twice for confirmation) at account-creation time via `views/users/formparts/_userpw.cfm` ("Initial Password" panel) and `Users.create()`. No auto-generated password, no emailed activation/invite link. The one-time installer (`install/functions.cfm`, `createInitialAdminUser()`) follows the identical pattern for the very first admin account.
+
+3. **Remember-me duration:** **RESOLVED.** 360-day cookie (`RBS_UN`, `events/functions.cfm:317`) storing only the email address for login-form prefill — not a session-extension mechanism. The underlying web-session timeout itself is **OPEN** — no override was found anywhere in this codebase's config files (`Application.cfc`, `config/app.cfm`, `config/environment.cfm`, `config/settings.cfm`, or any per-environment settings file), meaning it depends on the ColdFusion/Lucee **server/engine default**, which cannot be confirmed from source and must be confirmed against the actual historical deployment's engine-admin configuration (or explicitly decided fresh for the new system) before Phase 3 finalizes session-timeout behavior.
+
+4. **Password complexity rules:** **RESOLVED.** Minimum 6 characters, ≥1 digit, ≥1 lowercase letter (exact regex cited in User model section above). No uppercase or special-character requirement in legacy. New system's policy must be no weaker.
+
+**Additional findings logged as open decision points (discovered during this audit, not explicitly FRD-flagged, but material to Phase 3):**
+
+5. **Permission-change caching requires an application reload.** Edits via the Permissions controller update the database immediately but have no runtime effect until the app restarts (the in-memory `application.rbs.permission` struct is populated once at `onApplicationStart`). Phase 3 should make a conscious decision on whether the new system should (a) apply permission changes immediately (more likely desirable), or (b) intentionally require a cache-refresh step for some operational reason — **recommend (a)**, but this is a behavior change from legacy and should be named as such rather than silently diverging.
+
+6. **Password-reset token expiry is not re-checked at final submit.** `PasswordResets.edit()` checks the 2-hour window when the form is first loaded; `PasswordResets.update()` does not re-check it when the new password is actually submitted — a user who opens the reset link just inside the window could submit a new password well after expiry. Recommend the new system re-validates expiry on both read and write of the reset flow.
+
+7. **Email-enumeration inconsistency between login and password-reset-request.** `Sessions.attemptlogin()` returns a generic failure message regardless of whether the email exists; `PasswordResets.create()` explicitly reveals "we couldn't find an account for that address" when it doesn't. Recommend the new system pick one consistent policy (generic messaging is the more conservative default) as an explicit design decision, not an oversight carried forward.
+
+8. **`users.email` uniqueness collation is unconfirmed.** The `validatesUniquenessOf("email")` model rule's actual case-sensitivity depends on the deployed MySQL column collation, which was not explicitly declared beyond the table-level `utf8` charset in the reviewed schema snippet (`install/new-installation.sql`). Needs confirmation against an actual running instance (or an explicit decision for the new system) before assuming case-sensitive vs. case-insensitive uniqueness parity.
+
+9. **Admin-cannot-assume-admin is UI-only, not server-enforced.** The "Assume" (impersonate) link is hidden in the view when the target is also an admin, but `Users.assumeUser()` itself performs no such check — any user holding `accessUsers` could impersonate any other user, including another admin, by constructing the request directly. Recommend the new system enforce this restriction server-side, as an explicit, named change from legacy (which only enforced it cosmetically).
