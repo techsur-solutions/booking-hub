@@ -121,14 +121,19 @@ is finalized (see `open-questions.md` for the full verdict and citation).
 | BF-109 | findings/05-platform-settings.md | config/environment.cfm / config/{env}/settings.cfm (all 5 files) | All 5 per-environment settings files are 100% empty as shipped — zero configuration-VALUE differences between any of the 5 environments | Confirmed | F0.4 |
 | BF-110 | findings/05-platform-settings.md | views/common/layout/_footer.cfm | The ONE confirmed functional (not config-value) difference tied to environment: production serves minified JS bundle, every other environment serves unminified | Confirmed | F0.4 |
 | BF-111 | findings/05-platform-settings.md | config/settings.cfm (reloadPassword) | Shipped default reload password ("roombooking") is a plaintext, trivially-guessable string identical to the datasource name — a security concern flagged for the new system | Confirmed | F12 |
+| BF-112 | findings/01-booking-core.md | controllers/Bookings.cfc: check(), create(), update() | Forward design decision (not a legacy-behavior ambiguity): legacy's conflict-detection is unconditionally non-blocking for every user via `check()`, with no server-side enforcement in `create()`/`update()` — whether the NEW system should introduce a hard-block for any/all users is an open product decision, not a legacy fact to confirm | Open | F2 |
+| BF-113 | findings/01-booking-core.md / findings/02-reference-data.md | controllers/Resources.cfc: checkavailability(); views/bookings/_form.cfm (resource-level AJAX wiring) | Multi-resource conflict aggregation semantics unconfirmed: whether the booking UI aggregates multiple per-resource `checkavailability` calls into a single blocking/non-blocking verdict for the whole booking, or evaluates them independently with no cross-resource logic, could not be confirmed from the Bookings controller's own file content in isolation | Open | F2.1 |
 
 ---
 
-*Total: 111 rows (BF-001 through BF-111) across all 5 Wave 1 findings files.
+*Total: 113 rows (BF-001 through BF-113) across all 5 Wave 1 findings files.
 13 rows carry Status=Open, corresponding to the 13 OPEN items in
 `open-questions.md` (not a 1:1 mapping — several Open rows here map to the
 same open-questions.md item, e.g. BF-065/BF-067 both feed open-questions.md
-item 20/19 respectively). Every Confirmed row is directly implementable
-without further product decision; every Open row requires the corresponding
-`open-questions.md` entry to be resolved via explicit decision before the
-mapped F1–F13 feature is finalized.*
+item 20/19 respectively; BF-112 and BF-113 were added to give dedicated
+traceability rows to open-questions.md items #2 and #3, whose live
+forward-decision/ambiguity were not previously surfaced by any Open-status
+row — see REVIEW.md iteration 1, finding W1). Every Confirmed row is directly
+implementable without further product decision; every Open row requires the
+corresponding `open-questions.md` entry to be resolved via explicit decision
+before the mapped F1–F13 feature is finalized.*
