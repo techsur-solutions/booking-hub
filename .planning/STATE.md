@@ -2,15 +2,16 @@
 pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 4
-status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-10-06T16:02:29.708Z"
+current_plan: 5
+status: unknown
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-10-06T16:03:41.591Z"
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 6
-  completed_plans: 1
+  completed_plans: 2
+  percent: 17
 ---
 
 # Project State
@@ -26,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-10-06)
 
 Phase: 01 (legacy-functional-audit) — EXECUTING
 Plan: 4 of 6
-Current Plan: 4
+Current Plan: 5
 Total Plans in Phase: 6
 
 Progress: [█░░░░░░░░░] 17%
@@ -51,6 +52,7 @@ Progress: [█░░░░░░░░░] 17%
 - Trend: N/A (first recorded plan)
 
 *Updated after each plan completion*
+| Phase 01-legacy-functional-audit P01 | 25 min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -67,6 +69,8 @@ Recent decisions affecting current work:
 - Roadmap: F10 (Settings) placed in Phase 4 alongside F4/F5 rather than later with F9, because F3's auto-approve logic has a hard functional dependency on reading the `approveBooking` flag at booking-creation time — Phase 5 (Core Booking) cannot be built without it existing first.
 - [Phase 01-03]: FRD 'optional, free-text-validated' custom-fields placeholder corrected: legacy has NO server-side validation at all (not even free-text), confirmed via Controller.updateCustomFields()
 - [Phase 01-03]: Custom-fields join/context model confirmed as two-tier: parentmodel scopes field definitions to exactly 2 model types (event, location), Customfieldjoin.customfieldchildid scopes values to specific instances — no per-Location-instance definition scoping exists
+- [Phase 01-legacy-functional-audit]: PRD Open Question #2 interim decision (hard block without allowApproveBooking, soft warning with it) is corrected, not confirmed: legacy Bookings.check() is unconditionally non-blocking/informational for every user regardless of permission; create()/update() perform no server-side conflict validation at all — Direct code citation from controllers/Bookings.cfc: check(), create(), update() — see findings/01-booking-core.md
+- [Phase 01-legacy-functional-audit]: No recurring-booking series concept exists past creation time: Bookings.create()'s repeat-loop creates independent sibling rows with no linking id; update()/delete() always target a single row — resolves PRD Open Question #1 — Direct code citation from controllers/Bookings.cfc: create(), update(), delete(); models/Event.cfc: registerSystemFields()
 
 ### Pending Todos
 
@@ -79,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-06T16:02:27.540Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-10-06T16:03:41.590Z
+Stopped at: Completed 01-01-PLAN.md
 Resume file: None
