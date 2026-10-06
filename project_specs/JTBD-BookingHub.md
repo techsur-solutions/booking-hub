@@ -12,7 +12,9 @@
 
 ## JTBD Summary
 
-| ID | Persona | Job Statement | Priority |
+*Note: **Job Urgency** (P0/P1/P2) reflects how pressing a job is for the persona experiencing it — it is a distinct scale from the release-sequencing **Priority** used in UserStories-BookingHub.md and the Story Map. A P2 job (e.g., JTBD-02.4, JTBD-04.3) is still fully in scope for this release; it is simply less urgent to the persona than a P0 job, not deprioritized out of the release.*
+
+| ID | Persona | Job Statement | Job Urgency |
 |----|---------|--------------|----------|
 | JTBD-01.1 | PER-01 | When I need to book a room between other tasks, I want conflict status visible at submission, so I can trust the booking is mine without a later double-booking surprise. | P0 |
 | JTBD-01.2 | PER-01 | When I edit or cancel one occurrence of a recurring series, I want explicit control over scope, so I can avoid unintentionally changing other weeks. | P0 |
@@ -52,7 +54,7 @@ When I need to book a room for an internal sync or client call between other tas
 **Success Measure:** Maya completes a room+resource booking end-to-end in under 2 minutes with zero double-booking incidents.
 
 **Related Features:** F1, F2, F4
-**Priority:** P0
+**Job Urgency:** P0
 
 ---
 
@@ -72,7 +74,7 @@ When I set up a recurring weekly team sync and later need to edit or cancel a si
 **Success Measure:** Zero recurring-series edits produce unintended changes to other occurrences, across 100% of recurring-booking edit actions.
 
 **Related Features:** F1
-**Priority:** P0
+**Job Urgency:** P0
 
 ---
 
@@ -92,7 +94,7 @@ When I submit a booking that requires approval, I want to know immediately wheth
 **Success Measure:** 100% of status decisions result in a delivered notification to Maya within minutes of the decision.
 
 **Related Features:** F3, F8
-**Priority:** P0
+**Job Urgency:** P0
 
 ---
 
@@ -112,7 +114,7 @@ When my booking type requires additional details such as catering headcount, I w
 **Success Measure:** Zero post-booking emails required to communicate custom-field details for bookings with applicable field templates.
 
 **Related Features:** F5
-**Priority:** P1
+**Job Urgency:** P1
 
 ---
 
@@ -135,7 +137,7 @@ When I review my pending booking queue each morning, I want to see every pending
 **Success Measure:** Average time-to-decision under 5 minutes per booking once it enters his queue.
 
 **Related Features:** F2, F3
-**Priority:** P0
+**Job Urgency:** P0
 
 ---
 
@@ -155,7 +157,7 @@ When I approve or deny a booking, I want the requester to be reliably notified o
 **Success Measure:** 100% of David's approve/deny decisions result in a delivered notification to the requester.
 
 **Related Features:** F3, F8
-**Priority:** P0
+**Job Urgency:** P0
 
 ---
 
@@ -175,7 +177,7 @@ When the auto-approve setting changes or a new booking appears, I want to unders
 **Success Measure:** Zero instances where a booking auto-approves when David expected it to require his review, verified against current settings state.
 
 **Related Features:** F3, F10
-**Priority:** P1
+**Job Urgency:** P1
 
 ---
 
@@ -195,7 +197,7 @@ When a dispute arises about who approved or denied a booking and when, I want to
 **Success Measure:** 100% of disputed booking decisions resolved using the audit trail with no reliance on external email records.
 
 **Related Features:** F11
-**Priority:** P2
+**Job Urgency:** P2
 
 ---
 
@@ -217,7 +219,7 @@ When I onboard a new room or piece of equipment, I want to create or edit the lo
 **Success Measure:** Priya can onboard a new location or resource in under 5 minutes.
 
 **Related Features:** F4
-**Priority:** P1
+**Job Urgency:** P1
 
 ---
 
@@ -237,7 +239,7 @@ When I map a legacy permission rule to its Keycloak-backed equivalent, I want to
 **Success Measure:** 100% of legacy permission rules mapped to an equivalent Keycloak role/scope, verified by passing permission-boundary tests.
 
 **Related Features:** F6, F7, F13
-**Priority:** P0
+**Job Urgency:** P0
 
 ---
 
@@ -257,7 +259,7 @@ When I toggle a system-wide setting like the approval requirement or calendar sl
 **Success Measure:** Settings changes take effect across all dependent services with zero manual verification steps needed, confirmed in 100% of settings-change test cases.
 
 **Related Features:** F10
-**Priority:** P1
+**Job Urgency:** P1
 
 ---
 
@@ -277,7 +279,7 @@ When I perform compliance review or investigate an access-related issue, I want 
 **Success Measure:** 100% of state-changing actions appear in the audit log, verified across all entity types.
 
 **Related Features:** F11
-**Priority:** P1
+**Job Urgency:** P1
 
 ---
 
@@ -297,7 +299,7 @@ When the re-platform nears release, I want to confirm via the audit findings and
 **Success Measure:** 100% of F0-documented legacy features have a corresponding implemented requirement and at least one passing automated test before Priya signs off on release.
 
 **Related Features:** F0, F13
-**Priority:** P0
+**Job Urgency:** P0
 
 ---
 
@@ -320,7 +322,7 @@ When a visitor or employee asks which room a meeting is in, I want to glance at 
 **Success Measure:** Display board refresh latency under 1 minute from the moment a booking is approved, with zero visitor misdirection incidents attributable to stale data.
 
 **Related Features:** F9, F1, F4
-**Priority:** P1
+**Job Urgency:** P1
 
 ---
 
@@ -340,7 +342,7 @@ When I want to track which rooms at my location are busy during my shift without
 **Success Measure:** Feed data matches the authoritative approved-booking state 100% of the time, with no manual refresh required after initial subscription.
 
 **Related Features:** F9
-**Priority:** P1
+**Job Urgency:** P1
 
 ---
 
@@ -360,7 +362,7 @@ When I need to check booking visibility as part of my front-desk role, I want to
 **Success Measure:** Zero login prompts or access-denied errors encountered when accessing public feed/display surfaces across all formats.
 
 **Related Features:** F9, F7
-**Priority:** P2
+**Job Urgency:** P2
 
 ---
 

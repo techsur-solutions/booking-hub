@@ -13,7 +13,7 @@ Booking-Hub's frontend is a React + TypeScript single-page application replacing
 **Design principles:**
 
 1. **Explicit state confirmation over implicit success.** Every mutating action (save, approve, deny, settings change, delete) surfaces a visible, timestamped confirmation — never a silent 200 OK. This directly answers the #1 cross-journey pain point (JRN-01.1 Submit/Confirm stages, JRN-03.2 Confirm Propagation stage).
-2. **Boundary/scope decisions surfaced before, not after.** Recurring-edit scope (US-1.2, US-1.6), conflict hard-block vs. warning (US-2.1), and auto-approve boundary (US-3.4) are all surfaced as explicit choices or status badges *before* an action completes, per the "Shared Opportunities" pattern in JOURNEYS-BookingHub.md.
+2. **Boundary/scope decisions surfaced before, not after.** Recurring-edit scope (US-1.2, US-1.6), conflict hard-block-vs-soft-warning (role-dependent, US-2.1/US-2.3), and auto-approve boundary (US-3.4) are all surfaced as explicit choices or status badges *before* an action completes, per the "Shared Opportunities" pattern in JOURNEYS-BookingHub.md.
 3. **Conflict visibility is identical everywhere.** Calendar, day, list, and approval-queue views render the same `conflict_flags[]` using the same visual language (US-2.2) — there is exactly one conflict-evaluation code path and exactly one conflict-badge component.
 4. **Approved-only means approved-only, visibly.** The display board and all public feed formats show a hard visual/data guarantee that only `status=approved` bookings ever appear (US-9.1, US-9.4) — this is reinforced in the UI copy, not just the API contract.
 5. **Admin screens are single-pass, not multi-screen scavenger hunts.** Per JRN-03.1, Priya's location-onboarding success measure is "under 5 minutes, one form" — admin CRUD screens favor single-page forms with inline validation over multi-step wizards, replacing the legacy "juggle multiple screens" pain point.
@@ -102,11 +102,11 @@ Booking-Hub's frontend is a React + TypeScript single-page application replacing
 2. She clicks an empty slot on the desired room's calendar row; the Booking Create Form opens pre-populated with that location, start time, and a default end time of start + 1 hour (US-1.1).
 3. She opens the resource picker and attaches "Conference Phone"; the form renders the "Catering Headcount" custom field because it is scoped to this location's context (US-5.2).
 4. She fills in the title and catering headcount, then clicks Save.
-5. The system runs conflict detection synchronously across both location and resource scope (US-2.1). If a conflict exists, an inline banner names the specific conflicting booking and conflict type (location vs. resource) — this is a **hard block** in the interim default (FRD F2 §Process step 6); the Save button stays enabled for a corrected resubmission, it does not silently fail.
+5. The system runs conflict detection synchronously across both location and resource scope (US-2.1). If a conflict exists, an inline banner names the specific conflicting booking and conflict type (location vs. resource) — for Maya, who does not hold `allowApproveBooking`, this is a **hard block** (interim Key Decision, FRD F2 §Process step 6); the Save button stays enabled for a corrected resubmission, it does not silently fail. (A user holding `allowApproveBooking` would instead see the same banner as a dismissible warning and could save anyway — see the Approval Queue flow below.)
 6. On success, a toast confirms the save and explicitly states the resulting status (`Pending approval` vs. `Approved`) per the current `approveBooking` setting (US-3.4) — this directly resolves the "did that actually go through?" anxiety flagged in JRN-01.1's Submit stage.
 7. The Booking Detail Modal opens automatically showing the full persisted record (US-1.7), then the user returns to the Calendar View where the new event is already rendered with the correct location colour and no refresh needed.
 
-**Exit point:** Calendar View, with new booking visible and conflict-free (or flagged, if a soft-scenario slips through after an F0 policy change).
+**Exit point:** Calendar View, with new booking visible and conflict-free (Maya's bookings are always conflict-free on save, since a conflict hard-blocks her submission).
 
 ---
 ### Flow 2: Recurring Series Edit (Single Occurrence) and Approval Wait
@@ -206,10 +206,11 @@ Booking-Hub's frontend is a React + TypeScript single-page application replacing
           │                ┌───────┴────────┐
           │                ▼                 ▼
           │         [Approve anyway    [Deny, with optional
-          │          — interim hard     denial_reason]
-          │          block means this
-          │          path is disabled
-          │          pending F0]
+          │          — allowed; David   denial_reason]
+          │          holds allowApprove
+          │          Booking, so the
+          │          conflict is a soft
+          │          warning for him]
           ▼                ▼                 ▼
   [Row removed from queue; toast "Approved"]
           │
@@ -224,7 +225,7 @@ Booking-Hub's frontend is a React + TypeScript single-page application replacing
 2. The Approval Queue lists every `status=pending` booking, each row showing its `conflict_flags[]` inline using the identical conflict-badge component used in Calendar/List views (US-2.2) — no separate click needed to discover a conflict exists.
 3. For a non-conflicted row, David clicks Approve directly from the row — a single action, no modal required (US-3.2).
 4. For a conflicted row, clicking the conflict badge opens the Booking Detail Modal pre-scrolled to the conflict section, showing the specific conflicting booking's id and whether it's a location or resource conflict (US-2.1).
-5. Per the interim hard-block default (FRD F2 §Process step 6), "Approve anyway despite conflict" is not offered as a UI action until F0 confirms a soft-warning policy exists — the Approve button for a hard-blocked conflicted row is replaced with a "Resolve conflict first" state, preventing an approver from creating a double-booking via the approval path itself.
+5. Because David holds `allowApproveBooking`, the conflict is a **soft warning** for him (interim Key Decision, FRD F2 §Process step 6): the Approve button remains enabled on a conflicted row, with a confirmation step ("Approve despite conflict with Booking #482?") so the override is deliberate, not accidental. Denying remains available at all times regardless of conflict state.
 6. Denying a row opens a lightweight inline reason field (optional free text, US-3.3) before confirming.
 7. Approved/denied rows disappear from the queue immediately (optimistic UI) and a toast confirms the one-way transition (US-3.2/US-3.3: "Approve/deny are one-way transitions").
 8. Rows for bookings created while auto-approve was active show an "Auto-approved" status chip with a hover tooltip: "Auto-approved per Settings at [timestamp]" — a direct link to Settings Admin lets David instantly confirm this matches the current configuration (US-3.4, JRN-02.1 Verify Boundary stage), with zero manual cross-checking.
@@ -670,9 +671,10 @@ Booking-Hub's frontend is a React + TypeScript single-page application replacing
 | Default (create) | Empty form, End time placeholder shows "+1h from start" | N/A |
 | Default (edit) | Pre-filled with existing values | N/A |
 | Validation error: empty title | Red outline + inline text under field | "Booking title is required" (US-1.1) |
-| Validation error: end before start | Red outline on End field | "End time must not be before start time" (US-1.1) |
+| Validation error: end before or equal to start | Red outline on End field | "End time must be after start time" (US-1.1) |
 | Validation error: location not found | Form-level banner | "Specified location does not exist" |
-| Conflict (hard block, interim default) | Red banner above Save; Save remains clickable for a corrected resubmission | "This booking conflicts with an existing booking for the selected location or resource" (US-2.1) |
+| Conflict, caller without `allowApproveBooking` (hard block, interim default) | Red banner above Save; Save remains clickable for a corrected resubmission | "This booking conflicts with an existing booking for the selected location or resource" (US-2.1) |
+| Conflict, caller holding `allowApproveBooking` (soft warning, interim default) | Amber banner above Save; Save proceeds on confirmation | "This booking conflicts with an existing booking — save anyway?" (US-2.3) |
 | Scope required (series edit, scope omitted) | Scope dialog cannot be dismissed without a selection | "Scope (this occurrence or whole series) is required for recurring bookings" (US-1.2) |
 | Saving | Save button shows spinner, disabled | "Saving…" |
 | Success | Form closes; toast confirms | "Booking saved — Pending approval" / "— Approved" |
@@ -794,7 +796,7 @@ Booking-Hub's frontend is a React + TypeScript single-page application replacing
 | Default (queue has items) | Rows sorted oldest-first | Badge count in sidebar nav matches row count |
 | Empty queue | Empty-state illustration | "You're all caught up — no pending bookings" |
 | Conflict present | ⚠ icon + red-tinted row background | Tooltip: conflicting booking id + type (identical to Calendar/List, US-2.2) |
-| Conflict hard-blocked (interim default) | Approve button replaced with disabled state | Tooltip: "Resolve the conflict before this booking can be approved" |
+| Conflict present, Approve clicked (interim Key Decision: soft warning for `allowApproveBooking` holders) | Confirmation dialog before proceeding | "Approve despite conflict with Booking #482? This will not resolve the conflict automatically." [Cancel] [Approve anyway] |
 | Forbidden (no `allowApproveBooking`) | Screen/nav item does not render at all | N/A — route guard redirects to Calendar View (US-3.1, US-7.3) |
 | Approving | Row shows spinner over Approve button | — |
 | Approve success | Row fades out and is removed from list | Toast: "Booking approved" |
@@ -1292,7 +1294,7 @@ Booking-Hub's frontend is a React + TypeScript single-page application replacing
 ---
 ### Screen: Feed Subscription (iCal / RSS2 / JSON links)
 
-**Purpose:** A public (or `allowAPI`-scoped, pending F0 confirmation) landing page where a user obtains subscribable feed URLs for their location of interest — no account required for the happy path.
+**Purpose:** A fully public landing page (interim Key Decision, pending final F0 confirmation) where a user obtains subscribable feed URLs for their location of interest — no account required at all, for any path.
 **User Stories:** US-9.2, US-9.3, US-9.4
 
 #### Layout
@@ -1335,7 +1337,6 @@ Booking-Hub's frontend is a React + TypeScript single-page application replacing
 | Default | All four format rows rendered with location-scoped URLs | N/A |
 | No location selected | URLs omit the `location` query param (all-locations feed) | Placeholder note: "Showing all locations" |
 | Copy action | Button briefly shows checkmark | "Copied!" (2s micro-confirmation) |
-| Access denied (if `allowAPI` gating confirmed by F0) | Entire format list replaced with a message, not a broken link | "API access is required to view feed links — contact your administrator" (US-9.3: denial applies identically across all formats, never partially) |
 | Unknown/invalid location filter | Page still renders successfully (empty feed is a valid, non-error outcome per US-9.2) | No error shown — URL generated as normal; consuming app will simply show an empty feed |
 
 #### Interactive Elements

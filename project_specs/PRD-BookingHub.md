@@ -83,7 +83,7 @@ The core risk this project must manage is **silent feature loss during rewrite**
 
 **Capabilities:**
 - Create/edit/delete/clone bookings with full field set equivalent to legacy `Event` (title, location, times, resources, custom field values, system fields)
-- Date/time validation: end time must not precede start time; default booking duration of 1 hour when end time is unspecified
+- Date/time validation: end time must be strictly after start time (a zero-duration booking where end equals start is not permitted); default booking duration of 1 hour when end time is unspecified
 - Recurring/repeat booking support (series creation, and edit/delete scoping — single occurrence vs. whole series — to be confirmed against legacy behavior in F0 and flagged if ambiguous)
 - Multi-resource bookings: a single booking can be associated with multiple bookable resources via an `Eventresource`-equivalent join
 - Status workflow: new bookings enter `pending` or `approved` depending on the global auto-approve setting (see F10); transitions to `approved`/`denied` are gated by the approval workflow (F3)
@@ -104,7 +104,7 @@ The core risk this project must manage is **silent feature loss during rewrite**
 **Capabilities:**
 - Overlap-checking logic evaluated per location and per resource at booking creation/edit time
 - Conflict results surfaced inline in calendar view (visual indication) and list view (flagged rows)
-- Behavior when a conflict is detected (hard block vs. warn-and-allow, and whether this differs by permission level) to be confirmed during the Legacy Functional Audit (F0) and flagged as an open question if not clearly documented in legacy code
+- **Interim Key Decision (pending final F0 confirmation):** a detected conflict is a **hard block** (booking cannot be saved) for users without `allowApproveBooking`; a user holding `allowApproveBooking` **may save anyway**, with the conflict surfaced as a flag for informational/review purposes — this is the behavior that allows an approver to review a flagged conflict and decide to approve it regardless. Legacy code must still be checked in F0 to confirm or correct this default.
 - Conflict detection re-evaluated on every booking edit, not only at creation
 
 **Legacy Reference:** `Bookings` controller conflict-check logic; `Event`/`Eventresource` models.
@@ -228,7 +228,7 @@ The core risk this project must manage is **silent feature loss during rewrite**
 - JSON/API feed of approved upcoming bookings (equivalent to legacy `allowAPI`-gated JSON endpoint)
 - Digital-signage "display board" view: a visual, auto-refreshing screen-friendly view of upcoming approved bookings suitable for lobby/corridor displays
 - Optional per-location filtering on all feed formats
-- Feed access control equivalent to legacy `allowAPI` permission where the legacy feed is not fully public
+- **Interim Key Decision (pending final F0 confirmation):** all feed formats (RSS2/iCal/JSON/display board) are **fully public, requiring no authentication or token** — consistent with their intended use as a login-free, walk-up/subscribe-once surface for reception and visitors. `allowAPI` is retained as a legacy reference for F0 to confirm this matches historical behavior, but is not implemented as an access gate unless F0 finds evidence the legacy feed was in fact restricted.
 
 **Legacy Reference:** `Api` controller (RSS2/iCal/JSON/display board).
 
@@ -367,12 +367,12 @@ The core risk this project must manage is **silent feature loss during rewrite**
 Per the project's hard constraint that ambiguous legacy behavior must be flagged rather than guessed, the following are known candidate areas of ambiguity identified from the initial scan in PROJECT.md. **This list is a starting point, not exhaustive — F0 (Legacy Functional Audit) is responsible for producing the authoritative, complete Open Questions list** by reading the actual legacy source:
 
 1. **Recurring booking edit/delete scoping:** When a user edits or deletes one occurrence of a recurring booking series, does the legacy system apply the change to that occurrence only, the whole series, or prompt the user to choose? Exact legacy UX/logic unconfirmed.
-2. **Conflict detection enforcement:** Is a detected conflict a hard block (booking cannot be saved) or a soft warning (booking can be saved anyway, e.g., by an admin/approver)? Does this differ by role/permission?
+2. **Conflict detection enforcement:** Is a detected conflict a hard block (booking cannot be saved) or a soft warning (booking can be saved anyway, e.g., by an admin/approver)? Does this differ by role/permission? **Interim Key Decision recorded:** hard block for users without `allowApproveBooking`; soft warning (save-anyway, flagged) for users holding `allowApproveBooking`. F0 must still confirm/correct this against actual legacy behavior.
 3. **Multi-resource conflict scope:** When a booking has multiple resources attached, is conflict checked per-resource independently, or does any single resource conflict block the whole booking?
 4. **Auto-approve interaction with notifications:** When `approveBooking` is disabled (auto-approve), does the system still send a "booking created" notification, an "approved" notification, both, or neither?
 5. **Notification recipient rules:** For each lifecycle event (created/approved/denied), exactly who receives the email — booking owner only, owner + all approvers, owner + location-specific approvers, or configurable per-location?
 6. **Custom field validation rules:** Do custom fields support required/optional flags, type-specific validation (e.g., numeric, date), or are they free-text only?
-7. **Feed access control:** Are the RSS2/iCal/JSON feeds and display board fully public by default, or always gated behind the `allowAPI` permission / a token? Does per-location filtering apply uniformly across all feed formats?
+7. **Feed access control:** Are the RSS2/iCal/JSON feeds and display board fully public by default, or always gated behind the `allowAPI` permission / a token? Does per-location filtering apply uniformly across all feed formats? **Interim Key Decision recorded:** all feed formats are fully public, no authentication required; per-location filtering applies uniformly without a login. F0 must still confirm/correct this against actual legacy behavior.
 8. **Audit log field completeness:** Does the legacy `Logfiles` capture before/after values for edits, or only the fact that an edit occurred? Is every controller action logged, or only a subset?
 9. **Permission matrix completeness:** The permission flags named in PROJECT.md (`accessCalendar`, `allowRoomBooking`, `viewRoomBooking`, `allowApproveBooking`, `accessPermissions`, `allowAPI`) are described as non-exhaustive — the full set and their exact gating scope per controller action is unconfirmed.
 10. **Per-environment settings behavior:** What functional differences (if any) exist between development/production/testing/design/maintenance environment settings beyond configuration values — e.g., does "maintenance" mode change user-facing behavior (read-only mode, banner, access lockout)?

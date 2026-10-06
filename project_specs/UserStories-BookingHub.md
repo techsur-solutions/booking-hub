@@ -61,10 +61,11 @@ Where a story's acceptance criteria touch a legacy behavior not yet confirmed by
 **Acceptance Criteria:**
 - [ ] Booking form requires a non-empty title and rejects submission with a clear error if missing
 - [ ] If end time is omitted, the system defaults it to start time + 1 hour
-- [ ] Submission is rejected with "End time must not be before start time" if end time precedes start time
+- [ ] Submission is rejected with "End time must be after start time" if end time precedes or equals start time (zero-duration bookings are not permitted)
 - [ ] `location_id` must reference an existing, non-deleted location or the booking is rejected with a not-found error
 - [ ] Each selected resource must reference an existing, non-deleted resource or the booking is rejected
 - [ ] On successful creation, the booking is returned with its assigned status (pending or approved) and any conflict flags
+- [ ] Maya (who does not hold `allowApproveBooking`) is hard-blocked from saving a conflicting booking; the submission is rejected rather than saved-with-a-flag
 
 **Priority:** P0 | **Feature Ref:** F1
 
@@ -157,6 +158,7 @@ Where a story's acceptance criteria touch a legacy behavior not yet confirmed by
 - [ ] Conflict checks exclude the booking's own prior state when editing (never compared against itself)
 - [ ] Deleted and denied bookings are excluded from conflict comparison
 - [ ] A detected conflict is surfaced with the conflicting booking's id and whether it is a location or resource conflict
+- [ ] Because Maya does not hold `allowApproveBooking`, a detected conflict blocks her save (hard block) rather than merely warning her
 
 **Priority:** P0 | **Feature Ref:** F2
 
@@ -181,7 +183,8 @@ Where a story's acceptance criteria touch a legacy behavior not yet confirmed by
 **Acceptance Criteria:**
 - [ ] Editing a booking's time, location, or resources triggers a fresh conflict evaluation, not a cached result from creation
 - [ ] Multi-resource bookings have each attached resource checked, with the union of all per-resource conflicts returned
-- [ ] **(Open question pending F0)** Whether a conflict is a hard block or a soft warning — and whether this differs by role — is flagged rather than silently assumed; interim default is hard block for all roles
+- [ ] David, holding `allowApproveBooking`, can save an edit despite a detected conflict (soft warning) — the conflict is flagged, not blocking, for his role
+- [ ] **(Open question pending F0)** This role-based hard-block/soft-warning split is an interim Key Decision (PRD Open Question #2) — F0 must still confirm or correct it against actual legacy behavior
 
 **Priority:** P0 | **Feature Ref:** F2
 
@@ -208,6 +211,7 @@ Where a story's acceptance criteria touch a legacy behavior not yet confirmed by
 - [ ] Approve action is rejected with 403 if the caller lacks `allowApproveBooking`
 - [ ] Approve action is rejected with 409 if the target booking's status is not exactly `pending`
 - [ ] A successful approval sets `status=approved`, records `approved_by` and `approved_at`, and publishes a `booking.approved` domain event
+- [ ] David can approve a pending booking that carries a flagged conflict (saved under the soft-warning policy available to `allowApproveBooking` holders) — approval is not blocked by the presence of a conflict flag
 - [ ] The approval action is recorded in the audit log with actor and timestamp
 
 **Priority:** P0 | **Feature Ref:** F3
@@ -492,6 +496,7 @@ Where a story's acceptance criteria touch a legacy behavior not yet confirmed by
 - [ ] Display board shows only bookings with `status=approved`; pending and denied bookings never appear
 - [ ] Display board auto-refreshes client-side to stay current
 - [ ] Display board can be filtered to a specific location when multiple buildings are shown
+- [ ] Jordan accesses the display board with no login, account, or token of any kind
 
 **Priority:** P1 | **Feature Ref:** F9
 
@@ -504,6 +509,7 @@ Where a story's acceptance criteria touch a legacy behavior not yet confirmed by
 - [ ] The iCal feed produces a standard `.ics` document with one `VEVENT` per approved upcoming booking
 - [ ] Per-location filtering is supported on the iCal feed the same way as other formats
 - [ ] An unknown `location_id` filter returns an empty feed rather than an error
+- [ ] Subscribing requires no login, account, or token — the `.ics` URL alone is sufficient
 
 **Priority:** P1 | **Feature Ref:** F9
 
@@ -514,8 +520,8 @@ Where a story's acceptance criteria touch a legacy behavior not yet confirmed by
 
 **Acceptance Criteria:**
 - [ ] Feed access control is evaluated identically regardless of requested format (RSS2, iCal, JSON, display board)
-- [ ] A caller denied access to one format is equally denied access to all other formats for the same scope
-- [ ] **(Open question pending F0)** Whether feeds are fully public by default or always gated behind `allowAPI` is flagged for confirmation; interim default requires `allowAPI`-scoped access
+- [ ] All formats are fully public — no format requires a login, account, or token that another format does not
+- [ ] **(Open question pending F0)** This fully-public default is an interim Key Decision (PRD Open Question #7) — F0 must still confirm or correct it against actual legacy `allowAPI` behavior
 
 **Priority:** P1 | **Feature Ref:** F9
 
@@ -689,6 +695,8 @@ Where a story's acceptance criteria touch a legacy behavior not yet confirmed by
 | **P1** | High - Important for first release. Matches PRD features F4, F5, F8, F9, F10, F11 — reference data, extensibility, notifications, public visibility, configuration, and compliance logging. All are required for this release; none are deferred. |
 | **P2** | Medium - Nice to have. Not used in this release — the PRD's strict feature-parity mandate treats every legacy capability area as required (P0/P1 only), per PRD Section 9. |
 | **P3** | Low - Future consideration. Not used in this release. |
+
+*Note: This Priority scale governs release scope/sequencing only. It is distinct from the **Job Urgency** scale (also P0/P1/P2) used in JTBD-BookingHub.md, which reflects how pressing a job is to the persona experiencing it, not whether it ships this release — a P2 Job Urgency (e.g., JTBD-02.4, JTBD-04.3) can still correspond to a P1 Priority story that ships in this release.*
 
 ---
 

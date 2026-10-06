@@ -170,7 +170,7 @@ This FRD specifies the exact functional behavior for every feature (F0–F13) id
 **Validation:**
 - `title` must be non-empty.
 - `location_id` must reference an existing, non-deleted Location (F4).
-- `end_time` must not precede `start_time` (legacy rule, confirmed in PRD Section 5 F1).
+- `end_time` must be strictly after `start_time` (a zero-duration booking where `end_time == start_time` is rejected; legacy rule, confirmed in PRD Section 5 F1).
 - If `end_time` is omitted, it is set to `start_time + 1 hour` (legacy default duration rule, confirmed).
 - Each entry in `resource_ids` must reference an existing, non-deleted Resource (F4).
 - `recurrence`, if present, must define a determinate, finite set of occurrences (no open-ended series) `[OPEN QUESTION — deferred to F0: exact constraint unconfirmed]`.
@@ -181,12 +181,12 @@ This FRD specifies the exact functional behavior for every feature (F0–F13) id
 | Scenario | HTTP Status | Error Code | Message |
 |---|---|---|---|
 | Missing or empty `title` | 400 | BOOKING_TITLE_REQUIRED | "Booking title is required" |
-| `end_time` precedes `start_time` | 400 | BOOKING_INVALID_TIME_RANGE | "End time must not be before start time" |
+| `end_time` precedes or equals `start_time` | 400 | BOOKING_INVALID_TIME_RANGE | "End time must be after start time" |
 | `location_id` references a non-existent or deleted Location | 404 | BOOKING_LOCATION_NOT_FOUND | "Specified location does not exist" |
 | One or more `resource_ids` reference a non-existent or deleted Resource | 404 | BOOKING_RESOURCE_NOT_FOUND | "One or more specified resources do not exist" |
 | Edit/delete of series Booking without `scope` parameter | 400 | BOOKING_SCOPE_REQUIRED | "Scope (this_occurrence or whole_series) is required for recurring bookings" |
 | Clone requested for non-existent `source_booking_id` | 404 | BOOKING_SOURCE_NOT_FOUND | "Booking to clone does not exist" |
-| Create/edit blocked by hard-block conflict (see F2) | 409 | BOOKING_CONFLICT | "This booking conflicts with an existing booking for the selected location or resource" |
+| Create/edit blocked by conflict for a caller without `allowApproveBooking` (see F2) | 409 | BOOKING_CONFLICT | "This booking conflicts with an existing booking for the selected location or resource" |
 
 **API Surface (this feature):** see `Y1-api.md` §Booking for full request/response schemas (`POST /bookings`, `PUT /bookings/{id}`, `DELETE /bookings/{id}`, `POST /bookings/{id}/clone`, `GET /bookings`, `GET /bookings/{id}`).
 
@@ -199,8 +199,8 @@ This FRD specifies the exact functional behavior for every feature (F0–F13) id
 - **Overlap:** Two time ranges `[start_a, end_a)` and `[start_b, end_b)` overlap if `start_a < end_b AND start_b < end_a` (half-open interval comparison; adjacent bookings that touch exactly at the boundary, e.g. one ends at 10:00 and another starts at 10:00, do not overlap).
 - **Location-level conflict:** An overlap between two Bookings that reference the same `location_id`.
 - **Resource-level conflict:** An overlap between two Bookings where at least one attached `resource_id` is shared between them.
-- **Hard block:** A conflict that prevents the Booking from being saved at all.
-- **Soft warning:** A conflict that is surfaced to the user but does not prevent saving.
+- **Hard block:** A conflict that prevents the Booking from being saved at all. Applies to callers who do not hold `allowApproveBooking` (interim Key Decision, PRD Open Question #2).
+- **Soft warning:** A conflict that is surfaced to the user but does not prevent saving. Applies to callers who hold `allowApproveBooking` (interim Key Decision, PRD Open Question #2) — e.g., an approver reviewing a flagged conflict may choose to save/approve anyway.
 
 **Sub-features:**
 - Per-location overlap check
@@ -215,8 +215,8 @@ This FRD specifies the exact functional behavior for every feature (F0–F13) id
 3. Conflict Detection separately queries all non-deleted Bookings sharing at least one `resource_id` in common with the proposed `resource_ids[]`, whose time range overlaps the proposed range, excluding the Booking being edited.
 4. If multiple resources are attached, each resource is checked independently; the conflict result for the whole Booking includes the union of all per-resource conflicts found `[OPEN QUESTION — deferred to F0: whether legacy evaluates multi-resource conflicts per-resource independently (interim assumption) or treats any single resource conflict as blocking the whole booking identically — PRD Open Question #3; the distinction matters only for how the result is communicated, not whether a conflict is detected]`.
 5. Conflict Detection returns a structured result: a boolean `has_conflict`, and a list of `conflicts[]` each citing the conflicting Booking's `id`, the conflict type (`location` or `resource`), and the specific `location_id`/`resource_id` involved.
-6. The calling Booking Service (F1) applies the enforcement policy: `[OPEN QUESTION — deferred to F0: whether a detected conflict is a hard block (save rejected, HTTP 409) or a soft warning (save allowed, conflict surfaced for information) and whether this differs by permission/role — PRD Open Question #2]`. Interim default pending F0 confirmation: **hard block for all roles** (the conservative choice that cannot silently allow a double-booking regression); this default must be revisited and explicitly confirmed/corrected once F0 resolves the question, with a corresponding F13 test added either way.
-7. For calendar and list view read endpoints (F1 §Process step 12), Conflict Detection is invoked in bulk for all Bookings in the requested range so each returned Booking representation includes its `conflict_flags[]`, ensuring conflicts are visible even for already-saved Bookings (e.g., if a conflict was allowed under a soft-warning policy, or created via direct API access).
+6. The calling Booking Service (F1) applies the enforcement policy — **Interim Key Decision recorded (PRD Open Question #2), pending final F0 confirmation**: if the caller does **not** hold `allowApproveBooking` (F7), a detected conflict is a **hard block** (save rejected, HTTP 409). If the caller **holds** `allowApproveBooking`, a detected conflict is a **soft warning** — the save is allowed, the Booking is persisted (status per F3 §Process), and the conflict is surfaced via `conflict_flags[]` for the approver's review (this is what allows an approver to knowingly approve a booking despite a flagged conflict, per JRN-02.1). This default must still be revisited and explicitly confirmed/corrected once F0 resolves the question, with a corresponding F13 test added either way.
+7. For calendar and list view read endpoints (F1 §Process step 12), Conflict Detection is invoked in bulk for all Bookings in the requested range so each returned Booking representation includes its `conflict_flags[]`, ensuring conflicts are visible even for already-saved Bookings (e.g., a conflict saved by an approver under the soft-warning policy, or a conflict that emerges later from an independent edit).
 8. Conflict Detection logic is identical regardless of entry point (UI calendar, UI list, or direct API call) per the cross-cutting NFR "Conflict-detection correctness" — there is exactly one conflict-evaluation code path in the Booking Service, invoked by all three entry points.
 
 **Inputs:**
@@ -240,7 +240,8 @@ This FRD specifies the exact functional behavior for every feature (F0–F13) id
 **Error States:**
 | Scenario | HTTP Status | Error Code | Message |
 |---|---|---|---|
-| Hard-block conflict detected on create/edit (pending F0 confirmation of enforcement policy, interim default) | 409 | BOOKING_CONFLICT | "This booking conflicts with an existing booking for the selected location or resource" |
+| Conflict detected on create/edit for a caller without `allowApproveBooking` (hard block; pending final F0 confirmation of enforcement policy) | 409 | BOOKING_CONFLICT | "This booking conflicts with an existing booking for the selected location or resource" |
+| Conflict detected on create/edit for a caller holding `allowApproveBooking` | N/A — not an error | Save proceeds; conflict is returned in the response's `conflicts[]`/`conflict_flags[]` for review, not rejected |
 | Conflict check requested with invalid/missing `location_id` and empty `resource_ids` | 400 | CONFLICT_CHECK_INVALID_INPUT | "At least a location or one resource must be specified for conflict checking" |
 
 **API Surface (this feature):** Conflict Detection is primarily an internal Booking Service function invoked during `POST /bookings` and `PUT /bookings/{id}` (see F1); it is also exposed as a standalone check endpoint — see `Y1-api.md` §Booking, `POST /bookings/check-conflicts`.
@@ -584,12 +585,12 @@ This FRD specifies the exact functional behavior for every feature (F0–F13) id
 **Schema Surface (this feature):** owns table `notification_deliveries` (tracking idempotency keys, status, attempt counts) — see `Y0-schema.md` §Notification. Does not own `bookings` or `users` data; consumes event payloads only, per service-isolation NFR.
 ## F9: Public Feeds
 
-**Description:** The Public Feed Service exposes read-only, read-optimized views of approved upcoming Bookings in multiple formats — RSS2, iCal, JSON, and a digital-signage "display board" view — equivalent to legacy `Api` controller, with optional per-location filtering and access control equivalent to legacy `allowAPI`.
+**Description:** The Public Feed Service exposes read-only, read-optimized views of approved upcoming Bookings in multiple formats — RSS2, iCal, JSON, and a digital-signage "display board" view — equivalent to legacy `Api` controller, with optional per-location filtering. **Interim Key Decision (PRD Open Question #7, pending final F0 confirmation): all feed formats are fully public and require no authentication or token.**
 
 **Terminology:**
 - **Approved upcoming booking:** A Booking with `status = approved` and `start_time` (or `end_time`) in the future relative to the feed request time.
 - **Display board:** An auto-refreshing, screen-friendly HTML/visual view intended for lobby/corridor digital signage, not a machine-readable feed format.
-- **`allowAPI` permission:** The legacy permission flag gating non-public feed access, re-implemented via Keycloak (F7).
+- **`allowAPI` permission:** The legacy permission flag historically associated with feed access; retained here only as an F0 audit reference — per the interim Key Decision, it does not gate any feed format unless F0 finds evidence the legacy feed was in fact restricted.
 
 **Sub-features:**
 - RSS2 feed
@@ -597,25 +598,24 @@ This FRD specifies the exact functional behavior for every feature (F0–F13) id
 - JSON/API feed
 - Digital-signage display board view
 - Per-location filtering on all feed formats
-- Feed access control via `allowAPI`
+- Fully public access, no authentication required, across all feed formats
 
 **Process:**
-1. Client requests a feed in a given format (RSS2, iCal, JSON, or display board), optionally with a `location_id` filter query parameter.
-2. Service determines access control for the request: `[OPEN QUESTION — deferred to F0: are feeds fully public by default, or always gated behind allowAPI/a token? — PRD Open Question #7]`; interim default pending F0 confirmation: feeds require a valid `allowAPI`-scoped token or a feed-specific access token, consistent with the conservative default-deny posture used elsewhere in this FRD for unconfirmed access rules.
-3. If access is granted, service queries the Booking Service's read model (or a denormalized feed-optimized view, per PRD Risk mitigation on cross-domain read patterns) for all Bookings matching `status = approved` and `start_time >= now` (or configured lookback/lookahead window), filtered by `location_id` if supplied.
+1. Client requests a feed in a given format (RSS2, iCal, JSON, or display board), optionally with a `location_id` filter query parameter. No authentication or token is required.
+2. **Interim Key Decision (PRD Open Question #7, pending final F0 confirmation):** the service grants access to every request without checking for an `allowAPI` scope or any other credential — feeds and the display board are fully public by design, consistent with their intended use by unauthenticated reception/visitor users (PER-04). F0 must still confirm this matches legacy behavior; if legacy evidence shows the feed was gated, this default is corrected and a migration/communication plan is added.
+3. Service queries the Booking Service's read model (or a denormalized feed-optimized view, per PRD Risk mitigation on cross-domain read patterns) for all Bookings matching `status = approved` and `start_time >= now` (or configured lookback/lookahead window), filtered by `location_id` if supplied.
 4. Service renders the result in the requested format:
    - **RSS2:** standard RSS 2.0 XML with one `<item>` per Booking (title, location, time, link).
    - **iCal:** standard iCalendar (`.ics`) format with one `VEVENT` per Booking, subscribable by calendar clients.
    - **JSON:** structured JSON array of Booking summaries.
    - **Display board:** server-rendered HTML view styled for signage display, auto-refreshing client-side (e.g., via meta-refresh or polling) to stay current.
-5. Per-location filtering applies uniformly across all four formats `[OPEN QUESTION — deferred to F0: confirm uniform applicability — PRD Open Question #7]`.
+5. Per-location filtering applies uniformly across all four formats — confirmed as part of the fully-public interim decision; F0 still validates this matches legacy behavior.
 6. Custom field values are included in feed output only if confirmed exposable per F5 §Process step 6 (pending F0 confirmation); otherwise feeds expose only standard Booking fields (title, location, time).
-7. Feed responses are cacheable (e.g., with appropriate `Cache-Control`/`ETag` headers) given their read-heavy, publicly-consumed nature, without compromising the access-control check in step 2.
+7. Feed responses are cacheable (e.g., with appropriate `Cache-Control`/`ETag` headers) given their read-heavy, publicly-consumed nature.
 
 **Inputs:**
 - `format` (enum, required, typically via route/path or `Accept` header): `rss2` | `ical` | `json` | `display-board`.
 - `location_id` (UUID/long, optional): Filter to a single Location.
-- `access_token` (string, required if feeds are gated per step 2 interim default): Credential proving `allowAPI` access.
 
 **Outputs:**
 - RSS2 XML document.
@@ -626,12 +626,11 @@ This FRD specifies the exact functional behavior for every feature (F0–F13) id
 **Validation:**
 - Only Bookings with `status = approved` ever appear in any feed format — `pending` and `denied` Bookings are never exposed, regardless of access level (no role sees unapproved bookings via the public feed surface; internal views use F1's endpoints instead).
 - `location_id`, if supplied, must reference an existing Location; an unknown `location_id` returns an empty feed (not an error) to avoid leaking location-existence information differently across feed vs. internal endpoints `[confirm this parity choice against legacy behavior in F0]`.
-- Feed access control (step 2) is evaluated identically regardless of format — a caller denied JSON access is equally denied RSS2/iCal/display-board access for the same scope, per the single-conflict-logic-path principle applied analogously here.
+- Feed access (fully public, per the interim Key Decision) is evaluated identically regardless of format — no format requires a credential that another format does not.
 
 **Error States:**
 | Scenario | HTTP Status | Error Code | Message |
 |---|---|---|---|
-| Feed requested without required `allowAPI` access (pending F0 confirmation of default-public vs. gated) | 401 or 403 | FEED_FORBIDDEN | "Access to this feed requires API access" |
 | Unsupported `format` requested | 400 | FEED_FORMAT_UNSUPPORTED | "Requested feed format is not supported" |
 | `location_id` filter references a non-existent Location | 200 (empty feed, per Validation) | — | — |
 | Upstream Booking read model unavailable | 503 | FEED_SOURCE_UNAVAILABLE | "Unable to retrieve booking feed at this time" |
@@ -1169,10 +1168,10 @@ All endpoints are reached exclusively through Spring Cloud Gateway (single ingre
 
 | Method & Path | Request | Response | Permission |
 |---|---|---|---|
-| `GET /feeds/rss2` | query: `location_id?` | `200` RSS2 XML | `allowAPI` (pending F0 default-public confirmation) |
-| `GET /feeds/ical` | query: `location_id?` | `200` iCal `.ics` | `allowAPI` (pending F0 default-public confirmation) |
-| `GET /feeds/json` | query: `location_id?` | `200` JSON array | `allowAPI` (pending F0 default-public confirmation) |
-| `GET /feeds/display-board` | query: `location_id?` | `200` HTML | `allowAPI` (pending F0 default-public confirmation) |
+| `GET /feeds/rss2` | query: `location_id?` | `200` RSS2 XML | Public — no authentication (interim Key Decision, pending F0 confirmation) |
+| `GET /feeds/ical` | query: `location_id?` | `200` iCal `.ics` | Public — no authentication (interim Key Decision, pending F0 confirmation) |
+| `GET /feeds/json` | query: `location_id?` | `200` JSON array | Public — no authentication (interim Key Decision, pending F0 confirmation) |
+| `GET /feeds/display-board` | query: `location_id?` | `200` HTML | Public — no authentication (interim Key Decision, pending F0 confirmation) |
 
 ### §Settings (Settings Service — F10)
 
@@ -1198,7 +1197,7 @@ All endpoints are reached exclusively through Spring Cloud Gateway (single ingre
 | `/users/**` | User/Identity-adjacent Service | admin role or self |
 | `/permissions/**`, `/roles/**` | Permission System | `accessPermissions` |
 | `/notifications/**` | Notification Service | admin/ops role |
-| `/feeds/**` | Public Feed Service | `allowAPI` or public, per F9 pending confirmation |
+| `/feeds/**` | Public Feed Service | Public — no authentication (interim Key Decision, pending F0 confirmation) |
 | `/settings/**` | Settings Service | authenticated (read); admin (write) |
 | `/audit-log/**` | Audit Log Service | admin role |
 ## Y2: Error Catalog (Cross-Feature)
