@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-10-06T16:05:06.291Z"
+stopped_at: Completed 01-04-PLAN.md
+last_updated: "2026-10-06T16:06:27.372Z"
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
   percent: 17
 ---
 
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-10-06)
 ## Current Position
 
 Phase: 01 (legacy-functional-audit) — EXECUTING
-Plan: 4 of 6
-Current Plan: 6
+Plan: 4 of 6 (complete) — next: 01-05
+Current Plan: 5
 Total Plans in Phase: 6
 
 Progress: [█░░░░░░░░░] 17%
@@ -54,6 +54,7 @@ Progress: [█░░░░░░░░░] 17%
 *Updated after each plan completion*
 | Phase 01-legacy-functional-audit P01 | 25 min | 2 tasks | 1 files |
 | Phase 01-legacy-functional-audit P02 | 18min | 2 tasks | 1 files |
+| Phase 01-legacy-functional-audit P04 | 35 min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,10 @@ Recent decisions affecting current work:
 - [Phase 01-legacy-functional-audit]: No recurring-booking series concept exists past creation time: Bookings.create()'s repeat-loop creates independent sibling rows with no linking id; update()/delete() always target a single row — resolves PRD Open Question #1 — Direct code citation from controllers/Bookings.cfc: create(), update(), delete(); models/Event.cfc: registerSystemFields()
 - [Phase 01-legacy-functional-audit]: FRD deletion-in-use interim assumption corrected: Locations/Resources are TRUE HARD DELETES (no deletedAt column on either table) with no booking-reference guard and no DB foreign keys anywhere in schema — orphan-allow-via-hard-delete, not soft-delete-intact-references as FRD assumed
 - [Phase 01-legacy-functional-audit]: FRD Resource field-set and Location layout-metadata assumptions corrected: Resource has 5 fields (name, type, description, isunique, restrictlocations) sourced from DB schema since the model declares none itself; Location's 'layout' field is actually named 'layouts' (plural), free-text, and programmatically disconnected from Event.layoutstyle
+- [Phase 01-legacy-functional-audit]: [Phase 01-04]: Initial-credential mechanism confirmed: admin sets the password directly at account-creation time (typed twice, no auto-generation, no email invite link) — views/users/formparts/_userpw.cfm + Users.create()
+- [Phase 01-legacy-functional-audit]: [Phase 01-04]: PRD Open Question #9 resolved as NOT exhaustive: 17 total permission flags exist (6 PRD-named + 11 more), 15 actively enforced, 2 defined-but-dead (allowiCal, allowRSS) — full cross-controller inventory in findings/04-identity-access.md
+- [Phase 01-legacy-functional-audit]: [Phase 01-04]: Remember-me cookie confirmed as a 360-day email-prefill convenience (not a session-duration extension); underlying session-timeout depends on an unconfirmed ColdFusion/Lucee engine default absent from this codebase's config
+- [Phase 01-legacy-functional-audit]: [Phase 01-04]: Password complexity baseline confirmed from models/User.cfc regex: >=6 chars, >=1 digit, >=1 lowercase letter, no uppercase/symbol requirement — new system's policy must be no weaker
 
 ### Pending Todos
 
@@ -86,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-06T16:05:06.290Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-10-06T16:06:27.371Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None
