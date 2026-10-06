@@ -32,7 +32,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Every legacy behavior that is ambiguous, undocumented, or unconfirmable appears in an Open Questions list with a clear "unknown because..." statement — none are silently resolved or guessed at.
   3. Per-environment settings behavior (development/production/testing/design/maintenance) has its own audited section.
   4. The audit's baseline inventory (one row per finding) is formally handed off as the seed input to the F13 traceability matrix, and F0 sign-off is recorded as a gate — no F1–F13 implementation work proceeds without it.
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Audit booking core: Bookings/Eventdata controllers, Event/Eventresource models; confirm/correct conflict-enforcement policy (PRD OQ#2)
+- [ ] 01-02-PLAN.md — Audit reference data: Locations/Resources controllers, Location/Resource models
+- [ ] 01-03-PLAN.md — Audit custom fields: Customfields controller, Customfield/Customfieldjoin/Customfieldvalue models
+- [ ] 01-04-PLAN.md — Audit identity & access: Users/Sessions/PasswordResets/Permissions controllers, User model, full cross-controller permission-flag inventory
+- [ ] 01-05-PLAN.md — Audit platform: Settings/Api/Logfiles controllers, routes.cfm, CF lifecycle events, per-environment settings (dev/prod/test/design/maintenance)
+- [ ] 01-06-PLAN.md — Consolidate into legacy-audit-findings.md, open-questions.md, baseline-inventory.md; record F0 sign-off gate
 
 ### Phase 2: Platform Foundation & Infrastructure
 **Goal**: The microservice platform substrate exists so that every other feature can be built, deployed, and scaled independently on top of it.
