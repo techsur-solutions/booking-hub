@@ -45,7 +45,7 @@ Plans:
 
 ### Phase 2: Platform Foundation & Infrastructure
 **Goal**: The microservice platform substrate exists so that every other feature can be built, deployed, and scaled independently on top of it.
-**Status**: Failed
+**Status**: In progress
 **Depends on**: Phase 1 (bounded-context decomposition must be confirmed by the audit)
 **Requirements**: F12 (F12.1, F12.2, F12.3, F12.4, F12.5, F12.6, F12.7)
 **Success Criteria** (what must be TRUE):
@@ -154,7 +154,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Legacy Functional Audit | 0/TBD | Complete | 2026-10-07 |
-| 2. Platform Foundation & Infrastructure | 0/12 | Failed | - |
+| 2. Platform Foundation & Infrastructure | 0/12 | In progress | - |
 | 3. Identity & Access Control | 0/5 | Planned | - |
 | 4. Reference Data, Extensibility & Configuration | 0/TBD | Not started | - |
 | 5. Core Booking & Approval Workflow | 0/TBD | Not started | - |
