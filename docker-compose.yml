@@ -1,0 +1,297 @@
+version: '3.8'
+
+# Booking-Hub local development stack
+# 12 services: postgres, rabbitmq, keycloak, 8 business services, api-gateway, frontend
+# Network isolation enforced: only Gateway/Keycloak/RabbitMQ-mgmt/frontend/Postgres(dev-only) publish host ports
+
+services:
+  # Infrastructure Services
+  
+  postgres:
+    image: postgres:16
+    environment:
+      # MANDATORY: postgres:16 image refuses to initialize without POSTGRES_PASSWORD or POSTGRES_HOST_AUTH_METHOD
+      # This is a local-dev-only plaintext credential, documented alongside KEYCLOAK_ADMIN_PASSWORD
+      # Never acceptable in non-local deployments
+      POSTGRES_PASSWORD: postgres_root_pw
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./infra/postgres/init-multi-db.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
+    ports:
+      # Dev convenience only - allows direct psql access from host for debugging
+      # Acceptable since Postgres is infrastructure, not a Booking-Hub business service
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    volumes:
+      - ./infra/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./infra/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics check_port_connectivity"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    command: start-dev --import-realm
+    environment:
+      # Local-dev-only admin credential - same category as POSTGRES_PASSWORD
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ./infra/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    ports:
+      - "8180:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/realms/bookinghub || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  # Business Services - NO ports: published (ClusterIP-only equivalent)
+  
+  booking-service:
+    build: ./services/booking-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: booking_db
+      DB_USER: booking_svc
+      DB_PASSWORD: booking_svc_pw
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  locations-resources-service:
+    build: ./services/locations-resources-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: locres_db
+      DB_USER: locres_svc
+      DB_PASSWORD: locres_svc_pw
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  custom-field-service:
+    build: ./services/custom-field-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: customfld_db
+      DB_USER: customfld_svc
+      DB_PASSWORD: customfld_svc_pw
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  users-permissions-service:
+    build: ./services/users-permissions-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: userperm_db
+      DB_USER: userperm_svc
+      DB_PASSWORD: userperm_svc_pw
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8084/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  notifications-service:
+    build: ./services/notifications-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: notif_db
+      DB_USER: notif_svc
+      DB_PASSWORD: notif_svc_pw
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8085/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  feeds-service:
+    build: ./services/feeds-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: feeds_db
+      DB_USER: feeds_svc
+      DB_PASSWORD: feeds_svc_pw
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8086/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  settings-service:
+    build: ./services/settings-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: settings_db
+      DB_USER: settings_svc
+      DB_PASSWORD: settings_svc_pw
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8087/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  audit-log-service:
+    build: ./services/audit-log-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: audit_db
+      DB_USER: audit_svc
+      DB_PASSWORD: audit_svc_pw
+      FLYWAY_DB_HOST: postgres
+      FLYWAY_DB_PORT: 5432
+      FLYWAY_DB_NAME: audit_db
+      FLYWAY_DB_USER: audit_migrator
+      FLYWAY_DB_PASSWORD: audit_migrator_pw
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8088/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  # One-shot audit grants applier
+  # Runs AFTER audit-log-service healthy (Flyway has created audit_log_entries)
+  # Applies SELECT/INSERT-only grant to audit_svc, explicitly REVOKEs UPDATE/DELETE
+  audit-grants:
+    image: postgres:16
+    depends_on:
+      audit-log-service:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: audit_migrator_pw
+    volumes:
+      - ./infra/postgres/audit-grants.sh:/audit-grants.sh:ro
+    entrypoint: ["/bin/sh", "/audit-grants.sh"]
+
+  # Gateway - single external ingress point
+  api-gateway:
+    build: ./services/api-gateway
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      # Business services use 'started' not 'healthy' - Gateway circuit breaker handles transient unavailability
+      booking-service:
+        condition: service_started
+      locations-resources-service:
+        condition: service_started
+      custom-field-service:
+        condition: service_started
+      users-permissions-service:
+        condition: service_started
+      notifications-service:
+        condition: service_started
+      feeds-service:
+        condition: service_started
+      settings-service:
+        condition: service_started
+      audit-log-service:
+        condition: service_started
+    environment:
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    depends_on:
+      - api-gateway
+    ports:
+      - "3000:80"
+
+volumes:
+  pg-data:
