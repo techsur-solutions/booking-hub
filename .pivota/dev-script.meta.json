@@ -2,14 +2,13 @@
   "generator_version": "init-dev-server@1",
   "catalog_entry": "compose",
   "generated_at": "2026-10-07T14:17:18Z",
-  "inspection_inputs_hash": "a98bb40c3c9d65f8beb5a4b974f5816f6a0db24124d5fb536dfd682d3aee8f15",
+  "inspection_inputs_hash": "851fcf387bd3914f7548f00454244da3567a2fc21c6ec5fda444af329152b6cd",
   "inspection_inputs": {
     "matched_globs": [
-      "docker-compose.yml"
+      "docker-compose.yml",
+      "frontend/package.json"
     ],
-    "manifest_signatures": [
-      "docker-compose.yml:services:api-gateway,audit-grants,audit-log-service,booking-service,custom-field-service,feeds-service,frontend,keycloak,locations-resources-service,notifications-service,postgres,rabbitmq,settings-service,users-permissions-service"
-    ],
+    "manifest_signatures": [],
     "existing_scripts": []
   }
 }
