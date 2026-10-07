@@ -1,0 +1,40 @@
+{
+  "duration_secs": 4313.0,
+  "token_usage": {
+    "input": 1228,
+    "output": 650088,
+    "total": 80921587,
+    "cache_read": 78688499,
+    "cache_write": 1581772,
+    "cost": 26.195465800000008
+  },
+  "model": "claude-sonnet-5",
+  "files_changed": [
+    ".gitignore",
+    ".planning/PROJECT.md",
+    ".planning/STATE.md",
+    ".planning/fragments/",
+    ".planning/phases/01-legacy-functional-audit/01-01-SUMMARY.md",
+    ".planning/phases/01-legacy-functional-audit/01-02-SUMMARY.md",
+    ".planning/phases/01-legacy-functional-audit/01-03-SUMMARY.md",
+    ".planning/phases/01-legacy-functional-audit/01-04-SUMMARY.md",
+    ".planning/phases/01-legacy-functional-audit/01-05-SUMMARY.md",
+    ".planning/phases/01-legacy-functional-audit/01-06-SUMMARY.md",
+    ".planning/phases/01-legacy-functional-audit/01-GATE.md",
+    ".planning/phases/01-legacy-functional-audit/01-REVIEW.md",
+    ".planning/phases/01-legacy-functional-audit/01-VERIFICATION.md",
+    ".planning/phases/01-legacy-functional-audit/baseline-inventory.md",
+    ".planning/phases/01-legacy-functional-audit/findings/01-booking-core.md",
+    ".planning/phases/01-legacy-functional-audit/findings/02-reference-data.md",
+    ".planning/phases/01-legacy-functional-audit/findings/03-custom-fields.md",
+    ".planning/phases/01-legacy-functional-audit/findings/04-identity-access.md",
+    ".planning/phases/01-legacy-functional-audit/findings/05-platform-settings.md",
+    ".planning/phases/01-legacy-functional-audit/legacy-audit-findings.md",
+    ".planning/phases/01-legacy-functional-audit/open-questions.md"
+  ],
+  "verification_status": "passed",
+  "error_message": null,
+  "attempt_number": 2,
+  "created_at": "2026-10-06T15:54:58.199941+00:00",
+  "completed_at": "2026-10-06T17:06:51.343742039+00:00"
+}
