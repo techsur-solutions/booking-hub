@@ -36,6 +36,8 @@ public class SecurityConfig {
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchanges -> exchanges
                         // Public routes - no authentication required
+                        // NOTE: /feeds/** bypasses gateway-level auth - feeds-service is responsible
+                        // for any authorization logic (e.g. if admin endpoints are added under /feeds/admin/**)
                         .pathMatchers("/feeds/**").permitAll()
                         .pathMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .pathMatchers(HttpMethod.POST, "/auth/password-reset/**").permitAll()
