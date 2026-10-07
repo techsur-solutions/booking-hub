@@ -80,7 +80,14 @@ Plans:
   3. User can request and complete a password reset via an emailed token/link; expired, invalid, or already-used tokens are rejected.
   4. Every legacy permission flag (`accessCalendar`, `allowRoomBooking`, `viewRoomBooking`, `allowApproveBooking`, `accessPermissions`, `allowAPI`, plus any F0-confirmed additions) has a documented, administrable Keycloak-role mapping; any flag whose gating scope is unconfirmed is treated as deny-by-default, never approximated.
   5. A request to a Gateway-protected route without the required role is rejected at the edge, and a service-level fine-grained check independently rejects actions the Gateway would have allowed through by mistake — the two enforcement layers never disagree.
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Domain/migration layer: V2 migration (outbox, password-reset tokens, case-insensitive email, 17-row permission seed), JPA entities/repositories, shared ApiError contract
+- [ ] 03-02-PLAN.md — Keycloak integration layer: Tier-2 JWT validation with fail-closed JWKS-outage handling, Keycloak Admin API client, direct-grant token client, CurrentUserProvider
+- [ ] 03-03-PLAN.md — Auth flows: login/logout/password-reset/password-change against Keycloak, additive realm config (session timeouts, password policy, direct-grant clients)
+- [ ] 03-04-PLAN.md — User management: account CRUD, admin-vs-self authorization, role assignment, outbox event emission
+- [ ] 03-05-PLAN.md — Permission system CRUD, outbox-to-RabbitMQ relay, Tier1/Tier2 consistency contract test
 
 ### Phase 4: Reference Data, Extensibility & Configuration
 **Goal**: Admins can manage the reference data and configuration that booking depends on — locations, resources, custom fields, and system-wide settings — so the Core Booking phase has real data and rules to build against.
@@ -148,7 +155,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Legacy Functional Audit | 0/TBD | Complete | 2026-10-07 |
 | 2. Platform Foundation & Infrastructure | 0/12 | In progress | - |
-| 3. Identity & Access Control | 0/TBD | Not started | - |
+| 3. Identity & Access Control | 0/5 | Planned | - |
 | 4. Reference Data, Extensibility & Configuration | 0/TBD | Not started | - |
 | 5. Core Booking & Approval Workflow | 0/TBD | Not started | - |
 | 6. Notifications & Audit Logging | 0/TBD | Not started | - |
