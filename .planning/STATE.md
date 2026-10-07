@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 02-12-PLAN.md
-last_updated: "2026-10-07T04:08:59.968Z"
+stopped_at: Completed 02-13-PLAN.md
+last_updated: "2026-10-07T15:13:02.672Z"
 progress:
   total_phases: 8
   completed_phases: 2
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 19
+  completed_plans: 19
   percent: 13
 ---
 
@@ -69,6 +69,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 02-platform-foundation-infrastructure P02 | 7 min | 3 tasks | 13 files |
 | Phase 02-platform-foundation-infrastructure P10 | 6 min | 3 tasks | 12 files |
 | Phase 02-platform-foundation-infrastructure P12 | 17min | 2 tasks | 5 files |
+| Phase 02-platform-foundation-infrastructure P13 | 5min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,7 @@ Recent decisions affecting current work:
 - [Phase 02-11]: Used react-router-dom 6.x useRoutes hook-based routing instead of older <Routes>/<Route> component tree for cleaner, type-safe route declarations
 - [Phase 02-platform-foundation-infrastructure]: RabbitMQ dependency included in plan 02-05 (Phase 6 adds consumer logic only) — Keeps dependency set stable; Phase 6 only adds @RabbitListener code without modifying pom.xml
 - [Phase 02-platform-foundation-infrastructure]: spring.rabbitmq.listener.simple.auto-startup=false prevents boot failure when RabbitMQ unreachable — Consistent with fail-closed-but-not-fail-crashed posture (TechArch Threat T-02-05-04)
+- [Phase 02-platform-foundation-infrastructure]: Lazy JWT decoder initialization (NimbusReactiveJwtDecoder.withJwkSetUri()) instead of eager (ReactiveJwtDecoders.fromIssuerLocation()) to defer JWKS fetch until first request, allowing Gateway to start independently of Keycloak
 
 ### Pending Todos
 
@@ -117,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-07T04:08:59.966Z
-Stopped at: Completed 02-12-PLAN.md
+Last session: 2026-10-07T15:13:02.671Z
+Stopped at: Completed 02-13-PLAN.md
 Resume file: None
