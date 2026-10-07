@@ -5,7 +5,7 @@ milestone_name: milestone
 current_plan: 6
 status: unknown
 stopped_at: Completed 02-07-PLAN.md
-last_updated: "2026-10-07T03:41:26.169Z"
+last_updated: "2026-10-07T03:41:30.734Z"
 progress:
   total_phases: 8
   completed_phases: 1
@@ -87,6 +87,7 @@ Recent decisions affecting current work:
 - [Phase 01-legacy-functional-audit]: PRD Open Question #7 corrected: legacy Api.cfc feeds are token-gated (per-user apitoken), not role/allowAPI-gated — allowAPI only gates the feed-listing index page and is granted to all roles by default
 - [Phase 01-legacy-functional-audit]: PRD Open Question #8 resolved: logfiles table has no before/after value columns at all (message+data free text only); write-side coverage is a confirmed subset (Sessions/PasswordResets/Cookie helpers) plus incidental logging via a global logFlash after-filter on any flash message
 - [Phase 01-legacy-functional-audit]: PRD Open Question #10 resolved: all 5 per-environment settings files ship empty; only one functional (non-config) difference exists codebase-wide — production serves minified JS, all else unminified. Maintenance mode is a full unconditional lockout for all users including admins, no bypass mechanism found
+- [Phase 02-07]: settings-service singleton table uses CHECK (id = 1) constraint with ON CONFLICT DO NOTHING seed for idempotency; no updated_at trigger per TechArch §3.3 (application-managed column)
 
 ### Pending Todos
 
