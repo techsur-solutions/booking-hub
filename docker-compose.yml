@@ -19,7 +19,11 @@ services:
       - ./infra/postgres/init-multi-db.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
     ports:
       # Dev convenience only - allows direct psql access from host for debugging
-      # Acceptable since Postgres is infrastructure, not a Booking-Hub business service
+      # SECURITY TRADEOFF: Exposing the database port bypasses application-level access control
+      # and allows direct access to all service databases using plaintext credentials from this file.
+      # For production-like local testing, remove this port mapping and use:
+      #   docker compose exec postgres psql -U postgres
+      # Or create a separate docker-compose.override.yml with this port mapping for dev-only use.
       - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
