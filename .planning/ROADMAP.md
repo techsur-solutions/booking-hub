@@ -13,7 +13,7 @@ Booking-Hub re-platforms the legacy OxAlto RoomBooking ColdFusion application on
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Legacy Functional Audit** - Document every legacy controller/model/route/workflow and produce the authoritative Open Questions list before any build work begins (completed 2026-10-07)
-- [ ] **Phase 2: Platform Foundation & Infrastructure** - Stand up the nine bounded-context service scaffolds, per-service Postgres, RabbitMQ topology, Keycloak realm, Gateway, and the frontend SPA shell
+- [x] **Phase 2: Platform Foundation & Infrastructure** - Stand up the nine bounded-context service scaffolds, per-service Postgres, RabbitMQ topology, Keycloak realm, Gateway, and the frontend SPA shell (completed 2026-10-07)
 - [ ] **Phase 3: Identity & Access Control** - Users authenticate via Keycloak and every legacy permission flag has a confirmed, enforced Keycloak-role mapping
 - [ ] **Phase 4: Reference Data, Extensibility & Configuration** - Admins manage locations, resources, custom fields, and system-wide settings that booking depends on
 - [ ] **Phase 5: Core Booking & Approval Workflow** - Users create/edit/delete/clone bookings with full conflict detection and an approval workflow
@@ -45,7 +45,7 @@ Plans:
 
 ### Phase 2: Platform Foundation & Infrastructure
 **Goal**: The microservice platform substrate exists so that every other feature can be built, deployed, and scaled independently on top of it.
-**Status**: In progress
+**Status**: Complete (2026-10-07)
 **Depends on**: Phase 1 (bounded-context decomposition must be confirmed by the audit)
 **Requirements**: F12 (F12.1, F12.2, F12.3, F12.4, F12.5, F12.6, F12.7)
 **Success Criteria** (what must be TRUE):
@@ -162,7 +162,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Legacy Functional Audit | 0/TBD | Complete | 2026-10-07 |
-| 2. Platform Foundation & Infrastructure | 0/12 | In progress | - |
+| 2. Platform Foundation & Infrastructure | 12/12 | Complete | 2026-10-07 |
 | 3. Identity & Access Control | 0/5 | Planned | - |
 | 4. Reference Data, Extensibility & Configuration | 0/6 | Planned | - |
 | 5. Core Booking & Approval Workflow | 0/TBD | Not started | - |
