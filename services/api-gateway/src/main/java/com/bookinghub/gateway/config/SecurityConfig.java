@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoders;
@@ -98,10 +99,14 @@ public class SecurityConfig {
         NimbusReactiveJwtDecoder decoder = NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build();
         
         // Wrap with fail-closed error handling: JWKS fetch failures → 503
+        // BUT: allow JWT validation errors (JwtException) to propagate as 401
         return token -> decoder.decode(token)
                 .onErrorResume(ex -> {
-                    // Any failure reaching JWKS endpoint → fail closed with 503
-                    // This includes network errors, timeouts, DNS failures, etc.
+                    // JWT validation errors (expired, invalid signature, malformed) → propagate for 401
+                    if (ex instanceof JwtException) {
+                        return Mono.error(ex);
+                    }
+                    // JWKS fetch failures (network errors, timeouts, DNS failures, etc.) → fail closed with 503
                     return Mono.error(new JwksUnreachableException(
                             "Identity provider JWKS endpoint unreachable - failing closed", ex));
                 });
