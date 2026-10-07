@@ -56,6 +56,8 @@ Plans 02-01 through 02-12 (waves 1-2) were reviewed in iterations 1-2 and are ou
 
 - **Fix direction:** Modify `onErrorResume` at line 102 to selectively catch only network/IO-related exceptions (e.g., exceptions indicating JWKS fetch failure), not JWT validation exceptions. One approach: check exception type or message to distinguish JWKS fetch failures from token validation failures. For example, catch only exceptions that are NOT `JwtException` subclasses, or inspect the cause chain for `IOException` or connection-related exceptions. Allow `JwtValidationException`, `BadJwtException`, and other JWT validation errors to propagate unchanged so Spring Security's authentication entry point handles them as 401.
 
+**Resolution:** fixed (d8b970b) — Modified `onErrorResume` to check if exception is `JwtException` before wrapping. JwtException instances (validation errors like expired, invalid signature, malformed) now propagate unchanged and are handled by Spring Security as 401. Only non-JwtException errors (network, IO, DNS failures) are wrapped as JwksUnreachableException for 503 response.
+
 ## WARNINGs
 
 None.
