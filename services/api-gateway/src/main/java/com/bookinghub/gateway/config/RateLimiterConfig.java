@@ -51,7 +51,7 @@ public class RateLimiterConfig {
             
             if (tokensToAdd > 0) {
                 tokens = Math.min(capacity, tokens + tokensToAdd);
-                lastRefillTimestamp = now;
+                lastRefillTimestamp = now - (timePassed % refillIntervalMillis);
             }
         }
     }
