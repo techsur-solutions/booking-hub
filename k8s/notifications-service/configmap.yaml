@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notifications-service-config
+  labels:
+    app: notifications-service
+data:
+  SPRING_PROFILES_ACTIVE: "production"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "notif_db"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
