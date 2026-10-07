@@ -119,7 +119,13 @@ Plans:
   3. Overlap-checking is evaluated per location AND per resource, on every create AND edit (not just at creation), using half-open interval semantics, and excludes the booking's own prior state plus deleted/denied bookings from comparison.
   4. A detected conflict is a hard block for callers without `allowApproveBooking` and a soft, informational warning for callers who hold it — enforced by exactly one conflict-evaluation code path regardless of UI calendar, UI list, or direct API entry point.
   5. New bookings receive `pending` or `approved` status per the global auto-approve setting; a user holding `allowApproveBooking` can approve or deny a pending booking, each decision is a one-way transition (no re-toggling), and each publishes a domain event.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Domain/migration layer: V2 migration (6 missing Event fields, local custom-field-values table, outbox), entities/repositories, ApiError contract, Tier-2 security
+- [ ] 05-02-PLAN.md — Conflict detection engine (TechArch's exact query shapes, is_unique-aware) + outbound clients (locations-resources/custom-field/settings services) + standalone check-conflicts endpoint
+- [ ] 05-03-PLAN.md — Booking CRUD: create/edit/delete/clone, THE conflict-enforcement-policy decision, ownership restriction, recurring bulk-create
+- [ ] 05-04-PLAN.md — Approval workflow (one-way approve/deny) + calendar/day/list/detail read views with bulk conflict-flagging
 
 ### Phase 6: Notifications & Audit Logging
 **Goal**: Every booking lifecycle event and password reset reliably triggers an email notification, and every state-changing action across the system is captured in an audit trail, so no event is silently lost and every change is accountable after the fact.
