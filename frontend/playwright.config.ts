@@ -22,7 +22,8 @@ export default defineConfig({
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     env: {
-      VITE_E2E_MODE: 'true',
+      // Only set VITE_E2E_MODE for navigation tests, not auth tests
+      ...(process.env.PW_TEST_TYPE !== 'auth' ? { VITE_E2E_MODE: 'true' } : {}),
     },
   },
 });

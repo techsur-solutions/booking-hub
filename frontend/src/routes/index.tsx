@@ -1,4 +1,5 @@
-import { Navigate, RouteObject } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import type { RouteObject } from 'react-router-dom';
 import { CalendarView } from '../pages/CalendarView';
 import { ListView } from '../pages/ListView';
 import { DayView } from '../pages/DayView';
@@ -12,6 +13,7 @@ import { AuditLogViewer } from '../pages/AuditLogViewer';
 import { FeedsLanding } from '../pages/FeedsLanding';
 import { DisplayBoard } from '../pages/DisplayBoard';
 import { AppShell } from '../components/AppShell';
+import { ProtectedRoute } from '../auth/ProtectedRoute';
 
 export const routes: RouteObject[] = [
   {
@@ -20,43 +22,43 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/calendar',
-    element: <AppShell><CalendarView /></AppShell>,
+    element: <ProtectedRoute><AppShell><CalendarView /></AppShell></ProtectedRoute>,
   },
   {
     path: '/list',
-    element: <AppShell><ListView /></AppShell>,
+    element: <ProtectedRoute><AppShell><ListView /></AppShell></ProtectedRoute>,
   },
   {
     path: '/day',
-    element: <AppShell><DayView /></AppShell>,
+    element: <ProtectedRoute><AppShell><DayView /></AppShell></ProtectedRoute>,
   },
   {
     path: '/admin/locations',
-    element: <AppShell><LocationsAdmin /></AppShell>,
+    element: <ProtectedRoute><AppShell><LocationsAdmin /></AppShell></ProtectedRoute>,
   },
   {
     path: '/admin/resources',
-    element: <AppShell><ResourcesAdmin /></AppShell>,
+    element: <ProtectedRoute><AppShell><ResourcesAdmin /></AppShell></ProtectedRoute>,
   },
   {
     path: '/admin/custom-fields',
-    element: <AppShell><CustomFieldsAdmin /></AppShell>,
+    element: <ProtectedRoute><AppShell><CustomFieldsAdmin /></AppShell></ProtectedRoute>,
   },
   {
     path: '/admin/users',
-    element: <AppShell><UsersAdmin /></AppShell>,
+    element: <ProtectedRoute><AppShell><UsersAdmin /></AppShell></ProtectedRoute>,
   },
   {
     path: '/admin/roles',
-    element: <AppShell><RolesAdmin /></AppShell>,
+    element: <ProtectedRoute><AppShell><RolesAdmin /></AppShell></ProtectedRoute>,
   },
   {
     path: '/admin/settings',
-    element: <AppShell><SettingsAdmin /></AppShell>,
+    element: <ProtectedRoute><AppShell><SettingsAdmin /></AppShell></ProtectedRoute>,
   },
   {
     path: '/audit-log',
-    element: <AppShell><AuditLogViewer /></AppShell>,
+    element: <ProtectedRoute><AppShell><AuditLogViewer /></AppShell></ProtectedRoute>,
   },
   {
     path: '/feeds',
