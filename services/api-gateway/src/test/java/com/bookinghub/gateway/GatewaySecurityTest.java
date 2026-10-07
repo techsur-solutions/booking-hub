@@ -1,8 +1,10 @@
 package com.bookinghub.gateway;
 
+import com.bookinghub.gateway.config.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
@@ -17,6 +19,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@Import(TestSecurityConfig.class)
 public class GatewaySecurityTest {
 
     @Autowired
