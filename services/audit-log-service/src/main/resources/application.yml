@@ -25,6 +25,9 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
     listener:
       simple:
+        # Disabled until Phase 3: RabbitMQ listener beans will be implemented in Phase 3
+        # when event-driven message processing is added. Enabling without listener beans
+        # will cause startup failure with "No bean of type RabbitListenerContainerFactory"
         auto-startup: false
 
 management:
