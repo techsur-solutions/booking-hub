@@ -12,4 +12,13 @@ psql -h postgres -U audit_migrator -d audit_db <<-EOSQL
     REVOKE UPDATE, DELETE ON audit_log_entries FROM audit_svc;
 EOSQL
 
-echo "Audit immutability enforced: audit_svc can SELECT/INSERT only"
+# Verify immutability constraint: audit_svc should NOT have UPDATE privilege
+VERIFY_RESULT=$(psql -h postgres -U audit_migrator -d audit_db -t -c \
+    "SELECT has_table_privilege('audit_svc', 'audit_log_entries', 'UPDATE');")
+
+if echo "$VERIFY_RESULT" | grep -q "f"; then
+    echo "Audit immutability enforced: audit_svc can SELECT/INSERT only"
+else
+    echo "ERROR: Verification failed - audit_svc still has UPDATE privilege" >&2
+    exit 1
+fi
