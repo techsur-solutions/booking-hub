@@ -1,0 +1,585 @@
+{
+  "rabbit_version": "3.13.0",
+  "rabbitmq_version": "3.13.0",
+  "product_name": "RabbitMQ",
+  "product_version": "3.13.0",
+  "users": [],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [],
+  "topic_permissions": [],
+  "parameters": [],
+  "global_parameters": [],
+  "policies": [],
+  "queues": [
+    {
+      "name": "notifications.booking.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "notifications.booking.q.dlx"
+      }
+    },
+    {
+      "name": "notifications.booking.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.booking.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "audit.booking.q.dlx"
+      }
+    },
+    {
+      "name": "audit.booking.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "feeds.booking.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "feeds.booking.q.dlx"
+      }
+    },
+    {
+      "name": "feeds.booking.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.location.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "audit.location.q.dlx"
+      }
+    },
+    {
+      "name": "audit.location.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "feeds.location.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "feeds.location.q.dlx"
+      }
+    },
+    {
+      "name": "feeds.location.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.resource.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "audit.resource.q.dlx"
+      }
+    },
+    {
+      "name": "audit.resource.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.customfield.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "audit.customfield.q.dlx"
+      }
+    },
+    {
+      "name": "audit.customfield.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.user.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "audit.user.q.dlx"
+      }
+    },
+    {
+      "name": "audit.user.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notifications.passwordreset.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "notifications.passwordreset.q.dlx"
+      }
+    },
+    {
+      "name": "notifications.passwordreset.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.permission.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "audit.permission.q.dlx"
+      }
+    },
+    {
+      "name": "audit.permission.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.settings.q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "audit.settings.q.dlx"
+      }
+    },
+    {
+      "name": "audit.settings.q.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "booking.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "location.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "resource.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "customfield.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "user.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "permission.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "settings.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "notifications.booking.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.booking.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "feeds.booking.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.location.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "feeds.location.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.resource.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.customfield.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.user.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "notifications.passwordreset.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.permission.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "audit.settings.q.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "booking.events",
+      "vhost": "/",
+      "destination": "notifications.booking.q",
+      "destination_type": "queue",
+      "routing_key": "booking.created",
+      "arguments": {}
+    },
+    {
+      "source": "booking.events",
+      "vhost": "/",
+      "destination": "notifications.booking.q",
+      "destination_type": "queue",
+      "routing_key": "booking.approved",
+      "arguments": {}
+    },
+    {
+      "source": "booking.events",
+      "vhost": "/",
+      "destination": "notifications.booking.q",
+      "destination_type": "queue",
+      "routing_key": "booking.denied",
+      "arguments": {}
+    },
+    {
+      "source": "booking.events",
+      "vhost": "/",
+      "destination": "audit.booking.q",
+      "destination_type": "queue",
+      "routing_key": "booking.*",
+      "arguments": {}
+    },
+    {
+      "source": "booking.events",
+      "vhost": "/",
+      "destination": "feeds.booking.q",
+      "destination_type": "queue",
+      "routing_key": "booking.*",
+      "arguments": {}
+    },
+    {
+      "source": "location.events",
+      "vhost": "/",
+      "destination": "audit.location.q",
+      "destination_type": "queue",
+      "routing_key": "location.*",
+      "arguments": {}
+    },
+    {
+      "source": "location.events",
+      "vhost": "/",
+      "destination": "feeds.location.q",
+      "destination_type": "queue",
+      "routing_key": "location.updated",
+      "arguments": {}
+    },
+    {
+      "source": "location.events",
+      "vhost": "/",
+      "destination": "feeds.location.q",
+      "destination_type": "queue",
+      "routing_key": "location.deleted",
+      "arguments": {}
+    },
+    {
+      "source": "resource.events",
+      "vhost": "/",
+      "destination": "audit.resource.q",
+      "destination_type": "queue",
+      "routing_key": "resource.*",
+      "arguments": {}
+    },
+    {
+      "source": "customfield.events",
+      "vhost": "/",
+      "destination": "audit.customfield.q",
+      "destination_type": "queue",
+      "routing_key": "customfield.*",
+      "arguments": {}
+    },
+    {
+      "source": "customfield.events",
+      "vhost": "/",
+      "destination": "audit.customfield.q",
+      "destination_type": "queue",
+      "routing_key": "template.*",
+      "arguments": {}
+    },
+    {
+      "source": "user.events",
+      "vhost": "/",
+      "destination": "audit.user.q",
+      "destination_type": "queue",
+      "routing_key": "user.created",
+      "arguments": {}
+    },
+    {
+      "source": "user.events",
+      "vhost": "/",
+      "destination": "audit.user.q",
+      "destination_type": "queue",
+      "routing_key": "user.updated",
+      "arguments": {}
+    },
+    {
+      "source": "user.events",
+      "vhost": "/",
+      "destination": "audit.user.q",
+      "destination_type": "queue",
+      "routing_key": "role.assigned",
+      "arguments": {}
+    },
+    {
+      "source": "user.events",
+      "vhost": "/",
+      "destination": "notifications.passwordreset.q",
+      "destination_type": "queue",
+      "routing_key": "password.reset.requested",
+      "arguments": {}
+    },
+    {
+      "source": "permission.events",
+      "vhost": "/",
+      "destination": "audit.permission.q",
+      "destination_type": "queue",
+      "routing_key": "permission.updated",
+      "arguments": {}
+    },
+    {
+      "source": "settings.events",
+      "vhost": "/",
+      "destination": "audit.settings.q",
+      "destination_type": "queue",
+      "routing_key": "settings.updated",
+      "arguments": {}
+    },
+    {
+      "source": "notifications.booking.q.dlx",
+      "vhost": "/",
+      "destination": "notifications.booking.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "audit.booking.q.dlx",
+      "vhost": "/",
+      "destination": "audit.booking.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "feeds.booking.q.dlx",
+      "vhost": "/",
+      "destination": "feeds.booking.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "audit.location.q.dlx",
+      "vhost": "/",
+      "destination": "audit.location.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "feeds.location.q.dlx",
+      "vhost": "/",
+      "destination": "feeds.location.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "audit.resource.q.dlx",
+      "vhost": "/",
+      "destination": "audit.resource.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "audit.customfield.q.dlx",
+      "vhost": "/",
+      "destination": "audit.customfield.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "audit.user.q.dlx",
+      "vhost": "/",
+      "destination": "audit.user.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "notifications.passwordreset.q.dlx",
+      "vhost": "/",
+      "destination": "notifications.passwordreset.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "audit.permission.q.dlx",
+      "vhost": "/",
+      "destination": "audit.permission.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "audit.settings.q.dlx",
+      "vhost": "/",
+      "destination": "audit.settings.q.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    }
+  ]
+}
