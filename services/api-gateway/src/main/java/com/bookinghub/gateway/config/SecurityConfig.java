@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoders;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -84,14 +85,20 @@ public class SecurityConfig {
     }
 
     /**
-     * Fail-closed JWT decoder wrapper: if Keycloak's JWKS endpoint is unreachable,
-     * return 503 SERVICE_UNAVAILABLE rather than treating unverifiable tokens as valid.
+     * Fail-closed JWT decoder with LAZY initialization: defers JWKS fetch until first validation request.
+     * This allows the Gateway to start even when Keycloak is temporarily unavailable.
+     * At request time: if Keycloak's JWKS endpoint is unreachable, returns 503 SERVICE_UNAVAILABLE
+     * rather than treating unverifiable tokens as valid (fail-closed posture).
      */
     @Bean
     public ReactiveJwtDecoder failClosedJwtDecoder() {
-        ReactiveJwtDecoder delegate = ReactiveJwtDecoders.fromIssuerLocation(issuerUri);
+        // Lazy initialization: construct JWK Set URI but do NOT fetch yet
+        String jwkSetUri = issuerUri + "/protocol/openid-connect/certs";
         
-        return token -> delegate.decode(token)
+        NimbusReactiveJwtDecoder decoder = NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        
+        // Wrap with fail-closed error handling: JWKS fetch failures → 503
+        return token -> decoder.decode(token)
                 .onErrorResume(ex -> {
                     // Any failure reaching JWKS endpoint → fail closed with 503
                     // This includes network errors, timeouts, DNS failures, etc.
