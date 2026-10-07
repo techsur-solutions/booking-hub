@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 02-11-PLAN.md
-last_updated: "2026-10-07T03:42:48.758Z"
+stopped_at: Completed 02-08-PLAN.md
+last_updated: "2026-10-07T03:43:33.971Z"
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 18
-  completed_plans: 13
+  completed_plans: 15
   percent: 13
 ---
 
@@ -64,6 +64,8 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 02-platform-foundation-infrastructure P06 | 5 min | 3 tasks | 11 files |
 | Phase 02-platform-foundation-infrastructure P04 | 5 min | 3 tasks | 11 files |
 | Phase 02-platform-foundation-infrastructure P11 | 5min | 3 tasks | 29 files |
+| Phase 02-platform-foundation-infrastructure P08 | 6 min | 3 tasks | 11 files |
+| Phase 02-platform-foundation-infrastructure P05 | 6 min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -97,6 +99,7 @@ Recent decisions affecting current work:
 - [Phase 02-platform-foundation-infrastructure]: users-permissions-service combines F6 and F7 into one deployable with two internal modules (user and permission) - tables have no FK between them to allow future split without schema migration
 - [Phase 02-platform-foundation-infrastructure]: users.id is UUID PRIMARY KEY with NO DEFAULT - must be explicitly set to Keycloak sub claim at insert time, per TechArch §3.3
 - [Phase 02-11]: Used react-router-dom 6.x useRoutes hook-based routing instead of older <Routes>/<Route> component tree for cleaner, type-safe route declarations
+- [Phase 02-platform-foundation-infrastructure]: RabbitMQ dependency included in plan 02-05 (Phase 6 adds consumer logic only) — Keeps dependency set stable; Phase 6 only adds @RabbitListener code without modifying pom.xml
 
 ### Pending Todos
 
@@ -110,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-07T03:42:48.756Z
-Stopped at: Completed 02-11-PLAN.md
+Last session: 2026-10-07T03:43:32.503Z
+Stopped at: Completed 02-08-PLAN.md
 Resume file: None
