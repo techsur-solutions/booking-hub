@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: settings-service-config
+  labels:
+    app: settings-service
+data:
+  SPRING_PROFILES_ACTIVE: "production"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "settings_db"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"

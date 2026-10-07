@@ -1,0 +1,354 @@
+{
+  "realm": "bookinghub",
+  "enabled": true,
+  "displayName": "BookingHub",
+  "displayNameHtml": "<div>BookingHub</div>",
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespan": 5184000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "rememberMe": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "clients": [
+    {
+      "clientId": "bookinghub-frontend",
+      "name": "BookingHub Frontend SPA",
+      "description": "Public PKCE client for React frontend",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "https://*"
+      ],
+      "webOrigins": [
+        "*"
+      ],
+      "fullScopeAllowed": true,
+      "protocolMappers": [],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    },
+    {
+      "clientId": "booking-service",
+      "name": "Booking Service",
+      "description": "Confidential bearer-only client for booking-service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_booking_service_secret",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "locations-resources-service",
+      "name": "Locations & Resources Service",
+      "description": "Confidential bearer-only client for locations-resources-service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_locations_resources_service_secret",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "custom-field-service",
+      "name": "Custom Field Service",
+      "description": "Confidential bearer-only client for custom-field-service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_custom_field_service_secret",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "users-permissions-service",
+      "name": "Users & Permissions Service",
+      "description": "Confidential bearer-only client for users-permissions-service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_users_permissions_service_secret",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "notifications-service",
+      "name": "Notifications Service",
+      "description": "Confidential bearer-only client for notifications-service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_notifications_service_secret",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "feeds-service",
+      "name": "Feeds Service",
+      "description": "Confidential bearer-only client for feeds-service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_feeds_service_secret",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "settings-service",
+      "name": "Settings Service",
+      "description": "Confidential bearer-only client for settings-service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_settings_service_secret",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "audit-log-service",
+      "name": "Audit Log Service",
+      "description": "Confidential bearer-only client for audit-log-service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_audit_log_service_secret",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "api-gateway",
+      "name": "API Gateway",
+      "description": "Confidential bearer-only client for Spring Cloud Gateway",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_api_gateway_secret",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "userperm-admin-client",
+      "name": "Users-Permissions Service Admin Client",
+      "description": "Service account client for Keycloak Admin API access by users-permissions-service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_userperm_admin_client_secret",
+      "fullScopeAllowed": false
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "role_calendar_viewer",
+        "description": "View calendar and bookings (legacy accessCalendar)",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_booking_creator",
+        "description": "Create, edit, delete own bookings (legacy allowRoomBooking)",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_booking_viewer",
+        "description": "View bookings list/calendar/detail (legacy viewRoomBooking)",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_booking_approver",
+        "description": "Approve/deny pending bookings (legacy allowApproveBooking)",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_permissions_admin",
+        "description": "Manage role-to-permission mappings (legacy accessPermissions)",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_feed_api",
+        "description": "Access public feeds (legacy allowAPI)",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_location_admin",
+        "description": "CRUD locations and resources",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_customfield_admin",
+        "description": "Manage custom field definitions and templates",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_user_admin",
+        "description": "Create accounts and assign roles",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_settings_admin",
+        "description": "Modify system-wide settings",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "role_audit_viewer",
+        "description": "View audit log entries",
+        "composite": false,
+        "clientRole": false
+      }
+    ],
+    "client": {}
+  },
+  "users": [
+    {
+      "username": "admin@bookinghub.local",
+      "email": "admin@bookinghub.local",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Admin",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ChangeMe123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "role_calendar_viewer",
+        "role_booking_creator",
+        "role_booking_viewer",
+        "role_booking_approver",
+        "role_permissions_admin",
+        "role_feed_api",
+        "role_location_admin",
+        "role_customfield_admin",
+        "role_user_admin",
+        "role_settings_admin",
+        "role_audit_viewer"
+      ],
+      "clientRoles": {},
+      "groups": []
+    }
+  ],
+  "groups": [],
+  "defaultRoles": [],
+  "requiredCredentials": [
+    "password"
+  ],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "browserSecurityHeaders": {
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "none",
+    "xFrameOptions": "SAMEORIGIN",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  },
+  "eventsEnabled": false,
+  "eventsListeners": [
+    "jboss-logging"
+  ],
+  "enabledEventTypes": [],
+  "adminEventsEnabled": false,
+  "adminEventsDetailsEnabled": false,
+  "internationalizationEnabled": false,
+  "supportedLocales": [],
+  "authenticationFlows": [],
+  "authenticatorConfig": [],
+  "requiredActions": [],
+  "browserFlow": "browser",
+  "registrationFlow": "registration",
+  "directGrantFlow": "direct grant",
+  "resetCredentialsFlow": "reset credentials",
+  "clientAuthenticationFlow": "clients",
+  "dockerAuthenticationFlow": "docker auth",
+  "attributes": {},
+  "keycloakVersion": "25.0.0"
+}

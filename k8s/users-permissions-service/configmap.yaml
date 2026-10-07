@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: users-permissions-service-config
+  namespace: bookinghub
+data:
+  SPRING_PROFILES_ACTIVE: "production"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "userperm_db"
+  KEYCLOAK_REALM: "bookinghub"

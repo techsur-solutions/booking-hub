@@ -3,15 +3,15 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 6
-status: planning
-last_updated: "2026-10-07T03:29:21.711Z"
+status: unknown
+stopped_at: Completed 02-13-PLAN.md
+last_updated: "2026-10-07T15:13:02.672Z"
 progress:
   total_phases: 8
-  completed_phases: 1
-  total_plans: 6
-  completed_plans: 6
+  completed_phases: 2
+  total_plans: 19
+  completed_plans: 19
   percent: 13
-last_activity: "2026-10-07 — Phase 1 complete"
 ---
 
 # Project State
@@ -57,6 +57,19 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 01-legacy-functional-audit P04 | 35 min | 2 tasks | 1 files |
 | Phase 01-legacy-functional-audit P05 | 25 min | 2 tasks | 1 files |
 | Phase 01-legacy-functional-audit P06 | 33 min | 3 tasks | 5 files |
+| Phase 02-platform-foundation-infrastructure P01 | 4 min | 3 tasks | 11 files |
+| Phase 02-platform-foundation-infrastructure P09 | 3 min | 2 tasks | 5 files |
+| Phase 02-platform-foundation-infrastructure P07 | 4 min | 3 tasks | 11 files |
+| Phase 02-platform-foundation-infrastructure P03 | 5 min | 3 tasks | 12 files |
+| Phase 02-platform-foundation-infrastructure P06 | 5 min | 3 tasks | 11 files |
+| Phase 02-platform-foundation-infrastructure P04 | 5 min | 3 tasks | 11 files |
+| Phase 02-platform-foundation-infrastructure P11 | 5min | 3 tasks | 29 files |
+| Phase 02-platform-foundation-infrastructure P08 | 6 min | 3 tasks | 11 files |
+| Phase 02-platform-foundation-infrastructure P05 | 6 min | 3 tasks | 11 files |
+| Phase 02-platform-foundation-infrastructure P02 | 7 min | 3 tasks | 13 files |
+| Phase 02-platform-foundation-infrastructure P10 | 6 min | 3 tasks | 12 files |
+| Phase 02-platform-foundation-infrastructure P12 | 17min | 2 tasks | 5 files |
+| Phase 02-platform-foundation-infrastructure P13 | 5min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -84,6 +97,15 @@ Recent decisions affecting current work:
 - [Phase 01-legacy-functional-audit]: PRD Open Question #7 corrected: legacy Api.cfc feeds are token-gated (per-user apitoken), not role/allowAPI-gated — allowAPI only gates the feed-listing index page and is granted to all roles by default
 - [Phase 01-legacy-functional-audit]: PRD Open Question #8 resolved: logfiles table has no before/after value columns at all (message+data free text only); write-side coverage is a confirmed subset (Sessions/PasswordResets/Cookie helpers) plus incidental logging via a global logFlash after-filter on any flash message
 - [Phase 01-legacy-functional-audit]: PRD Open Question #10 resolved: all 5 per-environment settings files ship empty; only one functional (non-config) difference exists codebase-wide — production serves minified JS, all else unminified. Maintenance mode is a full unconditional lockout for all users including admins, no bypass mechanism found
+- [Phase 02-07]: settings-service singleton table uses CHECK (id = 1) constraint with ON CONFLICT DO NOTHING seed for idempotency; no updated_at trigger per TechArch §3.3 (application-managed column)
+- [Phase 02-03]: Port 8083 for custom-field-service (following sequence: booking-service 8081, locations-resources-service 8082)
+- [Phase 02-03]: ClusterIP-only Service for custom-field-service (no external Ingress) - internal service accessed via Gateway
+- [Phase 02-platform-foundation-infrastructure]: users-permissions-service combines F6 and F7 into one deployable with two internal modules (user and permission) - tables have no FK between them to allow future split without schema migration
+- [Phase 02-platform-foundation-infrastructure]: users.id is UUID PRIMARY KEY with NO DEFAULT - must be explicitly set to Keycloak sub claim at insert time, per TechArch §3.3
+- [Phase 02-11]: Used react-router-dom 6.x useRoutes hook-based routing instead of older <Routes>/<Route> component tree for cleaner, type-safe route declarations
+- [Phase 02-platform-foundation-infrastructure]: RabbitMQ dependency included in plan 02-05 (Phase 6 adds consumer logic only) — Keeps dependency set stable; Phase 6 only adds @RabbitListener code without modifying pom.xml
+- [Phase 02-platform-foundation-infrastructure]: spring.rabbitmq.listener.simple.auto-startup=false prevents boot failure when RabbitMQ unreachable — Consistent with fail-closed-but-not-fail-crashed posture (TechArch Threat T-02-05-04)
+- [Phase 02-platform-foundation-infrastructure]: Lazy JWT decoder initialization (NimbusReactiveJwtDecoder.withJwkSetUri()) instead of eager (ReactiveJwtDecoders.fromIssuerLocation()) to defer JWKS fetch until first request, allowing Gateway to start independently of Keycloak
 
 ### Pending Todos
 
@@ -97,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-06T16:43:30.279Z
-Stopped at: Completed 01-06-PLAN.md
+Last session: 2026-10-07T15:13:02.671Z
+Stopped at: Completed 02-13-PLAN.md
 Resume file: None

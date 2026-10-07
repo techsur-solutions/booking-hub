@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: settings-service
+  labels:
+    app: settings-service
+spec:
+  type: ClusterIP
+  selector:
+    app: settings-service
+  ports:
+  - name: http
+    port: 8087
+    targetPort: 8087
+    protocol: TCP

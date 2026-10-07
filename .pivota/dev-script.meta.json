@@ -1,10 +1,13 @@
 {
   "generator_version": "init-dev-server@1",
-  "catalog_entry": null,
-  "generated_at": "2026-10-06T18:56:00Z",
-  "inspection_inputs_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "catalog_entry": "compose",
+  "generated_at": "2026-10-07T14:17:18Z",
+  "inspection_inputs_hash": "851fcf387bd3914f7548f00454244da3567a2fc21c6ec5fda444af329152b6cd",
   "inspection_inputs": {
-    "matched_globs": [],
+    "matched_globs": [
+      "docker-compose.yml",
+      "frontend/package.json"
+    ],
     "manifest_signatures": [],
     "existing_scripts": []
   }

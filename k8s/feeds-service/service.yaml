@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: feeds-service
+  labels:
+    app: feeds-service
+spec:
+  type: ClusterIP
+  selector:
+    app: feeds-service
+  ports:
+  - name: http
+    port: 8086
+    targetPort: 8086
+    protocol: TCP
