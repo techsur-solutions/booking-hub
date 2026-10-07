@@ -52,11 +52,16 @@ All confidential client secrets are set to **placeholder values**:
 - `api-gateway`: `CHANGE_ME_api_gateway_secret`
 - `userperm-admin-client`: `CHANGE_ME_userperm_admin_client_secret`
 
+**Important:** The 9 bearer-only service clients (all except `userperm-admin-client`) do NOT actively use their client secrets in the current architecture. Bearer-only clients validate incoming JWTs via the realm's JWKS endpoint and do not initiate OAuth flows that require a client secret. The placeholder values in the realm export are safe for bearer-only clients and can remain as-is for local development.
+
+**However**, the `userperm-admin-client` is a service-account client that DOES use its secret for client credentials flow to obtain an access token for Keycloak Admin API calls.
+
 **Before deploying to staging/production:**
 
-1. Generate cryptographically secure client secrets (e.g., `openssl rand -base64 32` per client)
-2. Update each client's secret via Keycloak Admin Console or Admin API
-3. Store the secrets in Kubernetes `Secret` objects, NOT in this committed JSON file
+1. Generate a cryptographically secure secret for `userperm-admin-client` (e.g., `openssl rand -base64 32`)
+2. Update the client's secret via Keycloak Admin Console or Admin API
+3. Store the secret in Kubernetes `Secret` objects, NOT in this committed JSON file
+4. Bearer-only client secrets can remain as placeholders unless service-to-service calls using client credentials flow are added in future phases
 
 ### 2. Seed User Password
 
