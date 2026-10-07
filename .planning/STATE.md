@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 02-08-PLAN.md
-last_updated: "2026-10-07T03:43:33.971Z"
+stopped_at: Completed 02-05-PLAN.md
+last_updated: "2026-10-07T03:43:39.106Z"
 progress:
   total_phases: 8
   completed_phases: 1
@@ -100,6 +100,7 @@ Recent decisions affecting current work:
 - [Phase 02-platform-foundation-infrastructure]: users.id is UUID PRIMARY KEY with NO DEFAULT - must be explicitly set to Keycloak sub claim at insert time, per TechArch §3.3
 - [Phase 02-11]: Used react-router-dom 6.x useRoutes hook-based routing instead of older <Routes>/<Route> component tree for cleaner, type-safe route declarations
 - [Phase 02-platform-foundation-infrastructure]: RabbitMQ dependency included in plan 02-05 (Phase 6 adds consumer logic only) — Keeps dependency set stable; Phase 6 only adds @RabbitListener code without modifying pom.xml
+- [Phase 02-platform-foundation-infrastructure]: spring.rabbitmq.listener.simple.auto-startup=false prevents boot failure when RabbitMQ unreachable — Consistent with fail-closed-but-not-fail-crashed posture (TechArch Threat T-02-05-04)
 
 ### Pending Todos
 
@@ -113,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-07T03:43:32.503Z
-Stopped at: Completed 02-08-PLAN.md
+Last session: 2026-10-07T03:43:39.105Z
+Stopped at: Completed 02-05-PLAN.md
 Resume file: None
