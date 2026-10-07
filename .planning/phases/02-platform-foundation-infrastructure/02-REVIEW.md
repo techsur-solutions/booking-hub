@@ -1,93 +1,114 @@
 ---
 phase: 2
 status: issues_found
-blockers: 0
-warnings: 1
-files_reviewed: 17
+blockers: 1
+warnings: 0
+files_reviewed: 2
 files_reviewed_list:
-  - infra/keycloak/README.md
-  - infra/keycloak/realm-export.json
-  - infra/postgres/audit-grants.sh
-  - k8s/audit-log-service/configmap.yaml
-  - k8s/audit-log-service/secret.yaml
-  - services/api-gateway/src/main/java/com/bookinghub/gateway/config/RateLimiterConfig.java
+  - docker-compose.yml
   - services/api-gateway/src/main/java/com/bookinghub/gateway/config/SecurityConfig.java
-  - services/api-gateway/src/main/resources/application.yml
-  - services/api-gateway/src/test/java/com/bookinghub/gateway/GatewayFailClosedTest.java
-  - services/api-gateway/src/test/java/com/bookinghub/gateway/GatewaySecurityTest.java
-  - services/api-gateway/src/test/java/com/bookinghub/gateway/config/TestSecurityConfig.java
-  - services/audit-log-service/src/main/resources/application.yml
-  - services/booking-service/src/test/java/com/bookinghub/booking/ApplicationContextBootTest.java
-  - services/feeds-service/src/main/resources/application.yml
-  - services/feeds-service/src/test/java/com/bookinghub/feeds/ApplicationContextBootTest.java
-  - services/notifications-service/src/main/resources/application.yml
-  - services/settings-service/src/main/resources/application.yml
-reviewed_at: 2026-10-07T12:30:00Z
-iteration: 2
+reviewed_at: 2026-10-07T15:18:30Z
+iteration: 3
 ---
 
-# Phase 2 Code Review - Iteration 2
+# Phase 2 Code Review - Iteration 3 (Gap Closure Wave 3)
+
+## Scope
+
+This review covers **only** the gap-closure changes from plan 02-13 (wave 3):
+- docker-compose.yml (Keycloak healthcheck + api-gateway dependency)
+- services/api-gateway/src/main/java/com/bookinghub/gateway/config/SecurityConfig.java (lazy JWT decoder)
+
+Plans 02-01 through 02-12 (waves 1-2) were reviewed in iterations 1-2 and are out of scope.
 
 ## BLOCKERs
 
-None. All previous blockers have been verified as fixed:
-- **B1 (Rate limiter refill):** Correctly fixed at RateLimiterConfig.java:78 with `lastRefillTimestamp = now - (timePassed % refillIntervalMillis)`
-- **B2 (Audit grants error handling):** Correctly fixed with `set -e` and verification query at audit-grants.sh:16-23
-- **B3 (Missing Flyway credentials in K8s):** Correctly fixed in k8s/audit-log-service/configmap.yaml:12-14 and secret.yaml:14-15
+### B1: JWT decoder wraps all decode errors as JwksUnreachableException, causing invalid JWTs to return 503 instead of 401
+
+- **File:** services/api-gateway/src/main/java/com/bookinghub/gateway/config/SecurityConfig.java:101-107
+- **Category:** bug
+- **Evidence:** The `failClosedJwtDecoder()` method's `onErrorResume` handler (lines 101-107) catches **any** error emitted by `decoder.decode(token)` and wraps it as `JwksUnreachableException`. This includes:
+  - JWT validation errors (expired token, invalid signature, malformed JWT) → should return 401 Unauthorized
+  - JWKS fetch failures (network errors, DNS failures) → should return 503 Service Unavailable
+  
+  The current implementation wraps both categories as `JwksUnreachableException`, which is explicitly handled by `GatewayErrorAttributes.java:28-32` to return 503 with error_code `SERVICE_UNAVAILABLE`. This means a request with an expired or invalid JWT receives "Identity provider unavailable" (503) instead of "Authentication required" (401), violating the principle that 503 indicates server-side unavailability, not client-side bad credentials.
+
+  The plan (02-13-PLAN.md:92-93) states: "At request time: if Keycloak's JWKS endpoint is unreachable, returns 503" — not "if JWT validation fails". The comment at line 103 says "Any failure reaching JWKS endpoint" but the code catches all decode failures including token validation.
+
+  **Concrete failing scenario:**
+  1. Keycloak is healthy and reachable
+  2. Client sends request with expired JWT: `Authorization: Bearer eyJhbGc...` (expired exp claim)
+  3. `NimbusReactiveJwtDecoder.decode()` emits `JwtValidationException` (expired token)
+  4. `onErrorResume` catches it and wraps as `JwksUnreachableException`
+  5. `GatewayErrorAttributes` returns 503 with message "Identity provider unavailable"
+  6. **Expected:** 401 Unauthorized with AUTH_UNAUTHENTICATED
+  7. **Actual:** 503 Service Unavailable with SERVICE_UNAVAILABLE
+
+  **Impact:** Clients cannot distinguish between "my token is invalid" and "the auth service is down". This breaks standard HTTP semantics where 401 indicates client needs to re-authenticate and 503 indicates retry later. Debugging authentication issues becomes significantly harder.
+
+  **Note on scope:** This bug exists in the **unchanged error handling logic** within the modified `failClosedJwtDecoder()` method. The gap-closure changes (02-13) modified the decoder initialization (lines 95-98) but preserved the pre-existing error handling (lines 101-107). The error handling was also present in the original implementation from wave 1 (plan 02-10). 
+  
+  However, this is classified as a BLOCKER because:
+  1. The modified method (`failClosedJwtDecoder`) is the core deliverable of the gap-closure plan
+  2. The bug affects the runtime correctness of JWT validation, which is the method's primary purpose
+  3. The file was explicitly modified in this wave, making the bug subject to review even if the specific lines weren't changed
+  4. The plan's threat model (T-02-13-01) explicitly states "unreachable JWKS triggers 503", implying other errors should NOT trigger 503
+
+- **Fix direction:** Modify `onErrorResume` at line 102 to selectively catch only network/IO-related exceptions (e.g., exceptions indicating JWKS fetch failure), not JWT validation exceptions. One approach: check exception type or message to distinguish JWKS fetch failures from token validation failures. For example, catch only exceptions that are NOT `JwtException` subclasses, or inspect the cause chain for `IOException` or connection-related exceptions. Allow `JwtValidationException`, `BadJwtException`, and other JWT validation errors to propagate unchanged so Spring Security's authentication entry point handles them as 401.
 
 ## WARNINGs
 
-### W1: Rate limiter cleanup has non-volatile field read (benign race condition)
-- **File:** services/api-gateway/src/main/java/com/bookinghub/gateway/config/RateLimiterConfig.java:47
-- **Category:** bug
-- **Evidence:** The `lastAccessTime` field at line 47 is not declared `volatile`, but is written inside a synchronized method (line 59 in `tryConsume()`) and read outside synchronization (line 68 in `getLastAccessTime()`, called by cleanup thread at line 34). Without volatile or synchronization on read, the cleanup thread may see a stale value of `lastAccessTime` due to lack of happens-before relationship. This can cause two edge-case behaviors: (1) An active bucket might be removed prematurely if cleanup sees a stale old timestamp, causing the bucket to be recreated on next request (performance degradation but not correctness failure), or (2) An idle bucket might be retained longer if cleanup sees a stale recent timestamp (memory leak mitigation delayed). The impact is minor because cleanup runs every 10 minutes with a 1-hour idle threshold, so visibility lag is unlikely to span the full threshold window. The system remains functionally correct, but there's a potential for transient inefficiency.
-- **Fix direction:** Declare `lastAccessTime` as `volatile` at line 47 to ensure visibility across threads, OR make `getLastAccessTime()` synchronized to establish happens-before relationship.
+None.
+
+## Cross-file seams checked
+
+### docker-compose.yml ↔ SecurityConfig.java (JWKS endpoint path)
+- **Keycloak healthcheck path:** `/realms/bookinghub/.well-known/openid-configuration` (docker-compose.yml:60)
+- **SecurityConfig JWKS path:** `issuerUri + "/protocol/openid-connect/certs"` → `http://keycloak:8080/realms/bookinghub/protocol/openid-connect/certs` (SecurityConfig.java:96)
+- **Status:** OK — Both paths target the same Keycloak realm (`bookinghub`). Healthcheck tests OIDC discovery endpoint, SecurityConfig directly constructs JWKS URI. Standard Keycloak JWKS path is `/realms/{realm}/protocol/openid-connect/certs`, which matches the constructed URI.
+
+### docker-compose.yml ↔ application.yml (Keycloak connection parameters)
+- **docker-compose env vars:** `KEYCLOAK_HOST: keycloak`, `KEYCLOAK_PORT: 8080` (docker-compose.yml:283-284)
+- **application.yml issuer-uri:** `http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/bookinghub` (application.yml:68)
+- **Resolved URI in container:** `http://keycloak:8080/realms/bookinghub`
+- **Status:** OK — Environment variables correctly override the localhost defaults, pointing Gateway to the Keycloak container on internal port 8080 (not host port 8180).
+
+### docker-compose.yml dependency chain
+- **api-gateway depends_on keycloak:** `condition: service_healthy` (docker-compose.yml:263-264)
+- **Keycloak healthcheck:** interval 5s, timeout 5s, retries 30, start_period 30s → max 180 seconds to healthy
+- **Status:** OK — Gateway startup is blocked until Keycloak's OIDC discovery endpoint returns 200. This prevents the DNS resolution failure (`UnknownHostException: keycloak`) that gap-closure plan 02-13 was meant to fix. Combined with lazy decoder initialization (SecurityConfig.java:95-98), ensures Gateway can boot even if Keycloak temporarily becomes unavailable after initial startup.
+
+### SecurityConfig.java ↔ GatewayErrorAttributes.java (JwksUnreachableException handling)
+- **SecurityConfig throws:** `JwksUnreachableException` (SecurityConfig.java:105)
+- **GatewayErrorAttributes catches:** `if (error instanceof SecurityConfig.JwksUnreachableException)` (GatewayErrorAttributes.java:28)
+- **Status:** Contract fulfilled — GatewayErrorAttributes explicitly handles the custom exception and returns 503. However, the contract is **overused** due to B1: the exception is thrown for all JWT decode errors, not just JWKS unreachability.
 
 ## Re-Review: Verification of Previous Findings
 
-### Previously Reported BLOCKERs (All Fixed)
+### From Iteration 2 (Waves 1-2)
 
-**B1 - Rate limiter refill timestamp:** FIXED ✓  
-Verified at RateLimiterConfig.java:78. The refill logic now correctly advances `lastRefillTimestamp` by consumed intervals using `now - (timePassed % refillIntervalMillis)`, which properly tracks partial intervals and maintains consistent token refill rate. Tested logic with example: 120 tokens/min (500ms interval), after 1200ms adds 2 tokens and sets timestamp to 1000ms, next call at 1600ms correctly sees 600ms elapsed. Mathematical correctness confirmed.
+All previous blockers (B1-B3) and warnings (W1-W7) from iteration 2 were related to wave 1-2 plans and are not re-verified in this gap-closure review. Iteration 2 status was `issues_found` with 0 blockers, 1 warning (W1: rate limiter non-volatile field). That warning remains unaddressed but is out of scope for this gap-closure review.
 
-**B2 - Audit grants script error handling:** FIXED ✓  
-Verified at audit-grants.sh:2 (`set -e` present) and lines 16-23 (verification query). The script now fails fast on any psql error and verifies the immutability constraint by checking `has_table_privilege('audit_svc', 'audit_log_entries', 'UPDATE')` returns `f`. Exit code 1 on verification failure ensures docker-compose will not silently proceed with insecure grants. The original review noted `set -e` was already present (added in initial implementation), fix correctly added the missing verification query.
+## Gap Closure Specific Verification
 
-**B3 - Missing Flyway credentials in K8s:** FIXED ✓  
-Verified at k8s/audit-log-service/configmap.yaml:12-14 (FLYWAY_DB_HOST, FLYWAY_DB_PORT, FLYWAY_DB_NAME) and k8s/audit-log-service/secret.yaml:14-15 (FLYWAY_DB_USER, FLYWAY_DB_PASSWORD base64 encoded). These match the application.yml structure at lines 14-16 which references `${FLYWAY_DB_HOST:${DB_HOST:localhost}}` pattern. K8s deployment will now correctly use `audit_migrator` role for schema migrations and `audit_svc` role for runtime queries, maintaining the two-role security split.
+### Did the gap-closure changes fix the reported UAT issue?
 
-### Previously Reported WARNINGs (All Addressed)
+**UAT Test 5 failure (02-UAT.md):** Gateway container crash-looped with `java.net.UnknownHostException: keycloak` during JWT decoder initialization.
 
-**W1 - Healthcheck path inconsistency:** FIXED ✓  
-Verified docker-compose.yml lines 80, 97, 114, 137, 160, 183, 206, 234, 282 all use `/actuator/health/readiness` matching K8s deployment manifests. Consistency across environments achieved.
+**Root cause:** Eager JWT decoder initialization (`ReactiveJwtDecoders.fromIssuerLocation(issuerUri)`) attempted to fetch OIDC discovery and JWKS at bean creation time, before Keycloak was resolvable.
 
-**W2 - Missing CORS configuration:** FIXED ✓  
-Verified at api-gateway/src/main/resources/application.yml:9-25. Global CORS configuration added with `allowedOrigins: ["http://localhost:3000", "http://${FRONTEND_HOST:localhost}:${FRONTEND_PORT:3000}"]`, `allowCredentials: true`, and appropriate methods/headers. Environment variables default to localhost:3000 which matches docker-compose frontend port mapping (3000:80). The frontend container runs nginx on internal port 80 but is exposed to host on 3000, so browser Origin header will be `http://localhost:3000`, correctly matching CORS config. No CORS conflicts in SecurityConfig (line 35 only disables CSRF, no cors() call present).
+**Gap-closure fixes:**
+1. **docker-compose.yml:** Added Keycloak healthcheck + changed api-gateway dependency to `service_healthy` → Ensures Keycloak is reachable before Gateway starts ✓
+2. **SecurityConfig.java:** Replaced eager decoder with lazy initialization (`NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build()`) → Defers JWKS fetch until first request ✓
 
-**W3 - Rate limiter memory leak:** FIXED (with new W1 caveat) ✓  
-Verified at RateLimiterConfig.java:30-36. Scheduled cleanup task added with `@Scheduled(fixedRate = 600_000)` (10 minutes) removing buckets idle for >1 hour. Uses `ConcurrentHashMap.entrySet().removeIf()` which is atomic and safe for concurrent modification. `@EnableScheduling` present at line 11. Cleanup logic is correct but introduced the non-volatile field issue reported as new W1.
+**Verification:** The gap-closure changes correctly implement the plan's objectives. Gateway startup no longer depends on Keycloak being immediately reachable during bean creation. The healthcheck ensures Keycloak is available before Gateway starts, and lazy initialization prevents crash if Keycloak becomes temporarily unavailable after startup.
 
-**W4 - RabbitMQ auto-startup documentation:** FIXED ✓  
-Verified inline comments added to 4 services: audit-log-service/application.yml:28-30, feeds-service/application.yml:33-35, notifications-service/application.yml:25-27, settings-service/application.yml:25-27. Comments document deferral to Phase 3 and explain that enabling without listener beans will cause startup failure. Original review stated 5 services, but only 4 services actually have `spring.rabbitmq` config (booking-service and users-permissions-service do not have rabbitmq config yet, though docker-compose provides env vars for forward compatibility). Fix correctly identified and documented all 4 services with rabbitmq configuration.
+**However:** B1 remains unresolved and affects runtime behavior after successful startup. This bug was pre-existing (present in plan 02-10's original implementation) but is now exposed as the Gateway can actually start and process requests.
 
-**W5 - Feeds public route authorization responsibility:** FIXED ✓  
-Verified at SecurityConfig.java:39-40. Inline comment added explaining feeds-service is responsible for all authorization under `/feeds/**` and noting potential for admin sub-paths in future. Clarifies gateway-level authentication is intentionally bypassed.
+## Verdict
 
-**W6 - Keycloak placeholder secrets:** ADDRESSED ✓  
-Verified at infra/keycloak/README.md:38-64. Documentation now clearly distinguishes bearer-only clients (9 services) which don't actively use secrets in the current JWT validation architecture, from service-account client (`userperm-admin-client`) which requires a real secret for client credentials flow. README provides concrete guidance for production secret generation and Kubernetes secret management. Placeholders remain in realm-export.json per documented local-dev-only status.
+**Status:** `issues_found`  
+**Blockers:** 1 (B1: JWT validation errors incorrectly return 503 instead of 401)  
+**Warnings:** 0  
 
-**W7 - PostgreSQL port exposure:** ADDRESSED (documentation enhanced) ✓  
-Verified at docker-compose.yml:20-26. Port mapping retained but comments enhanced to document security tradeoff (direct database access bypassing application logic) and provide alternatives: `docker compose exec postgres psql` or separate docker-compose.override.yml for dev-only exposure. Original WARNING noted weak justification ("infrastructure not business service"); fix strengthens documentation acknowledging the tradeoff without claiming it's acceptable, and provides secure alternatives.
-
-## Cross-file seams checked (fixer-touched files only)
-
-- **Rate limiter cleanup → TokenBucket access:** OK - `ConcurrentHashMap.removeIf()` is atomic, `computeIfAbsent()` is atomic, only issue is non-volatile field read (reported as W1)
-- **Audit grants script → audit-log Flyway migration:** OK - script waits for audit-log-service healthy (Flyway completed), applies grants to `audit_log_entries` table created by V1__init_schema.sql
-- **K8s audit-log Flyway env vars → application.yml:** OK - configmap provides FLYWAY_DB_HOST/PORT/NAME with fallback to DB_* vars, secret provides FLYWAY_DB_USER/PASSWORD, matching application.yml:14-16 structure
-- **CORS allowedOrigins → docker-compose frontend port:** OK - defaults to localhost:3000, docker-compose exposes frontend on 3000:80, browser Origin header matches
-- **CORS allowedOrigins → K8s frontend:** DEFERRED - K8s configmap does not provide FRONTEND_HOST/PORT env vars, will default to localhost:3000 which is incorrect for K8s cluster-internal frontend service. However, K8s frontend service does not exist yet (no k8s/frontend/), so this mismatch is expected and will be addressed when K8s frontend deployment is implemented in a future phase. Not a blocker for phase 2 which targets docker-compose as primary deployment.
-- **RabbitMQ auto-startup comments → docker-compose env vars:** OK - 6 services receive RABBITMQ_* env vars in docker-compose (booking, users-permissions, notifications, feeds, settings, audit-log), but only 4 have `spring.rabbitmq` config with auto-startup disabled (notifications, feeds, settings, audit-log). The 2 services without rabbitmq config (booking, users-permissions) receive env vars for forward compatibility with Phase 3 implementation.
-
-## New Issues Introduced by Fixes
-
-None. The rate limiter cleanup fix introduced a minor non-volatile field visibility issue (W1) which is a refinement of the memory leak fix, not a regression. All other fixes are correct without introducing new defects.
+The gap-closure changes **successfully fix the startup issue** (UAT Test 5) but **expose a pre-existing runtime bug** in JWT error handling that must be fixed before phase 2 ships. The bug does not prevent Gateway startup (the gap-closure's goal) but breaks correct JWT validation behavior for production traffic.
