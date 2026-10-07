@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 02-06-PLAN.md
-last_updated: "2026-10-07T03:42:31.540Z"
+stopped_at: Completed 02-11-PLAN.md
+last_updated: "2026-10-07T03:42:48.758Z"
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 18
-  completed_plans: 11
+  completed_plans: 13
   percent: 13
 ---
 
@@ -62,6 +62,8 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 02-platform-foundation-infrastructure P07 | 4 min | 3 tasks | 11 files |
 | Phase 02-platform-foundation-infrastructure P03 | 5 min | 3 tasks | 12 files |
 | Phase 02-platform-foundation-infrastructure P06 | 5 min | 3 tasks | 11 files |
+| Phase 02-platform-foundation-infrastructure P04 | 5 min | 3 tasks | 11 files |
+| Phase 02-platform-foundation-infrastructure P11 | 5min | 3 tasks | 29 files |
 
 ## Accumulated Context
 
@@ -92,6 +94,9 @@ Recent decisions affecting current work:
 - [Phase 02-07]: settings-service singleton table uses CHECK (id = 1) constraint with ON CONFLICT DO NOTHING seed for idempotency; no updated_at trigger per TechArch §3.3 (application-managed column)
 - [Phase 02-03]: Port 8083 for custom-field-service (following sequence: booking-service 8081, locations-resources-service 8082)
 - [Phase 02-03]: ClusterIP-only Service for custom-field-service (no external Ingress) - internal service accessed via Gateway
+- [Phase 02-platform-foundation-infrastructure]: users-permissions-service combines F6 and F7 into one deployable with two internal modules (user and permission) - tables have no FK between them to allow future split without schema migration
+- [Phase 02-platform-foundation-infrastructure]: users.id is UUID PRIMARY KEY with NO DEFAULT - must be explicitly set to Keycloak sub claim at insert time, per TechArch §3.3
+- [Phase 02-11]: Used react-router-dom 6.x useRoutes hook-based routing instead of older <Routes>/<Route> component tree for cleaner, type-safe route declarations
 
 ### Pending Todos
 
@@ -105,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-07T03:42:31.539Z
-Stopped at: Completed 02-06-PLAN.md
+Last session: 2026-10-07T03:42:48.756Z
+Stopped at: Completed 02-11-PLAN.md
 Resume file: None
