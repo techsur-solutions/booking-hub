@@ -31,3 +31,11 @@ waves:
 - Tests: `(cd services/api-gateway && mvn -q test) && ... (8 more services)` → skipped
 - Fix attempts: 0/3 — Plan 02-12 added docker-compose.yml and verified full-stack integration via docker compose up. Tests skip for same environmental reason as Wave 1: Testcontainers Docker API detection issue in sandbox. Plan 02-12 itself mechanically verified: network isolation (service ports unreachable), database isolation (cross-service access denied), audit immutability (UPDATE/DELETE denied), Keycloak realm loaded, RabbitMQ topology loaded, stack boots and tears down cleanly.
 
+
+## Backend pre-push gate
+
+- Status: skipped
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=59b0b5be66407f9e0c3dd624be0a9a66c4ac67d9 test_files=16 skip_marks=2 shadow_files=0
+```
