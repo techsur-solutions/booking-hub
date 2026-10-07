@@ -12,7 +12,7 @@ Booking-Hub re-platforms the legacy OxAlto RoomBooking ColdFusion application on
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Legacy Functional Audit** - Document every legacy controller/model/route/workflow and produce the authoritative Open Questions list before any build work begins
+- [x] **Phase 1: Legacy Functional Audit** - Document every legacy controller/model/route/workflow and produce the authoritative Open Questions list before any build work begins (completed 2026-10-07)
 - [ ] **Phase 2: Platform Foundation & Infrastructure** - Stand up the nine bounded-context service scaffolds, per-service Postgres, RabbitMQ topology, Keycloak realm, Gateway, and the frontend SPA shell
 - [ ] **Phase 3: Identity & Access Control** - Users authenticate via Keycloak and every legacy permission flag has a confirmed, enforced Keycloak-role mapping
 - [ ] **Phase 4: Reference Data, Extensibility & Configuration** - Admins manage locations, resources, custom fields, and system-wide settings that booking depends on
@@ -25,7 +25,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 ### Phase 1: Legacy Functional Audit
 **Goal**: A documented, end-to-end functional audit of the legacy RoomBooking repository exists before any service implementation begins, so every subsequent phase builds against confirmed behavior rather than assumption.
-**Status**: Passed
+**Status**: Complete (2026-10-07)
 **Depends on**: Nothing (first phase)
 **Requirements**: F0 (F0.1, F0.2, F0.3, F0.4, F0.5)
 **Success Criteria** (what must be TRUE):
@@ -131,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Legacy Functional Audit | 0/TBD | Passed | - |
+| 1. Legacy Functional Audit | 0/TBD | Complete | 2026-10-07 |
 | 2. Platform Foundation & Infrastructure | 0/TBD | Not started | - |
 | 3. Identity & Access Control | 0/TBD | Not started | - |
 | 4. Reference Data, Extensibility & Configuration | 0/TBD | Not started | - |
