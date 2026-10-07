@@ -1,0 +1,61 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: bookings
+          uri: http://booking-service:8081
+          predicates:
+            - Path=/bookings/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: bookingCB
+                fallbackUri: forward:/fallback
+        - id: locations-resources
+          uri: http://locations-resources-service:8082
+          predicates:
+            - Path=/locations/**,/resources/**
+        - id: custom-fields
+          uri: http://custom-field-service:8083
+          predicates:
+            - Path=/custom-fields/**,/field-templates/**
+        - id: auth-users
+          uri: http://users-permissions-service:8084
+          predicates:
+            - Path=/auth/**,/users/**,/permissions/**,/roles/**
+        - id: notifications
+          uri: http://notifications-service:8085
+          predicates:
+            - Path=/notifications/**
+        - id: feeds
+          uri: http://feeds-service:8086
+          predicates:
+            - Path=/feeds/**
+        - id: settings
+          uri: http://settings-service:8087
+          predicates:
+            - Path=/settings/**
+        - id: audit-log
+          uri: http://audit-log-service:8088
+          predicates:
+            - Path=/audit-log/**
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/bookinghub
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
