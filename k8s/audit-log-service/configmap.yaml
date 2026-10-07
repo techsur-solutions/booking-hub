@@ -9,5 +9,8 @@ data:
   DB_HOST: "postgres"
   DB_PORT: "5432"
   DB_NAME: "audit_db"
+  FLYWAY_DB_HOST: "postgres"
+  FLYWAY_DB_PORT: "5432"
+  FLYWAY_DB_NAME: "audit_db"
   RABBITMQ_HOST: "rabbitmq"
   RABBITMQ_PORT: "5672"
