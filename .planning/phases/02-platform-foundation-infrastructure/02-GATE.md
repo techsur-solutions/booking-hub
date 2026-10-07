@@ -50,3 +50,11 @@ __GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=59b0b5
 - Tests: `(cd services/api-gateway && mvn -q test) && ...` → skipped
 - Fix attempts: 0/3 — Wave 3 (gap closure): Build/test gate skipped — Maven/Java not installed in sandbox (consistent with waves 1-2). Plan 02-13 changes (Keycloak healthcheck + lazy JWT decoder) are docker-compose.yml config and Spring Java code; runtime verification deferred to full-stack boot smoke gate.
 
+
+## Backend pre-push gate
+
+- Status: skipped
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=ec31b27c1d5992e382654869eb1dd1a2284f887d test_files=16 skip_marks=2 shadow_files=0
+```
