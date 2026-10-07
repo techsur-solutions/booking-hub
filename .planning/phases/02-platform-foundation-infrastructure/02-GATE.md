@@ -3,9 +3,11 @@ phase: 02
 gate_status: passed_with_warnings
 build_command: "(cd services/api-gateway && mvn -q compile -DskipTests) && (cd services/audit-log-service && mvn -q compile -DskipTests) && (cd services/booking-service && mvn -q compile -DskipTests) && (cd services/custom-field-service && mvn -q compile -DskipTests) && (cd services/feeds-service && mvn -q compile -DskipTests) && (cd services/locations-resources-service && mvn -q compile -DskipTests) && (cd services/notifications-service && mvn -q compile -DskipTests) && (cd services/settings-service && mvn -q compile -DskipTests) && (cd services/users-permissions-service && mvn -q compile -DskipTests) && (cd frontend && npm run build)"
 test_command: "(cd services/api-gateway && mvn -q test) && ... (8 more services)"
-last_updated: 2026-10-07T04:10:15Z
+last_updated: 2026-10-07T04:25:56Z
 tests_disabled_during_fixes: none
 shadowed_sources: 0
+review_blockers_open: 0
+boot_smoke: pass
 waves:
   - wave: 1
     build: pass
