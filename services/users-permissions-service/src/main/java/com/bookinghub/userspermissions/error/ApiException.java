@@ -66,15 +66,6 @@ class PasswordPolicyViolationException extends ApiException {
 }
 
 /**
- * Generic action forbidden (user lacks permission) — 403 FORBIDDEN
- */
-class ActionForbiddenException extends ApiException {
-    public ActionForbiddenException(String message) {
-        super(HttpStatus.FORBIDDEN, "ACTION_FORBIDDEN", message);
-    }
-}
-
-/**
  * Permission-specific forbidden (explicit permission check failed) — 403 FORBIDDEN
  */
 class PermissionsForbiddenException extends ApiException {
