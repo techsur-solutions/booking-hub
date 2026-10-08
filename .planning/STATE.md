@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-10-08T15:09:36.599Z"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-10-08T15:20:58.234Z"
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 34
-  completed_plans: 21
+  completed_plans: 22
   percent: 13
 ---
 
@@ -71,6 +71,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 02-platform-foundation-infrastructure P12 | 17min | 2 tasks | 5 files |
 | Phase 02-platform-foundation-infrastructure P13 | 5min | 3 tasks | 2 files |
 | Phase 03-identity-access-control P02 | 11 min | 3 tasks | 12 files |
+| Phase 03-identity-access-control P03 | 8min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,9 @@ Recent decisions affecting current work:
 - [Phase 02-platform-foundation-infrastructure]: RabbitMQ dependency included in plan 02-05 (Phase 6 adds consumer logic only) — Keeps dependency set stable; Phase 6 only adds @RabbitListener code without modifying pom.xml
 - [Phase 02-platform-foundation-infrastructure]: spring.rabbitmq.listener.simple.auto-startup=false prevents boot failure when RabbitMQ unreachable — Consistent with fail-closed-but-not-fail-crashed posture (TechArch Threat T-02-05-04)
 - [Phase 02-platform-foundation-infrastructure]: Lazy JWT decoder initialization (NimbusReactiveJwtDecoder.withJwkSetUri()) instead of eager (ReactiveJwtDecoders.fromIssuerLocation()) to defer JWKS fetch until first request, allowing Gateway to start independently of Keycloak
+- [Phase 03-03]: F0 Open Question #17 resolved: session timeouts set to 30 min idle / 10 hours max (fresh decision, not legacy parity)
+- [Phase 03-03]: F0 Open Question #19 closed: password reset token expiry/used status re-validated at submit time
+- [Phase 03-03]: F0 Open Question #20 closed: password-reset-request returns identical 202 response regardless of email existence
 
 ### Pending Todos
 
@@ -120,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-08T15:09:36.597Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-10-08T15:20:58.232Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None
