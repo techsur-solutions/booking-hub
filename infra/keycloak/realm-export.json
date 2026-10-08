@@ -207,6 +207,42 @@
       "protocol": "openid-connect",
       "secret": "CHANGE_ME_userperm_admin_client_secret",
       "fullScopeAllowed": false
+    },
+    {
+      "clientId": "userperm-direct-grant-client",
+      "name": "Users-Permissions Direct Grant Client",
+      "description": "Confidential direct-grant client for server-side login (standard session duration)",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_userperm_direct_grant_secret",
+      "attributes": {
+        "client.session.idle.timeout": "1800",
+        "client.session.max.lifespan": "36000"
+      },
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "userperm-direct-grant-remember-client",
+      "name": "Users-Permissions Direct Grant Remember-Me Client",
+      "description": "Confidential direct-grant client for server-side login with remember-me (30-day session)",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_userperm_direct_grant_remember_secret",
+      "attributes": {
+        "client.session.idle.timeout": "1800",
+        "client.session.max.lifespan": "2592000"
+      },
+      "fullScopeAllowed": true
     }
   ],
   "roles": {
@@ -350,5 +386,6 @@
   "clientAuthenticationFlow": "clients",
   "dockerAuthenticationFlow": "docker auth",
   "attributes": {},
-  "keycloakVersion": "25.0.0"
+  "keycloakVersion": "25.0.0",
+  "passwordPolicy": "length(6) and digits(1) and lowerCase(1)"
 }

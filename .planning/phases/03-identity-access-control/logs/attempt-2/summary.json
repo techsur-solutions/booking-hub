@@ -1,0 +1,21 @@
+{
+  "duration_secs": 2484.0,
+  "token_usage": {
+    "input": 212,
+    "output": 11723,
+    "total": 2634990,
+    "cache_read": 2460806,
+    "cache_write": 162249,
+    "cost": 1.5231565500000002
+  },
+  "model": "claude-sonnet-4-5",
+  "files_changed": [
+    ".planning/phases/03-identity-access-control/03-UAT.md",
+    ".planning/phases/03-identity-access-control/03-UAT.summary.json"
+  ],
+  "verification_status": "passed",
+  "error_message": null,
+  "attempt_number": 2,
+  "created_at": "2026-10-08T17:37:13.263708+00:00",
+  "completed_at": "2026-10-08T18:18:37.638087369+00:00"
+}

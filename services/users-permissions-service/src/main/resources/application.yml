@@ -15,6 +15,30 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+outbox:
+  poll-interval-ms: 2000
+  batch-size: 100
+
+keycloak:
+  realm: ${KEYCLOAK_REALM:bookinghub}
+  server-url: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}
+  admin-client-id: userperm-admin-client
+  admin-client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:}
+  direct-grant-client-id: userperm-direct-grant-client
+  direct-grant-client-secret: ${KEYCLOAK_DIRECT_GRANT_CLIENT_SECRET:}
+  direct-grant-remember-client-id: userperm-direct-grant-remember-client
+  direct-grant-remember-client-secret: ${KEYCLOAK_DIRECT_GRANT_REMEMBER_CLIENT_SECRET:}
 
 management:
   endpoints:
