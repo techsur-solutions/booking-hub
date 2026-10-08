@@ -66,24 +66,6 @@ class PasswordPolicyViolationException extends ApiException {
 }
 
 /**
- * Permission-specific forbidden (explicit permission check failed) — 403 FORBIDDEN
- */
-class PermissionsForbiddenException extends ApiException {
-    public PermissionsForbiddenException(String message) {
-        super(HttpStatus.FORBIDDEN, "PERMISSIONS_FORBIDDEN", message);
-    }
-}
-
-/**
- * Permission flag referenced but not defined in permissions table — 400 BAD REQUEST
- */
-class PermissionFlagUndefinedException extends ApiException {
-    public PermissionFlagUndefinedException(String message) {
-        super(HttpStatus.BAD_REQUEST, "PERMISSION_FLAG_UNDEFINED", message);
-    }
-}
-
-/**
  * Authentication failed: invalid credentials — 401 UNAUTHORIZED
  */
 class AuthInvalidCredentialsException extends ApiException {
