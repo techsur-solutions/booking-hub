@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Legacy Functional Audit** - Document every legacy controller/model/route/workflow and produce the authoritative Open Questions list before any build work begins (completed 2026-10-07)
 - [x] **Phase 2: Platform Foundation & Infrastructure** - Stand up the nine bounded-context service scaffolds, per-service Postgres, RabbitMQ topology, Keycloak realm, Gateway, and the frontend SPA shell (completed 2026-10-07)
-- [ ] **Phase 3: Identity & Access Control** - Users authenticate via Keycloak and every legacy permission flag has a confirmed, enforced Keycloak-role mapping
+- [x] **Phase 3: Identity & Access Control** - Users authenticate via Keycloak and every legacy permission flag has a confirmed, enforced Keycloak-role mapping (completed 2026-10-08)
 - [ ] **Phase 4: Reference Data, Extensibility & Configuration** - Admins manage locations, resources, custom fields, and system-wide settings that booking depends on
 - [ ] **Phase 5: Core Booking & Approval Workflow** - Users create/edit/delete/clone bookings with full conflict detection and an approval workflow
 - [ ] **Phase 6: Notifications & Audit Logging** - Booking/account lifecycle events reliably trigger emails and produce an immutable, queryable audit trail
@@ -72,7 +72,7 @@ Plans:
 
 ### Phase 3: Identity & Access Control
 **Goal**: Users can authenticate and self-manage their accounts, and every protected action is gated by a confirmed permission, so access control behaves equivalently to the legacy system without anyone silently gaining or losing access during the re-platform.
-**Status**: Passed
+**Status**: Complete (2026-10-08)
 **Depends on**: Phase 2 (Keycloak realm, Gateway, users-permissions-service scaffold)
 **Requirements**: F6 (F6.1–F6.6), F7 (F7.1–F7.4)
 **Success Criteria** (what must be TRUE):
@@ -176,7 +176,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Legacy Functional Audit | 0/TBD | Complete | 2026-10-07 |
 | 2. Platform Foundation & Infrastructure | 12/12 | Complete | 2026-10-07 |
-| 3. Identity & Access Control | 5/5 | Passed | - |
+| 3. Identity & Access Control | 5/5 | Complete | 2026-10-08 |
 | 4. Reference Data, Extensibility & Configuration | 0/6 | Planned | - |
 | 5. Core Booking & Approval Workflow | 0/TBD | Not started | - |
 | 6. Notifications & Audit Logging | 0/TBD | Not started | - |
