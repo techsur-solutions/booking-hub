@@ -16,10 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.EnabledIf;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 import java.util.UUID;
@@ -47,19 +45,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
  * 
  * Tests account creation, duplicate email rejection (case-insensitive),
  * admin-vs-self authorization, self-edit guards, and role assignment with
- * outbox event emission — all against Testcontainers Postgres + WireMock
- * Keycloak stub.
+ * outbox event emission — all against the running docker-compose Postgres + WireMock
+ * Keycloak stub (switched from Testcontainers due to Docker API compatibility in sandbox).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
-@Testcontainers
 class UserControllerIntegrationTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test");
 
     @org.junit.jupiter.api.extension.RegisterExtension
     static WireMockExtension wireMock = WireMockExtension.newInstance()
@@ -68,10 +60,6 @@ class UserControllerIntegrationTest {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        
         // Point Keycloak admin client at WireMock
         registry.add("keycloak.server-url", () -> wireMock.baseUrl());
         registry.add("keycloak.realm", () -> "bookinghub");

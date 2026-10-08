@@ -1,5 +1,7 @@
 package com.bookinghub.userspermissions.security;
 
+import com.bookinghub.userspermissions.controller.AuthController;
+import com.bookinghub.userspermissions.controller.UserController;
 import com.bookinghub.userspermissions.error.ApiError;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -42,6 +45,13 @@ class Tier2FailClosedTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    // Mock controllers added in Wave 3 that have JPA dependencies
+    @MockBean
+    private AuthController authController;
+
+    @MockBean
+    private UserController userController;
 
     /**
      * Scenario 1: JWKS endpoint fails at runtime → 503 SERVICE_UNAVAILABLE (fail-closed)
