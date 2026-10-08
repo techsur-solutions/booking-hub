@@ -20,6 +20,15 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+outbox:
+  poll-interval-ms: 2000
+  batch-size: 100
 
 keycloak:
   realm: ${KEYCLOAK_REALM:bookinghub}

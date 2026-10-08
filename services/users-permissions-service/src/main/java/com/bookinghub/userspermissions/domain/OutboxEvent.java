@@ -93,6 +93,10 @@ public class OutboxEvent {
         this.attemptCount++;
     }
     
+    public void setAttemptCount(int attemptCount) {
+        this.attemptCount = attemptCount;
+    }
+    
     public void setPublishedAt(Instant publishedAt) {
         this.publishedAt = publishedAt;
     }
