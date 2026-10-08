@@ -138,7 +138,13 @@ Plans:
   3. Change events are captured across booking lifecycle, location/resource management, user/role changes, settings changes, and permission changes — not just booking actions.
   4. Admins can view and filter the audit log by entity type, actor, and date range; audit log entries are immutable once written (no API can edit or delete a prior entry).
   5. A missed or failed domain event consumption is retried via the durable queue/DLQ mechanism rather than silently leaving a gap in the audit trail.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — notifications-service: Tier-2 security, RabbitMQ retry/DLQ container factory, notification_deliveries JPA layer
+- [ ] 06-02-PLAN.md — notifications-service: template rendering, SMTP sending, consumer (idempotency/recipient resolution), admin delivery-status/dead-letter endpoints
+- [ ] 06-03-PLAN.md — audit-log-service: Tier-2 security, V2 idempotency-key migration, RabbitMQ retry/DLQ container factory
+- [ ] 06-04-PLAN.md — audit-log-service: 7-queue domain event consumer, routing-key-derived entity/action parsing, admin filterable GET /audit-log
 
 ### Phase 7: Public Feeds
 **Goal**: Approved upcoming bookings are exposed via public, read-only feeds, so external viewers like reception staff and visitors can see room availability at a glance without ever logging in or being shown an unconfirmed booking.
