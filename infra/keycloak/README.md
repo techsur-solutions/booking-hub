@@ -11,8 +11,45 @@ This directory contains the declarative Keycloak realm configuration for Booking
   - **1 public client** (frontend PKCE): `bookinghub-frontend`
   - **9 confidential bearer-only clients** (backend services): `booking-service`, `locations-resources-service`, `custom-field-service`, `users-permissions-service`, `notifications-service`, `feeds-service`, `settings-service`, `audit-log-service`, `api-gateway`
   - **1 confidential service-account client**: `userperm-admin-client` (for Keycloak Admin API access by users-permissions-service)
+  - **2 confidential direct-grant clients** (server-side login): `userperm-direct-grant-client`, `userperm-direct-grant-remember-client` (see Session Timeouts section below)
   - **11 realm roles** per TechArch §5.2: `role_calendar_viewer`, `role_booking_creator`, `role_booking_viewer`, `role_booking_approver`, `role_permissions_admin`, `role_feed_api`, `role_location_admin`, `role_customfield_admin`, `role_user_admin`, `role_settings_admin`, `role_audit_viewer`
   - **1 seed user**: `admin@bookinghub.local` holding all 11 roles
+
+## Session Timeouts and Password Policy
+
+### Session Timeouts
+
+**Realm-level defaults** (F0 Open Question #17 — fresh decision for the new system):
+- `ssoSessionIdleTimeout`: **1800 seconds (30 minutes)** — idle sessions expire after 30 minutes of inactivity
+- `ssoSessionMaxLifespan`: **36000 seconds (10 hours)** — active sessions expire after 10 hours regardless of activity
+
+**Rationale:** Legacy's actual session timeout was never discoverable from source code (ColdFusion/Lucee engine-level default, absent from the codebase's config). The values above are reasonable modern defaults, explicitly NOT a parity claim with legacy behavior.
+
+### Remember-Me Session Extension
+
+The new system introduces **two direct-grant clients** for server-side login (used by `AuthController.login`), which differ ONLY in their session lifespan overrides:
+
+- **`userperm-direct-grant-client`** (standard):
+  - `client.session.idle.timeout`: 1800 (30 min)
+  - `client.session.max.lifespan`: 36000 (10 hours)
+
+- **`userperm-direct-grant-remember-client`** (remember-me):
+  - `client.session.idle.timeout`: 1800 (30 min)
+  - `client.session.max.lifespan`: **2592000 (30 days)**
+
+**Rationale (F6 remember_me improvement):** Legacy's `RBS_UN` cookie (360-day expiry, F0-confirmed) was PURELY a login-form email-prefill convenience — it never extended the underlying session. The new system's `remember_me` flag **genuinely extends the issued token's session lifetime** (30 days vs 10 hours) — an explicit, deliberate IMPROVEMENT over legacy, not a parity claim. The 30-day figure is a fresh choice, NOT derived from legacy's 360-day cookie (deliberately avoiding a false connection).
+
+### Password Policy
+
+**`passwordPolicy`: `length(6) and digits(1) and lowerCase(1)`**
+
+This policy matches the **confirmed baseline from legacy's `models/User.cfc` regex** (F0-confirmed):
+- Minimum 6 characters
+- At least 1 digit
+- At least 1 lowercase letter
+- No uppercase or symbol requirement (matching legacy exactly)
+
+Per the F0 audit's explicit requirement: the new system's password policy must be **no weaker** than legacy's enforced floor.
 
 ## Import Mechanism
 
@@ -51,16 +88,21 @@ All confidential client secrets are set to **placeholder values**:
 - `audit-log-service`: `CHANGE_ME_audit_log_service_secret`
 - `api-gateway`: `CHANGE_ME_api_gateway_secret`
 - `userperm-admin-client`: `CHANGE_ME_userperm_admin_client_secret`
+- `userperm-direct-grant-client`: `CHANGE_ME_userperm_direct_grant_secret`
+- `userperm-direct-grant-remember-client`: `CHANGE_ME_userperm_direct_grant_remember_secret`
 
-**Important:** The 9 bearer-only service clients (all except `userperm-admin-client`) do NOT actively use their client secrets in the current architecture. Bearer-only clients validate incoming JWTs via the realm's JWKS endpoint and do not initiate OAuth flows that require a client secret. The placeholder values in the realm export are safe for bearer-only clients and can remain as-is for local development.
+**Important:** The 9 bearer-only service clients do NOT actively use their client secrets in the current architecture. Bearer-only clients validate incoming JWTs via the realm's JWKS endpoint and do not initiate OAuth flows that require a client secret. The placeholder values in the realm export are safe for bearer-only clients and can remain as-is for local development.
 
-**However**, the `userperm-admin-client` is a service-account client that DOES use its secret for client credentials flow to obtain an access token for Keycloak Admin API calls.
+**However**, three confidential clients **DO actively use their secrets**:
+- `userperm-admin-client` (service-account): client credentials flow for Keycloak Admin API access
+- `userperm-direct-grant-client` (direct-grant): resource owner password credentials flow for standard login
+- `userperm-direct-grant-remember-client` (direct-grant): resource owner password credentials flow for remember-me login
 
 **Before deploying to staging/production:**
 
-1. Generate a cryptographically secure secret for `userperm-admin-client` (e.g., `openssl rand -base64 32`)
-2. Update the client's secret via Keycloak Admin Console or Admin API
-3. Store the secret in Kubernetes `Secret` objects, NOT in this committed JSON file
+1. Generate cryptographically secure secrets for all three active clients (e.g., `openssl rand -base64 32`)
+2. Update the clients' secrets via Keycloak Admin Console or Admin API
+3. Store the secrets in Kubernetes `Secret` objects, NOT in this committed JSON file
 4. Bearer-only client secrets can remain as placeholders unless service-to-service calls using client credentials flow are added in future phases
 
 ### 2. Seed User Password
@@ -118,6 +160,6 @@ curl -s http://localhost:8080/realms/bookinghub/.well-known/openid-configuration
 
 ---
 
-**Last updated:** 2026-10-07  
-**Plan:** 02-09 (Keycloak realm export + RabbitMQ topology definitions)  
-**Phase:** 02-platform-foundation-infrastructure
+**Last updated:** 2026-10-08  
+**Plans:** 02-09 (initial realm), 03-03 (session timeouts, password policy, direct-grant clients)  
+**Phase:** 03-identity-access-control
