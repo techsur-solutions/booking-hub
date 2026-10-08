@@ -155,7 +155,10 @@ Plans:
   1. RSS2, iCal, JSON feeds and a digital-signage display-board view are all available, each showing only `status=approved` upcoming bookings — pending and denied bookings never appear in any format.
   2. All feed formats support optional per-location filtering, applied consistently; an unknown `location_id` filter returns an empty feed rather than an error.
   3. Every feed format is accessible with zero login, account, or token required, and access rules are identical across RSS2/iCal/JSON/display board — no format is gated while another isn't.
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 07-01-PLAN.md — Public (security-free) foundation: V2 idempotency-dedup migration, FeedBooking/ProcessedEvent entities + repositories, shared error contract, RabbitMQ retry/DLQ container factory (wave 1)
+- [ ] 07-02-PLAN.md — Projection consumers: feeds.booking.q + feeds.location.q listeners, idempotent lifecycle state machine (approved→visible, denied/deleted→removed), event-fed location_name denormalization (wave 2)
+- [ ] 07-03-PLAN.md — Four public GET endpoints (RSS2/iCal/JSON/display-board) over one shared approved-upcoming query with consistent optional location filtering and cache headers (wave 2)
 
 ### Phase 8: Regression Verification & Test Traceability
 **Goal**: Automated tests verify every legacy feature and business rule identified by F0, with a maintained traceability matrix, so "no functionality lost" is continuously and objectively verifiable — and a CI-enforced regression suite blocks any release that would silently regress parity.
@@ -181,7 +184,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Reference Data, Extensibility & Configuration | 0/6 | In progress | - |
 | 5. Core Booking & Approval Workflow | 0/TBD | Not started | - |
 | 6. Notifications & Audit Logging | 0/TBD | Not started | - |
-| 7. Public Feeds | 0/TBD | Not started | - |
+| 7. Public Feeds | 0/3 | Not started | - |
 | 8. Regression Verification & Test Traceability | 0/TBD | Not started | - |
 
 ---
