@@ -72,6 +72,7 @@ Plans:
 
 ### Phase 3: Identity & Access Control
 **Goal**: Users can authenticate and self-manage their accounts, and every protected action is gated by a confirmed permission, so access control behaves equivalently to the legacy system without anyone silently gaining or losing access during the re-platform.
+**Status**: In progress
 **Depends on**: Phase 2 (Keycloak realm, Gateway, users-permissions-service scaffold)
 **Requirements**: F6 (F6.1–F6.6), F7 (F7.1–F7.4)
 **Success Criteria** (what must be TRUE):
@@ -169,7 +170,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Legacy Functional Audit | 0/TBD | Complete | 2026-10-07 |
 | 2. Platform Foundation & Infrastructure | 12/12 | Complete | 2026-10-07 |
-| 3. Identity & Access Control | 0/5 | Planned | - |
+| 3. Identity & Access Control | 0/5 | In progress | - |
 | 4. Reference Data, Extensibility & Configuration | 0/6 | Planned | - |
 | 5. Core Booking & Approval Workflow | 0/TBD | Not started | - |
 | 6. Notifications & Audit Logging | 0/TBD | Not started | - |
