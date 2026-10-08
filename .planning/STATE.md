@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-10-08T15:21:54.123Z"
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-10-08T15:37:53.944Z"
 progress:
   total_phases: 8
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 34
-  completed_plans: 23
+  completed_plans: 24
   percent: 13
 ---
 
@@ -73,6 +73,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 03-identity-access-control P02 | 11 min | 3 tasks | 12 files |
 | Phase 03-identity-access-control P03 | 8min | 3 tasks | 11 files |
 | Phase 03-identity-access-control P04 | 8min | 2 tasks | 16 files |
+| Phase 03-identity-access-control P05 | 10min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,8 @@ Recent decisions affecting current work:
 - [Phase 03-03]: F0 Open Question #20 closed: password-reset-request returns identical 202 response regardless of email existence
 - [Phase 03-04]: UserSelfUpdateRequest type-level guard: NO password/role fields (compile-time, not runtime strip)
 - [Phase 03-04]: createUser generates random initial password with temporary=true (improvement over legacy's permanent password)
+- [Phase 03-05]: F0 Open Question #18 resolved: no in-memory permission cache (changes take effect on next JWT issue, improvement over legacy's restart-required behavior)
+- [Phase 03-05]: TechArch §5 choice: scheduled polling-publisher bean (not Debezium CDC) for outbox relay - simpler, zero new infra, sets precedent
 
 ### Pending Todos
 
@@ -127,6 +130,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-08T15:21:54.122Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-10-08T15:37:53.943Z
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None
