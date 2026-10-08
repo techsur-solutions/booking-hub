@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-10-08T15:20:58.234Z"
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-10-08T15:21:54.123Z"
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 34
-  completed_plans: 22
+  completed_plans: 23
   percent: 13
 ---
 
@@ -72,6 +72,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 02-platform-foundation-infrastructure P13 | 5min | 3 tasks | 2 files |
 | Phase 03-identity-access-control P02 | 11 min | 3 tasks | 12 files |
 | Phase 03-identity-access-control P03 | 8min | 3 tasks | 11 files |
+| Phase 03-identity-access-control P04 | 8min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,8 @@ Recent decisions affecting current work:
 - [Phase 03-03]: F0 Open Question #17 resolved: session timeouts set to 30 min idle / 10 hours max (fresh decision, not legacy parity)
 - [Phase 03-03]: F0 Open Question #19 closed: password reset token expiry/used status re-validated at submit time
 - [Phase 03-03]: F0 Open Question #20 closed: password-reset-request returns identical 202 response regardless of email existence
+- [Phase 03-04]: UserSelfUpdateRequest type-level guard: NO password/role fields (compile-time, not runtime strip)
+- [Phase 03-04]: createUser generates random initial password with temporary=true (improvement over legacy's permanent password)
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-08T15:20:58.232Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-10-08T15:21:54.122Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
