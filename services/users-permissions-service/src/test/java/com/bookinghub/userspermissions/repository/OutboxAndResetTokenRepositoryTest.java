@@ -88,14 +88,15 @@ class OutboxAndResetTokenRepositoryTest {
     
     @Test
     void shouldEnforceCaseInsensitiveEmailUniqueness() {
-        // Create first user with lowercase email
+        // Create first user with lowercase email (use unique email to avoid collision with other tests)
         UUID userId1 = UUID.randomUUID();
-        User user1 = new User(userId1, "unique@example.com", "User One");
+        String uniqueEmail = "case-test-" + System.currentTimeMillis() + "@example.com";
+        User user1 = new User(userId1, uniqueEmail, "User One");
         userRepository.save(user1);
         
         // Attempt to create second user with same email (different case)
         UUID userId2 = UUID.randomUUID();
-        User user2 = new User(userId2, "UNIQUE@example.com", "User Two");
+        User user2 = new User(userId2, uniqueEmail.toUpperCase(), "User Two");
         
         // Should throw DataIntegrityViolationException due to uq_users_email_lower index
         assertThatThrownBy(() -> {
