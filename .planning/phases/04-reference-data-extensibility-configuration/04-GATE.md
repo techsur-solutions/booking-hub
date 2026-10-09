@@ -3,9 +3,10 @@ phase: 04
 gate_status: passed
 build_command: "(cd services/locations-resources-service && mvn -q compile -DskipTests) && (cd services/custom-field-service && mvn -q compile -DskipTests) && (cd services/settings-service && mvn -q compile -DskipTests)"
 test_command: "(cd services/locations-resources-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/custom-field-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/settings-service && mvn -q test -Dtest='!ApplicationContextBootTest')"
-last_updated: 2026-10-09T02:25:27Z
+last_updated: 2026-10-09T02:30:25Z
 tests_disabled_during_fixes: none
 shadowed_sources: 0
+review_blockers_open: 0
 waves:
   - wave: 1
     build: pass
