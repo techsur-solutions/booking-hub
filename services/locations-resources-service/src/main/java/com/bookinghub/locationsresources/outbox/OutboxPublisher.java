@@ -79,13 +79,14 @@ public class OutboxPublisher {
                 event.setStatus("published");
                 event.setPublishedAt(Instant.now());
 
+                outboxEventRepository.save(event);
+
             } catch (AmqpException ex) {
                 // RabbitMQ unreachable: increment attempt count, leave status
                 // pending. Next poll will retry — delays event, never loses it.
                 event.incrementAttemptCount();
+                outboxEventRepository.save(event);
             }
-
-            outboxEventRepository.save(event);
         }
     }
 }

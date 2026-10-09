@@ -68,12 +68,13 @@ public class OutboxPublisher {
                 event.setStatus("published");
                 event.setPublishedAt(Instant.now());
 
+                outboxEventRepository.save(event);
+
             } catch (AmqpException ex) {
                 event.incrementAttemptCount();
                 // status stays "pending" — next poll retries
+                outboxEventRepository.save(event);
             }
-
-            outboxEventRepository.save(event);
         }
     }
 }
