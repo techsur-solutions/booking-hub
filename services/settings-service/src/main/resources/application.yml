@@ -15,6 +15,11 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
@@ -26,6 +31,10 @@ spring:
         # when event-driven message processing is added. Enabling without listener beans
         # will cause startup failure with "No bean of type RabbitListenerContainerFactory"
         auto-startup: false
+
+outbox:
+  poll-interval-ms: 2000
+  batch-size: 100
 
 management:
   endpoints:

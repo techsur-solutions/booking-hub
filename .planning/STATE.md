@@ -3,15 +3,15 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 6
-status: planning
-last_updated: "2026-10-08T18:24:39.631Z"
+status: unknown
+stopped_at: Completed 04-06-PLAN.md
+last_updated: "2026-10-09T02:17:43.081Z"
 progress:
   total_phases: 8
-  completed_phases: 3
-  total_plans: 38
-  completed_plans: 24
-  percent: 38
-last_activity: "2026-10-08 — Phase 3 complete"
+  completed_phases: 4
+  total_plans: 41
+  completed_plans: 30
+  percent: 13
 ---
 
 # Project State
@@ -74,6 +74,12 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 03-identity-access-control P03 | 8min | 3 tasks | 11 files |
 | Phase 03-identity-access-control P04 | 8min | 2 tasks | 16 files |
 | Phase 03-identity-access-control P05 | 10min | 3 tasks | 13 files |
+| Phase 04-reference-data-extensibility-configuration P03 | 55min | 3 tasks | 26 files |
+| Phase 04-reference-data-extensibility-configuration P05 | 35min | 2 tasks | 20 files |
+| Phase 04-reference-data-extensibility-configuration P01 | 47min | 3 tasks | 20 files |
+| Phase 04-reference-data-extensibility-configuration P04 | 95min | 3 tasks | 17 files |
+| Phase 04-reference-data-extensibility-configuration P02 | 95min | 3 tasks | 25 files |
+| Phase 04-reference-data-extensibility-configuration P06 | 100min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -117,6 +123,24 @@ Recent decisions affecting current work:
 - [Phase 03-04]: createUser generates random initial password with temporary=true (improvement over legacy's permanent password)
 - [Phase 03-05]: F0 Open Question #18 resolved: no in-memory permission cache (changes take effect on next JWT issue, improvement over legacy's restart-required behavior)
 - [Phase 03-05]: TechArch §5 choice: scheduled polling-publisher bean (not Debezium CDC) for outbox relay - simpler, zero new infra, sets precedent
+- [Phase 04-03]: F0-driven schema completion: custom_fields.required column (TechArch's V1 DDL omitted it entirely) added additively in V2 - storage/retrieval only, enforcement deferred to Phase 5's booking-service
+- [Phase 04-03]: custom-field-service Tier-2 role requirement is an EXACT match (not merely not-weaker) to Gateway's Tier-1 for the entire /custom-fields/**+/field-templates/** route group - no read/write split, unlike locations-resources-service
+- [Phase 04-03]: CUSTOM_FIELD_VALUE_INVALID error code deliberately NOT implemented in custom-field-service - validating custom_field_values[] is Phase 5 booking-service scope
+- [Phase 04-05]: Settings singleton entity (no @GeneratedValue) enforces F10.3 at the code layer alongside the existing DB CHECK constraint
+- [Phase 04-05]: SETTINGS_UNAVAILABLE (503) deliberately not implemented in settings-service - it is the calling service's (Phase 5 booking-service) error when this service is unreachable
+- [Phase 04-05]: pgcrypto extension added in V2 migration (absent from V1) to support outbox table's gen_random_uuid() defaults
+- [Phase 04-01]: F0-driven schema completion: locations.colour/description and resources.type/description/is_unique/restrict_locations added additively in V2, closing open-questions.md #11/#12
+- [Phase 04-01]: Tier-2 deliberately stricter than Tier-1 for GET /locations,/resources: Gateway requires authenticated-only, this service's controllers (plan 04-02) require role_calendar_viewer - proven never-weaker by Tier1Tier2ConsistencyTest
+- [Phase 04-01]: LOCATION_IN_USE/RESOURCE_IN_USE (409) deliberately NOT implemented - unreachable under this phase's never-block soft-delete policy
+- [Phase 04-04]: F0-confirmed 5-value field_type enum (textfield/select/textarea/radio/checkbox) enforced via DTO @Pattern, correcting TechArch's pre-F0 4-value placeholder guess
+- [Phase 04-04]: options[] required for all 3 choice-based types (select/radio/checkbox), not just select - deliberate improvement over legacy's confirmed zero-validation
+- [Phase 04-04]: Field Template context_id references a SPECIFIC Location id (null=global) - more granular than legacy's all-locations-blanket scoping
+- [Phase 04-04]: [Rule 1 - Bug] Added explicit JwtAuthenticationConverter mapping realm_access.roles to ROLE_-prefixed authorities - Spring Security's default only reads flat scope/scp claims, so every @PreAuthorize check would have silently denied all real Keycloak-issued tokens (same root cause independently found/fixed in parallel plan 04-06)
+- [Phase 04-02]: getById() on Location/Resource deliberately uses plain findById (not findByIdAndDeletedAtIsNull), so soft-deleted rows return 200 with last-known values instead of 404 - satisfies Success Criterion 2's cross-service lookup requirement for Phase 5
+- [Phase 04-02]: Critical JWT role-converter bugfix: SecurityConfig lacked a JwtAuthenticationConverter mapping realm_access.roles to ROLE_-prefixed authorities - every @PreAuthorize(hasRole(...)) check was unreachable by any real caller until fixed (same bug independently found in settings-service/custom-field-service)
+- [Phase 04-06]: Fixed sentinel UUID (00000000-0000-0000-0000-000000000001) used as outbox aggregate_id for the Settings singleton - its own PK is the integer 1 but the outbox schema needs a UUID-shaped value for cross-service consistency
+- [Phase 04-06]: Rule 1 bugfix: explicit JwtAuthenticationConverter wiring realm_access.roles to ROLE_-prefixed authorities was required for @PreAuthorize to function at all against a real Keycloak JWT - without it every hasRole() check silently denied all callers
+- [Phase 04-06]: No in-memory settings cache at all - getCurrent() reads the DB directly on every call, closing F0's confirmed legacy restart-required caching quirk
 
 ### Pending Todos
 
@@ -130,6 +154,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-08T15:37:53.943Z
-Stopped at: Completed 03-05-PLAN.md
+Last session: 2026-10-09T02:17:43.007Z
+Stopped at: Completed 04-06-PLAN.md
 Resume file: None
