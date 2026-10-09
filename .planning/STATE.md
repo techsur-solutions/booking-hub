@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-10-09T19:19:42.240Z"
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-10-09T19:36:42.535Z"
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 46
-  completed_plans: 33
+  completed_plans: 34
   percent: 13
 ---
 
@@ -83,6 +83,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 05-core-booking-approval-workflow P01 | 47min | 3 tasks | 24 files |
 | Phase 05-core-booking-approval-workflow P02 | 18min | 3 tasks | 27 files |
 | Phase 05-core-booking-approval-workflow P03 | 23 min | 3 tasks | 8 files |
+| Phase 05-core-booking-approval-workflow P04 | 13min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -151,6 +152,9 @@ Recent decisions affecting current work:
 - [Phase 05-02]: ConflictDetectionService has ZERO cross-service HTTP calls — is_unique filtering is caller's pre-processing responsibility; 13 ApiException subclasses extracted to individual public files for cross-package throwability
 - [Phase 05-core-booking-approval-workflow]: Conflict-enforcement-policy implements ROADMAP's permission-conditional split (hard-block for non-approver, soft-warning for role_booking_approver) through single applyConflictPolicy() — DIVERGES from TechArch §1.5's uniform hard-block; TechArch §1.5 needs documentation correction
 - [Phase 05-core-booking-approval-workflow]: Recurring series bypass-approve applies ONLY to occurrence #1 (F0 confirmed legacy parity); no scope/EditScope field in any DTO (F0 confirmed no series-scoped edit concept); clone returns non-persisted draft with null id per F0 confirmed legacy behavior
+- [Phase 05-04]: calendar/day/list are query-parameter variants of ONE GET /bookings endpoint; status and q are named additions beyond TechArch §4.2's literal 4-param table
+- [Phase 05-04]: getById uses plain findById (not findByIdAndDeletedAtIsNull) for last-known-values policy, mirroring Phase 4's Locations/Resources precedent for cross-system consistency
+- [Phase 05-04]: BookingApprovalController has NO @PreAuthorize — manual hasRole check produces APPROVAL_FORBIDDEN (FRD-named) not generic BOOKING_FORBIDDEN, matching Phase 3 PermissionController precedent
 
 ### Pending Todos
 
@@ -164,6 +168,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T19:19:42.238Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-10-09T19:36:42.534Z
+Stopped at: Completed 05-04-PLAN.md
 Resume file: None
