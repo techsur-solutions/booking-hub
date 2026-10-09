@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-10-09T00:02:22.656Z"
+stopped_at: Completed 04-05-PLAN.md
+last_updated: "2026-10-09T00:03:32.663Z"
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 41
-  completed_plans: 25
+  completed_plans: 26
   percent: 13
 ---
 
@@ -75,6 +75,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 03-identity-access-control P04 | 8min | 2 tasks | 16 files |
 | Phase 03-identity-access-control P05 | 10min | 3 tasks | 13 files |
 | Phase 04-reference-data-extensibility-configuration P03 | 55min | 3 tasks | 26 files |
+| Phase 04-reference-data-extensibility-configuration P05 | 35min | 2 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -121,6 +122,9 @@ Recent decisions affecting current work:
 - [Phase 04-03]: F0-driven schema completion: custom_fields.required column (TechArch's V1 DDL omitted it entirely) added additively in V2 - storage/retrieval only, enforcement deferred to Phase 5's booking-service
 - [Phase 04-03]: custom-field-service Tier-2 role requirement is an EXACT match (not merely not-weaker) to Gateway's Tier-1 for the entire /custom-fields/**+/field-templates/** route group - no read/write split, unlike locations-resources-service
 - [Phase 04-03]: CUSTOM_FIELD_VALUE_INVALID error code deliberately NOT implemented in custom-field-service - validating custom_field_values[] is Phase 5 booking-service scope
+- [Phase 04-05]: Settings singleton entity (no @GeneratedValue) enforces F10.3 at the code layer alongside the existing DB CHECK constraint
+- [Phase 04-05]: SETTINGS_UNAVAILABLE (503) deliberately not implemented in settings-service - it is the calling service's (Phase 5 booking-service) error when this service is unreachable
+- [Phase 04-05]: pgcrypto extension added in V2 migration (absent from V1) to support outbox table's gen_random_uuid() defaults
 
 ### Pending Todos
 
@@ -134,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T00:02:22.649Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-10-09T00:03:32.655Z
+Stopped at: Completed 04-05-PLAN.md
 Resume file: None
