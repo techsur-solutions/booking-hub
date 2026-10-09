@@ -121,6 +121,10 @@ public class Resource {
         return updatedAt;
     }
 
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public Instant getDeletedAt() {
         return deletedAt;
     }

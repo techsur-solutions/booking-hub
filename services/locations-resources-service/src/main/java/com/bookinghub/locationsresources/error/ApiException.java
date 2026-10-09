@@ -36,48 +36,13 @@ public abstract class ApiException extends RuntimeException {
     }
 }
 
-/**
- * Location name is required but was missing/blank — 400 BAD REQUEST
- */
-class LocationNameRequiredException extends ApiException {
-    public LocationNameRequiredException(String message) {
-        super(HttpStatus.BAD_REQUEST, "LOCATION_NAME_REQUIRED", message);
-    }
-}
-
-/**
- * Resource name is required but was missing/blank — 400 BAD REQUEST
- */
-class ResourceNameRequiredException extends ApiException {
-    public ResourceNameRequiredException(String message) {
-        super(HttpStatus.BAD_REQUEST, "RESOURCE_NAME_REQUIRED", message);
-    }
-}
-
-/**
- * Authenticated caller lacks the required role for a Location/Resource
- * write operation — 403 FORBIDDEN
- */
-class LocationResourceForbiddenException extends ApiException {
-    public LocationResourceForbiddenException(String message) {
-        super(HttpStatus.FORBIDDEN, "LOCATION_RESOURCE_FORBIDDEN", message);
-    }
-}
-
-/**
- * Requested Location does not exist (or is soft-deleted) — 404 NOT FOUND
- */
-class LocationNotFoundException extends ApiException {
-    public LocationNotFoundException(String message) {
-        super(HttpStatus.NOT_FOUND, "LOCATION_NOT_FOUND", message);
-    }
-}
-
-/**
- * Requested Resource does not exist (or is soft-deleted) — 404 NOT FOUND
- */
-class ResourceNotFoundException extends ApiException {
-    public ResourceNotFoundException(String message) {
-        super(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", message);
-    }
-}
+// NOTE: the 5 concrete ApiException subclasses that used to live inline in this
+// file (package-private) were split into their own top-level files
+// (LocationNameRequiredException.java, ResourceNameRequiredException.java,
+// LocationResourceForbiddenException.java, LocationNotFoundException.java,
+// ResourceNotFoundException.java) as `public class` — plan 04-02's
+// LocationService/ResourceService/LocationController/ResourceController live in
+// different packages (service/controller) and must be able to reference these
+// exception types, which a package-private class in the `error` package cannot
+// provide. Java also permits only one public top-level class per file, so they
+// could not become `public` in place here. [Rule 3 - Blocking]

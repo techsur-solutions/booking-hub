@@ -136,6 +136,10 @@ public class Location {
         return updatedAt;
     }
 
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public Instant getDeletedAt() {
         return deletedAt;
     }
