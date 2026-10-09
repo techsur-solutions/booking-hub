@@ -131,6 +131,8 @@ public class SettingsService {
                 ? request.calendarSlotSize()
                 : settings.getCalendarSlotSize();
 
+        // Defense-in-depth validation: redundant with DB CHECK constraint (calendar_slot_size > 0)
+        // but catches constraint violations early with clearer error message
         if (resultingSlotSize <= 0) {
             throw new SettingsInvalidSlotSizeException(
                     "calendar_slot_size must be positive (got " + resultingSlotSize + ")");
