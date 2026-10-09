@@ -3,7 +3,7 @@ phase: 04
 gate_status: passed
 build_command: "(cd services/locations-resources-service && mvn -q compile -DskipTests) && (cd services/custom-field-service && mvn -q compile -DskipTests) && (cd services/settings-service && mvn -q compile -DskipTests)"
 test_command: "(cd services/locations-resources-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/custom-field-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/settings-service && mvn -q test -Dtest='!ApplicationContextBootTest')"
-last_updated: 2026-10-09T00:22:36Z
+last_updated: 2026-10-09T02:25:27Z
 tests_disabled_during_fixes: none
 shadowed_sources: 0
 waves:
@@ -11,6 +11,10 @@ waves:
     build: pass
     tests: pass
     fix_attempts: 1
+  - wave: 2
+    build: pass
+    tests: pass
+    fix_attempts: 0
 ---
 
 ## Wave 1
@@ -858,5 +862,615 @@ Hibernate: insert into settings (approve_booking,calendar_max_time,calendar_min_
 2026-10-09T00:22:04.292Z  INFO 18497 --- [settings-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 44565 (http) with context path '/'
 2026-10-09T00:22:04.302Z  INFO 18497 --- [settings-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : Started Tier2FailClosedTest.InsufficientRoleTest in 5.503 seconds (process running for 42.072)
 TEST_EXIT=0
+```
+
+## Wave 2
+
+- Build: `(cd services/locations-resources-service && mvn -q compile -DskipTests) && (cd services/custom-field-service && mvn -q compile -DskipTests) && (cd services/settings-service && mvn -q compile -DskipTests)` → pass
+- Tests: `(cd services/locations-resources-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/custom-field-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/settings-service && mvn -q test -Dtest='!ApplicationContextBootTest')` → pass
+- Fix attempts: 0/3 — 49/49 tests pass across all 3 services (18+16+15), 0 failures, 0 errors, 0 skips. ApplicationContextBootTest excluded (pre-existing Testcontainers/sandbox-Docker-API incompatibility, same as wave 1). All 3 plans independently discovered and fixed the same critical bug: missing JwtAuthenticationConverter meant @PreAuthorize never read Keycloak's realm_access.roles, silently denying all real callers including admins — fixed in commits 9db4b0f/4185596/e5e6e68.
+
+### Gate output
+
+```
+[gate] wave 2 build: (cd services/locations-resources-service && mvn -q compile -DskipTests) && (cd services/custom-field-service && mvn -q compile -DskipTests) && (cd services/settings-service && mvn -q compile -DskipTests)
+[gate] wave 2 tests: (cd services/locations-resources-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/custom-field-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/settings-service && mvn -q test -Dtest='!ApplicationContextBootTest')
+02:19:13.882 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.bookinghub.locationsresources.repository.SchemaCompletionTest]: SchemaCompletionTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+02:19:15.302 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.bookinghub.locationsresources.LocationsResourcesServiceApplication for test class com.bookinghub.locationsresources.repository.SchemaCompletionTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:19:17.112Z  INFO 23390 --- [locations-resources-service] [           main] c.b.l.repository.SchemaCompletionTest    : Starting SchemaCompletionTest using Java 21.0.12.1 with PID 23390 (started by root in /home/daytona/project/services/locations-resources-service)
+2026-10-09T02:19:17.116Z  INFO 23390 --- [locations-resources-service] [           main] c.b.l.repository.SchemaCompletionTest    : The following 1 profile is active: "test"
+2026-10-09T02:19:18.450Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:19:18.622Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 164 ms. Found 3 JPA repository interfaces.
+2026-10-09T02:19:25.825Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-09T02:19:27.153Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@12f279b5
+2026-10-09T02:19:27.220Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-09T02:19:27.444Z  INFO 23390 --- [locations-resources-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/locres_db_test (PostgreSQL 16.15)
+2026-10-09T02:19:28.122Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.474s)
+2026-10-09T02:19:28.236Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:19:28.243Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:19:28.823Z  INFO 23390 --- [locations-resources-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:19:29.343Z  INFO 23390 --- [locations-resources-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-10-09T02:19:29.721Z  INFO 23390 --- [locations-resources-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:19:30.869Z  INFO 23390 --- [locations-resources-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:19:30.942Z  WARN 23390 --- [locations-resources-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-09T02:19:32.055Z  INFO 23390 --- [locations-resources-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:19:32.114Z  INFO 23390 --- [locations-resources-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:19:32.744Z  INFO 23390 --- [locations-resources-service] [           main] c.b.l.repository.SchemaCompletionTest    : Started SchemaCompletionTest in 16.745 seconds (process running for 24.479)
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.19/byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Hibernate: 
+    insert 
+    into
+        resources
+        (created_at, deleted_at, description, is_unique, name, restrict_locations, type, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        locations
+        (building, colour, created_at, css_class, deleted_at, description, layout, name, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-09T02:19:33.829Z  INFO 23390 --- [locations-resources-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.locationsresources.security.Tier2FailClosedTest$MissingTokenTest]: MissingTokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:19:33.920Z  INFO 23390 --- [locations-resources-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.locationsresources.LocationsResourcesServiceApplication for test class com.bookinghub.locationsresources.security.Tier2FailClosedTest$MissingTokenTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:19:36.242Z  INFO 23390 --- [locations-resources-service] [           main] l.s.Tier2FailClosedTest$MissingTokenTest : Starting Tier2FailClosedTest.MissingTokenTest using Java 21.0.12.1 with PID 23390 (started by root in /home/daytona/project/services/locations-resources-service)
+2026-10-09T02:19:36.242Z  INFO 23390 --- [locations-resources-service] [           main] l.s.Tier2FailClosedTest$MissingTokenTest : The following 1 profile is active: "test"
+2026-10-09T02:19:40.323Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:19:40.345Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 21 ms. Found 3 JPA repository interfaces.
+2026-10-09T02:19:42.086Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:19:42.180Z  INFO 23390 --- [locations-resources-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:19:42.181Z  INFO 23390 --- [locations-resources-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:19:42.371Z  INFO 23390 --- [locations-resources-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:19:42.372Z  INFO 23390 --- [locations-resources-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 6128 ms
+2026-10-09T02:19:42.860Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-10-09T02:19:42.881Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@7ac47e87
+2026-10-09T02:19:42.882Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-10-09T02:19:42.884Z  INFO 23390 --- [locations-resources-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/locres_db_test (PostgreSQL 16.15)
+2026-10-09T02:19:42.899Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.006s)
+2026-10-09T02:19:42.946Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:19:42.947Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:19:42.999Z  INFO 23390 --- [locations-resources-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:19:43.002Z  INFO 23390 --- [locations-resources-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:19:43.029Z  INFO 23390 --- [locations-resources-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:19:43.034Z  WARN 23390 --- [locations-resources-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-09T02:19:43.183Z  INFO 23390 --- [locations-resources-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:19:43.225Z  INFO 23390 --- [locations-resources-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:19:44.154Z  WARN 23390 --- [locations-resources-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-09T02:19:46.233Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:19:52.492Z  INFO 23390 --- [locations-resources-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:19:52.492Z  INFO 23390 --- [locations-resources-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:19:52.497Z  INFO 23390 --- [locations-resources-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 4 ms
+2026-10-09T02:19:53.316Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 44441 (http) with context path '/'
+2026-10-09T02:19:53.396Z  INFO 23390 --- [locations-resources-service] [           main] l.s.Tier2FailClosedTest$MissingTokenTest : Started Tier2FailClosedTest.MissingTokenTest in 17.347 seconds (process running for 45.075)
+2026-10-09T02:19:54.123Z  INFO 23390 --- [locations-resources-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.locationsresources.security.Tier2FailClosedTest$InsufficientRoleTest]: InsufficientRoleTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:19:54.127Z  INFO 23390 --- [locations-resources-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.locationsresources.LocationsResourcesServiceApplication for test class com.bookinghub.locationsresources.security.Tier2FailClosedTest$InsufficientRoleTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:19:54.302Z  INFO 23390 --- [locations-resources-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : Starting Tier2FailClosedTest.InsufficientRoleTest using Java 21.0.12.1 with PID 23390 (started by root in /home/daytona/project/services/locations-resources-service)
+2026-10-09T02:19:54.302Z  INFO 23390 --- [locations-resources-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : The following 1 profile is active: "test"
+2026-10-09T02:19:54.843Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:19:54.853Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 9 ms. Found 3 JPA repository interfaces.
+2026-10-09T02:19:55.037Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:19:55.038Z  INFO 23390 --- [locations-resources-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:19:55.038Z  INFO 23390 --- [locations-resources-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:19:55.061Z  INFO 23390 --- [locations-resources-service] [           main] o.a.c.c.C.[Tomcat-1].[localhost].[/]     : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:19:55.061Z  INFO 23390 --- [locations-resources-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 755 ms
+2026-10-09T02:19:55.405Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-10-09T02:19:55.497Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@24270e65
+2026-10-09T02:19:55.498Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-10-09T02:19:55.502Z  INFO 23390 --- [locations-resources-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/locres_db_test (PostgreSQL 16.15)
+2026-10-09T02:19:55.591Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.012s)
+2026-10-09T02:19:55.687Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:19:55.690Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:19:55.732Z  INFO 23390 --- [locations-resources-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:19:55.734Z  INFO 23390 --- [locations-resources-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:19:55.778Z  INFO 23390 --- [locations-resources-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:19:55.784Z  WARN 23390 --- [locations-resources-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-09T02:19:55.951Z  INFO 23390 --- [locations-resources-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:19:56.003Z  INFO 23390 --- [locations-resources-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:19:56.750Z  WARN 23390 --- [locations-resources-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-09T02:19:57.553Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:19:58.581Z  INFO 23390 --- [locations-resources-service] [           main] o.a.c.c.C.[Tomcat-1].[localhost].[/]     : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:19:58.582Z  INFO 23390 --- [locations-resources-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:19:58.586Z  INFO 23390 --- [locations-resources-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 3 ms
+2026-10-09T02:19:58.778Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 45447 (http) with context path '/'
+2026-10-09T02:19:58.791Z  INFO 23390 --- [locations-resources-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : Started Tier2FailClosedTest.InsufficientRoleTest in 4.577 seconds (process running for 50.47)
+2026-10-09T02:19:59.592Z  INFO 23390 --- [locations-resources-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.locationsresources.outbox.OutboxPublisherTest]: OutboxPublisherTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:19:59.678Z  INFO 23390 --- [locations-resources-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.locationsresources.LocationsResourcesServiceApplication for test class com.bookinghub.locationsresources.outbox.OutboxPublisherTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:19:59.980Z  INFO 23390 --- [locations-resources-service] [           main] c.b.l.outbox.OutboxPublisherTest         : Starting OutboxPublisherTest using Java 21.0.12.1 with PID 23390 (started by root in /home/daytona/project/services/locations-resources-service)
+2026-10-09T02:19:59.980Z  INFO 23390 --- [locations-resources-service] [           main] c.b.l.outbox.OutboxPublisherTest         : The following 1 profile is active: "test"
+2026-10-09T02:20:02.485Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:20:02.585Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 99 ms. Found 3 JPA repository interfaces.
+2026-10-09T02:20:03.900Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+2026-10-09T02:20:04.000Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection org.postgresql.jdbc.PgConnection@5a6a293d
+2026-10-09T02:20:04.001Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+2026-10-09T02:20:04.005Z  INFO 23390 --- [locations-resources-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/locres_db_test (PostgreSQL 16.15)
+2026-10-09T02:20:04.101Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.014s)
+2026-10-09T02:20:04.205Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:20:04.206Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:20:04.402Z  INFO 23390 --- [locations-resources-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:20:04.406Z  INFO 23390 --- [locations-resources-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:20:04.418Z  INFO 23390 --- [locations-resources-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:20:04.423Z  WARN 23390 --- [locations-resources-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-09T02:20:04.600Z  INFO 23390 --- [locations-resources-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:20:04.626Z  INFO 23390 --- [locations-resources-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:20:05.136Z  WARN 23390 --- [locations-resources-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-09T02:20:05.424Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:20:06.412Z  INFO 23390 --- [locations-resources-service] [           main] c.b.l.outbox.OutboxPublisherTest         : Started OutboxPublisherTest in 6.711 seconds (process running for 58.091)
+2026-10-09T02:20:07.091Z  INFO 23390 --- [locations-resources-service] [           main] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: [localhost:5672]
+2026-10-09T02:20:07.114Z  INFO 23390 --- [locations-resources-service] [           main] o.s.a.r.c.CachingConnectionFactory       : Created new connection: rabbitConnectionFactory#458b6dea:0/SimpleConnection@6f413dc7 [delegate=amqp://guest@127.0.0.1:5672/, localPort=39426]
+2026-10-09T02:20:07.779Z  INFO 23390 --- [locations-resources-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.locationsresources.controller.LocationControllerIntegrationTest]: LocationControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:20:07.792Z  INFO 23390 --- [locations-resources-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.locationsresources.LocationsResourcesServiceApplication for test class com.bookinghub.locationsresources.controller.LocationControllerIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:20:07.991Z  INFO 23390 --- [locations-resources-service] [           main] .b.l.c.LocationControllerIntegrationTest : Starting LocationControllerIntegrationTest using Java 21.0.12.1 with PID 23390 (started by root in /home/daytona/project/services/locations-resources-service)
+2026-10-09T02:20:07.991Z  INFO 23390 --- [locations-resources-service] [           main] .b.l.c.LocationControllerIntegrationTest : The following 1 profile is active: "test"
+2026-10-09T02:20:08.671Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:20:08.686Z  INFO 23390 --- [locations-resources-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 14 ms. Found 3 JPA repository interfaces.
+2026-10-09T02:20:08.997Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:20:08.999Z  INFO 23390 --- [locations-resources-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:20:08.999Z  INFO 23390 --- [locations-resources-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:20:09.015Z  INFO 23390 --- [locations-resources-service] [           main] o.a.c.c.C.[Tomcat-2].[localhost].[/]     : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:20:09.015Z  INFO 23390 --- [locations-resources-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1022 ms
+2026-10-09T02:20:09.154Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Starting...
+2026-10-09T02:20:09.183Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-5 - Added connection org.postgresql.jdbc.PgConnection@578d4551
+2026-10-09T02:20:09.183Z  INFO 23390 --- [locations-resources-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Start completed.
+2026-10-09T02:20:09.185Z  INFO 23390 --- [locations-resources-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/locres_db_test (PostgreSQL 16.15)
+2026-10-09T02:20:09.197Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.005s)
+2026-10-09T02:20:09.218Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:20:09.219Z  INFO 23390 --- [locations-resources-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:20:09.245Z  INFO 23390 --- [locations-resources-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:20:09.247Z  INFO 23390 --- [locations-resources-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:20:09.255Z  INFO 23390 --- [locations-resources-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:20:09.260Z  WARN 23390 --- [locations-resources-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-09T02:20:09.403Z  INFO 23390 --- [locations-resources-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:20:09.419Z  INFO 23390 --- [locations-resources-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:20:10.099Z  WARN 23390 --- [locations-resources-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-09T02:20:10.898Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:20:12.492Z  INFO 23390 --- [locations-resources-service] [           main] o.a.c.c.C.[Tomcat-2].[localhost].[/]     : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:20:12.492Z  INFO 23390 --- [locations-resources-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:20:12.494Z  INFO 23390 --- [locations-resources-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-10-09T02:20:12.697Z  INFO 23390 --- [locations-resources-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 35761 (http) with context path '/'
+2026-10-09T02:20:12.721Z  INFO 23390 --- [locations-resources-service] [           main] .b.l.c.LocationControllerIntegrationTest : Started LocationControllerIntegrationTest in 4.921 seconds (process running for 64.4)
+2026-10-09T02:20:14.499Z  INFO 23390 --- [locations-resources-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.locationsresources.controller.ResourceControllerIntegrationTest]: ResourceControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:20:14.503Z  INFO 23390 --- [locations-resources-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.locationsresources.LocationsResourcesServiceApplication for test class com.bookinghub.locationsresources.controller.ResourceControllerIntegrationTest
+02:20:43.190 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.bookinghub.customfield.repository.DomainRepositoryTest]: DomainRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+02:20:44.003 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.bookinghub.customfield.CustomFieldServiceApplication for test class com.bookinghub.customfield.repository.DomainRepositoryTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:20:44.905Z  INFO 26760 --- [custom-field-service] [           main] c.b.c.repository.DomainRepositoryTest    : Starting DomainRepositoryTest using Java 21.0.12.1 with PID 26760 (started by root in /home/daytona/project/services/custom-field-service)
+2026-10-09T02:20:44.907Z  INFO 26760 --- [custom-field-service] [           main] c.b.c.repository.DomainRepositoryTest    : The following 1 profile is active: "test"
+2026-10-09T02:20:46.286Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:20:46.487Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 182 ms. Found 4 JPA repository interfaces.
+2026-10-09T02:20:47.988Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-09T02:20:48.930Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@536b71b4
+2026-10-09T02:20:48.978Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-09T02:20:49.200Z  INFO 26760 --- [custom-field-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/customfld_db_test (PostgreSQL 16.15)
+2026-10-09T02:20:49.983Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.483s)
+2026-10-09T02:20:50.194Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:20:50.201Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:20:50.789Z  INFO 26760 --- [custom-field-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:20:51.385Z  INFO 26760 --- [custom-field-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-10-09T02:20:51.713Z  INFO 26760 --- [custom-field-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:20:53.594Z  INFO 26760 --- [custom-field-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:20:57.256Z  INFO 26760 --- [custom-field-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:20:57.390Z  INFO 26760 --- [custom-field-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:20:58.080Z  INFO 26760 --- [custom-field-service] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-09T02:20:58.794Z  INFO 26760 --- [custom-field-service] [           main] c.b.c.repository.DomainRepositoryTest    : Started DomainRepositoryTest in 14.662 seconds (process running for 23.9)
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.19/byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+Hibernate: insert into custom_fields (created_at,deleted_at,field_type,label,options,required,updated_at,id) values (?,?,?,?,?,?,?,?)
+Hibernate: select cf1_0.id,cf1_0.created_at,cf1_0.deleted_at,cf1_0.field_type,cf1_0.label,cf1_0.options,cf1_0.required,cf1_0.updated_at from custom_fields cf1_0 where cf1_0.id=? and cf1_0.deleted_at is null
+Hibernate: insert into custom_field_templates (context_id,created_at,name,updated_at,id) values (?,?,?,?,?)
+Hibernate: insert into custom_field_templates (context_id,created_at,name,updated_at,id) values (?,?,?,?,?)
+Hibernate: select cft1_0.id,cft1_0.context_id,cft1_0.created_at,cft1_0.name,cft1_0.updated_at from custom_field_templates cft1_0 where cft1_0.context_id=? or cft1_0.context_id is null
+2026-10-09T02:21:00.108Z  INFO 26760 --- [custom-field-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.customfield.security.Tier2FailClosedTest]: Tier2FailClosedTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:21:00.126Z  INFO 26760 --- [custom-field-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.customfield.CustomFieldServiceApplication for test class com.bookinghub.customfield.security.Tier2FailClosedTest
+2026-10-09T02:21:00.177Z  INFO 26760 --- [custom-field-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.customfield.security.Tier2FailClosedTest$JwksFailClosedVerification]: JwksFailClosedVerification does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:21:00.181Z  INFO 26760 --- [custom-field-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.customfield.CustomFieldServiceApplication for test class com.bookinghub.customfield.security.Tier2FailClosedTest$JwksFailClosedVerification
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:21:00.317Z  INFO 26760 --- [custom-field-service] [           main] c.b.c.security.Tier2FailClosedTest       : Starting Tier2FailClosedTest using Java 21.0.12.1 with PID 26760 (started by root in /home/daytona/project/services/custom-field-service)
+2026-10-09T02:21:00.317Z  INFO 26760 --- [custom-field-service] [           main] c.b.c.security.Tier2FailClosedTest       : The following 1 profile is active: "test"
+2026-10-09T02:21:03.098Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:21:03.196Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 97 ms. Found 4 JPA repository interfaces.
+2026-10-09T02:21:07.405Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:21:07.438Z  INFO 26760 --- [custom-field-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:21:07.439Z  INFO 26760 --- [custom-field-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:21:07.590Z  INFO 26760 --- [custom-field-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:21:07.591Z  INFO 26760 --- [custom-field-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 7214 ms
+2026-10-09T02:21:08.297Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-10-09T02:21:08.326Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@7d4d3842
+2026-10-09T02:21:08.327Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-10-09T02:21:08.330Z  INFO 26760 --- [custom-field-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/customfld_db_test (PostgreSQL 16.15)
+2026-10-09T02:21:08.352Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.009s)
+2026-10-09T02:21:08.405Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:21:08.407Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:21:08.493Z  INFO 26760 --- [custom-field-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:21:08.496Z  INFO 26760 --- [custom-field-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:21:08.509Z  INFO 26760 --- [custom-field-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:21:08.743Z  INFO 26760 --- [custom-field-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:21:08.796Z  INFO 26760 --- [custom-field-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:21:12.098Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:21:15.793Z  INFO 26760 --- [custom-field-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:21:15.793Z  INFO 26760 --- [custom-field-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:21:15.796Z  INFO 26760 --- [custom-field-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 3 ms
+2026-10-09T02:21:16.306Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 42375 (http) with context path '/'
+2026-10-09T02:21:16.482Z  INFO 26760 --- [custom-field-service] [           main] c.b.c.security.Tier2FailClosedTest       : Started Tier2FailClosedTest in 16.294 seconds (process running for 41.588)
+2026-10-09T02:21:16.599Z  INFO 26760 --- [custom-field-service] [   scheduling-1] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: [localhost:5672]
+2026-10-09T02:21:16.713Z  INFO 26760 --- [custom-field-service] [   scheduling-1] o.s.a.r.c.CachingConnectionFactory       : Created new connection: rabbitConnectionFactory#18c04885:0/SimpleConnection@fe51c71 [delegate=amqp://guest@127.0.0.1:5672/, localPort=45092]
+2026-10-09T02:21:16.807Z  INFO 26760 --- [custom-field-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.customfield.security.Tier2FailClosedTest$MissingTokenTest]: MissingTokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:21:16.815Z  INFO 26760 --- [custom-field-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.customfield.CustomFieldServiceApplication for test class com.bookinghub.customfield.security.Tier2FailClosedTest$MissingTokenTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:21:19.078Z  INFO 26760 --- [custom-field-service] [           main] c.s.Tier2FailClosedTest$MissingTokenTest : Starting Tier2FailClosedTest.MissingTokenTest using Java 21.0.12.1 with PID 26760 (started by root in /home/daytona/project/services/custom-field-service)
+2026-10-09T02:21:19.079Z  INFO 26760 --- [custom-field-service] [           main] c.s.Tier2FailClosedTest$MissingTokenTest : The following 1 profile is active: "test"
+2026-10-09T02:21:19.619Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:21:19.634Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 14 ms. Found 4 JPA repository interfaces.
+2026-10-09T02:21:19.937Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:21:19.939Z  INFO 26760 --- [custom-field-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:21:19.939Z  INFO 26760 --- [custom-field-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:21:19.980Z  INFO 26760 --- [custom-field-service] [           main] o.a.c.c.C.[Tomcat-1].[localhost].[/]     : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:21:19.980Z  INFO 26760 --- [custom-field-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 897 ms
+2026-10-09T02:21:20.316Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-10-09T02:21:20.393Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@f8740f5
+2026-10-09T02:21:20.393Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-10-09T02:21:20.396Z  INFO 26760 --- [custom-field-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/customfld_db_test (PostgreSQL 16.15)
+2026-10-09T02:21:20.415Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.009s)
+2026-10-09T02:21:20.442Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:21:20.443Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:21:20.507Z  INFO 26760 --- [custom-field-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:21:20.510Z  INFO 26760 --- [custom-field-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:21:20.520Z  INFO 26760 --- [custom-field-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:21:20.899Z  INFO 26760 --- [custom-field-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:21:20.989Z  INFO 26760 --- [custom-field-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:21:22.278Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:21:24.303Z  INFO 26760 --- [custom-field-service] [           main] o.a.c.c.C.[Tomcat-1].[localhost].[/]     : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:21:24.304Z  INFO 26760 --- [custom-field-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:21:24.378Z  INFO 26760 --- [custom-field-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 74 ms
+2026-10-09T02:21:24.490Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 39921 (http) with context path '/'
+2026-10-09T02:21:24.501Z  INFO 26760 --- [custom-field-service] [           main] c.s.Tier2FailClosedTest$MissingTokenTest : Started Tier2FailClosedTest.MissingTokenTest in 5.592 seconds (process running for 49.608)
+2026-10-09T02:21:25.195Z  INFO 26760 --- [custom-field-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.customfield.security.Tier2FailClosedTest$InsufficientRoleTest]: InsufficientRoleTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:21:25.200Z  INFO 26760 --- [custom-field-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.customfield.CustomFieldServiceApplication for test class com.bookinghub.customfield.security.Tier2FailClosedTest$InsufficientRoleTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:21:25.498Z  INFO 26760 --- [custom-field-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : Starting Tier2FailClosedTest.InsufficientRoleTest using Java 21.0.12.1 with PID 26760 (started by root in /home/daytona/project/services/custom-field-service)
+2026-10-09T02:21:25.576Z  INFO 26760 --- [custom-field-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : The following 1 profile is active: "test"
+2026-10-09T02:21:26.721Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:21:26.731Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 9 ms. Found 4 JPA repository interfaces.
+2026-10-09T02:21:26.903Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:21:26.904Z  INFO 26760 --- [custom-field-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:21:26.905Z  INFO 26760 --- [custom-field-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:21:26.922Z  INFO 26760 --- [custom-field-service] [           main] o.a.c.c.C.[Tomcat-2].[localhost].[/]     : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:21:26.922Z  INFO 26760 --- [custom-field-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1343 ms
+2026-10-09T02:21:27.108Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+2026-10-09T02:21:27.125Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection org.postgresql.jdbc.PgConnection@3aaede52
+2026-10-09T02:21:27.125Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+2026-10-09T02:21:27.127Z  INFO 26760 --- [custom-field-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/customfld_db_test (PostgreSQL 16.15)
+2026-10-09T02:21:27.141Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.006s)
+2026-10-09T02:21:27.164Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:21:27.165Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:21:27.241Z  INFO 26760 --- [custom-field-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:21:27.244Z  INFO 26760 --- [custom-field-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:21:27.253Z  INFO 26760 --- [custom-field-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:21:27.411Z  INFO 26760 --- [custom-field-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:21:27.430Z  INFO 26760 --- [custom-field-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:21:28.278Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:21:29.113Z  INFO 26760 --- [custom-field-service] [           main] o.a.c.c.C.[Tomcat-2].[localhost].[/]     : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:21:29.113Z  INFO 26760 --- [custom-field-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:21:29.115Z  INFO 26760 --- [custom-field-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-09T02:21:29.209Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 45553 (http) with context path '/'
+2026-10-09T02:21:29.280Z  INFO 26760 --- [custom-field-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : Started Tier2FailClosedTest.InsufficientRoleTest in 3.886 seconds (process running for 54.386)
+2026-10-09T02:21:29.806Z  INFO 26760 --- [custom-field-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.customfield.outbox.OutboxPublisherTest]: OutboxPublisherTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:21:29.880Z  INFO 26760 --- [custom-field-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.customfield.CustomFieldServiceApplication for test class com.bookinghub.customfield.outbox.OutboxPublisherTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:21:29.978Z  INFO 26760 --- [custom-field-service] [           main] c.b.c.outbox.OutboxPublisherTest         : Starting OutboxPublisherTest using Java 21.0.12.1 with PID 26760 (started by root in /home/daytona/project/services/custom-field-service)
+2026-10-09T02:21:29.979Z  INFO 26760 --- [custom-field-service] [           main] c.b.c.outbox.OutboxPublisherTest         : The following 1 profile is active: "test"
+2026-10-09T02:21:30.787Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:21:30.797Z  INFO 26760 --- [custom-field-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 9 ms. Found 4 JPA repository interfaces.
+2026-10-09T02:21:31.234Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Starting...
+2026-10-09T02:21:31.258Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-5 - Added connection org.postgresql.jdbc.PgConnection@616e867b
+2026-10-09T02:21:31.258Z  INFO 26760 --- [custom-field-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Start completed.
+2026-10-09T02:21:31.262Z  INFO 26760 --- [custom-field-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/customfld_db_test (PostgreSQL 16.15)
+2026-10-09T02:21:31.293Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.010s)
+2026-10-09T02:21:31.337Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:21:31.339Z  INFO 26760 --- [custom-field-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:21:31.389Z  INFO 26760 --- [custom-field-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:21:31.390Z  INFO 26760 --- [custom-field-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:21:31.398Z  INFO 26760 --- [custom-field-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:21:31.590Z  INFO 26760 --- [custom-field-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:21:31.619Z  INFO 26760 --- [custom-field-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:21:34.098Z  INFO 26760 --- [custom-field-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:21:36.192Z  INFO 26760 --- [custom-field-service] [           main] c.b.c.outbox.OutboxPublisherTest         : Started OutboxPublisherTest in 6.303 seconds (process running for 61.299)
+2026-10-09T02:21:36.483Z  INFO 26760 --- [custom-field-service] [           main] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: [localhost:5672]
+2026-10-09T02:21:36.496Z  INFO 26760 --- [custom-field-service] [           main] o.s.a.r.c.CachingConnectionFactory       : Created new connection: rabbitConnectionFactory#2267a30c:0/SimpleConnection@3bad9493 [delegate=amqp://guest@127.0.0.1:5672/, localPort=53402]
+2026-10-09T02:21:37.094Z  INFO 26760 --- [custom-field-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.customfield.controller.CustomFieldControllerIntegrationTest]: CustomFieldControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:21:37.281Z  INFO 26760 --- [custom-field-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.customfield.CustomFieldServiceApplication for test class com.bookinghub.customfield.controller.CustomFieldControllerIntegrationTest
+2026-10-09T02:21:37.920Z  INFO 26760 --- [custom-field-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.customfield.controller.FieldTemplateControllerIntegrationTest]: FieldTemplateControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:21:37.923Z  INFO 26760 --- [custom-field-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.customfield.CustomFieldServiceApplication for test class com.bookinghub.customfield.controller.FieldTemplateControllerIntegrationTest
+02:21:44.704 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.bookinghub.settings.repository.SettingsSingletonTest]: SettingsSingletonTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+02:21:45.388 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.bookinghub.settings.SettingsServiceApplication for test class com.bookinghub.settings.repository.SettingsSingletonTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:21:47.103Z  INFO 29528 --- [settings-service] [           main] c.b.s.repository.SettingsSingletonTest   : Starting SettingsSingletonTest using Java 21.0.12.1 with PID 29528 (started by root in /home/daytona/project/services/settings-service)
+2026-10-09T02:21:47.105Z  INFO 29528 --- [settings-service] [           main] c.b.s.repository.SettingsSingletonTest   : The following 1 profile is active: "test"
+2026-10-09T02:21:48.114Z  INFO 29528 --- [settings-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:21:48.233Z  INFO 29528 --- [settings-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 111 ms. Found 2 JPA repository interfaces.
+2026-10-09T02:21:48.995Z  INFO 29528 --- [settings-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-09T02:21:49.229Z  INFO 29528 --- [settings-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@35d60381
+2026-10-09T02:21:49.231Z  INFO 29528 --- [settings-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-09T02:21:49.267Z  INFO 29528 --- [settings-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/settings_db_test (PostgreSQL 16.15)
+2026-10-09T02:21:49.342Z  INFO 29528 --- [settings-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.038s)
+2026-10-09T02:21:49.419Z  INFO 29528 --- [settings-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:21:49.423Z  INFO 29528 --- [settings-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:21:49.552Z  INFO 29528 --- [settings-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:21:49.694Z  INFO 29528 --- [settings-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-10-09T02:21:49.789Z  INFO 29528 --- [settings-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:21:50.125Z  INFO 29528 --- [settings-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:21:51.707Z  INFO 29528 --- [settings-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:21:51.777Z  INFO 29528 --- [settings-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:21:53.086Z  INFO 29528 --- [settings-service] [           main] c.b.s.repository.SettingsSingletonTest   : Started SettingsSingletonTest in 7.389 seconds (process running for 11.096)
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.19/byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+Hibernate: select s1_0.id,s1_0.approve_booking,s1_0.calendar_max_time,s1_0.calendar_min_time,s1_0.calendar_slot_size,s1_0.updated_at,s1_0.updated_by from settings s1_0 where s1_0.id=?
+Hibernate: select count(*) from settings s1_0
+Hibernate: select s1_0.id,s1_0.approve_booking,s1_0.calendar_max_time,s1_0.calendar_min_time,s1_0.calendar_slot_size,s1_0.updated_at,s1_0.updated_by from settings s1_0 where s1_0.id=?
+Hibernate: insert into settings (approve_booking,calendar_max_time,calendar_min_time,calendar_slot_size,updated_at,updated_by,id) values (?,?,?,?,?,?,?)
+2026-10-09T02:21:57.044Z  WARN 29528 --- [settings-service] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 0, SQLState: 23514
+2026-10-09T02:21:57.045Z ERROR 29528 --- [settings-service] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : ERROR: new row for relation "settings" violates check constraint "chk_settings_singleton"
+  Detail: Failing row contains (2, t, 30, 08:00:00, 18:00:00, 2026-10-09 02:21:56.995338+00, null).
+2026-10-09T02:21:57.106Z  INFO 29528 --- [settings-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.settings.security.Tier2FailClosedTest]: Tier2FailClosedTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:21:57.194Z  INFO 29528 --- [settings-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.settings.SettingsServiceApplication for test class com.bookinghub.settings.security.Tier2FailClosedTest
+2026-10-09T02:21:57.203Z  INFO 29528 --- [settings-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.settings.security.Tier2FailClosedTest$JwksFailClosedVerification]: JwksFailClosedVerification does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:21:57.209Z  INFO 29528 --- [settings-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.settings.SettingsServiceApplication for test class com.bookinghub.settings.security.Tier2FailClosedTest$JwksFailClosedVerification
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:21:57.390Z  INFO 29528 --- [settings-service] [           main] c.b.s.security.Tier2FailClosedTest       : Starting Tier2FailClosedTest using Java 21.0.12.1 with PID 29528 (started by root in /home/daytona/project/services/settings-service)
+2026-10-09T02:21:57.391Z  INFO 29528 --- [settings-service] [           main] c.b.s.security.Tier2FailClosedTest       : No active profile set, falling back to 1 default profile: "default"
+2026-10-09T02:22:01.698Z  INFO 29528 --- [settings-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:22:01.784Z  INFO 29528 --- [settings-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:22:01.785Z  INFO 29528 --- [settings-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:22:02.080Z  INFO 29528 --- [settings-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:22:02.081Z  INFO 29528 --- [settings-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4687 ms
+2026-10-09T02:22:07.699Z  INFO 29528 --- [settings-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:22:08.813Z  INFO 29528 --- [settings-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:22:08.814Z  INFO 29528 --- [settings-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:22:08.816Z  INFO 29528 --- [settings-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-10-09T02:22:08.993Z  INFO 29528 --- [settings-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 36121 (http) with context path '/'
+2026-10-09T02:22:09.016Z  INFO 29528 --- [settings-service] [           main] c.b.s.security.Tier2FailClosedTest       : Started Tier2FailClosedTest in 11.74 seconds (process running for 27.027)
+2026-10-09T02:22:09.213Z  INFO 29528 --- [settings-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.settings.security.Tier2FailClosedTest$MissingTokenTest]: MissingTokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:22:09.221Z  INFO 29528 --- [settings-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.settings.SettingsServiceApplication for test class com.bookinghub.settings.security.Tier2FailClosedTest$MissingTokenTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:22:10.776Z  INFO 29528 --- [settings-service] [           main] s.s.Tier2FailClosedTest$MissingTokenTest : Starting Tier2FailClosedTest.MissingTokenTest using Java 21.0.12.1 with PID 29528 (started by root in /home/daytona/project/services/settings-service)
+2026-10-09T02:22:10.777Z  INFO 29528 --- [settings-service] [           main] s.s.Tier2FailClosedTest$MissingTokenTest : No active profile set, falling back to 1 default profile: "default"
+2026-10-09T02:22:12.407Z  INFO 29528 --- [settings-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:22:12.408Z  INFO 29528 --- [settings-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:22:12.409Z  INFO 29528 --- [settings-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:22:12.494Z  INFO 29528 --- [settings-service] [           main] o.a.c.c.C.[Tomcat-1].[localhost].[/]     : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:22:12.495Z  INFO 29528 --- [settings-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1716 ms
+2026-10-09T02:22:15.885Z  INFO 29528 --- [settings-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:22:16.559Z  INFO 29528 --- [settings-service] [           main] o.a.c.c.C.[Tomcat-1].[localhost].[/]     : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:22:16.559Z  INFO 29528 --- [settings-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:22:16.562Z  INFO 29528 --- [settings-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-10-09T02:22:16.639Z  INFO 29528 --- [settings-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 38595 (http) with context path '/'
+2026-10-09T02:22:16.675Z  INFO 29528 --- [settings-service] [           main] s.s.Tier2FailClosedTest$MissingTokenTest : Started Tier2FailClosedTest.MissingTokenTest in 5.949 seconds (process running for 34.686)
+2026-10-09T02:22:16.877Z  INFO 29528 --- [settings-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.settings.security.Tier2FailClosedTest$InsufficientRoleTest]: InsufficientRoleTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:22:16.884Z  INFO 29528 --- [settings-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.settings.SettingsServiceApplication for test class com.bookinghub.settings.security.Tier2FailClosedTest$InsufficientRoleTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:22:17.109Z  INFO 29528 --- [settings-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : Starting Tier2FailClosedTest.InsufficientRoleTest using Java 21.0.12.1 with PID 29528 (started by root in /home/daytona/project/services/settings-service)
+2026-10-09T02:22:17.110Z  INFO 29528 --- [settings-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : No active profile set, falling back to 1 default profile: "default"
+2026-10-09T02:22:17.947Z  INFO 29528 --- [settings-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:22:17.948Z  INFO 29528 --- [settings-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:22:17.948Z  INFO 29528 --- [settings-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:22:17.977Z  INFO 29528 --- [settings-service] [           main] o.a.c.c.C.[Tomcat-2].[localhost].[/]     : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:22:17.977Z  INFO 29528 --- [settings-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 864 ms
+2026-10-09T02:22:18.528Z  INFO 29528 --- [settings-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:22:19.223Z  INFO 29528 --- [settings-service] [           main] o.a.c.c.C.[Tomcat-2].[localhost].[/]     : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:22:19.224Z  INFO 29528 --- [settings-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:22:19.225Z  INFO 29528 --- [settings-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-09T02:22:19.306Z  INFO 29528 --- [settings-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 44213 (http) with context path '/'
+2026-10-09T02:22:19.318Z  INFO 29528 --- [settings-service] [           main] Tier2FailClosedTest$InsufficientRoleTest : Started Tier2FailClosedTest.InsufficientRoleTest in 2.323 seconds (process running for 37.329)
+2026-10-09T02:22:19.499Z  INFO 29528 --- [settings-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.settings.outbox.OutboxPublisherTest]: OutboxPublisherTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:22:19.508Z  INFO 29528 --- [settings-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.settings.SettingsServiceApplication for test class com.bookinghub.settings.outbox.OutboxPublisherTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:22:19.599Z  INFO 29528 --- [settings-service] [           main] c.b.settings.outbox.OutboxPublisherTest  : Starting OutboxPublisherTest using Java 21.0.12.1 with PID 29528 (started by root in /home/daytona/project/services/settings-service)
+2026-10-09T02:22:19.599Z  INFO 29528 --- [settings-service] [           main] c.b.settings.outbox.OutboxPublisherTest  : The following 1 profile is active: "test"
+2026-10-09T02:22:19.956Z  INFO 29528 --- [settings-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:22:19.980Z  INFO 29528 --- [settings-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 23 ms. Found 2 JPA repository interfaces.
+2026-10-09T02:22:20.219Z  INFO 29528 --- [settings-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-10-09T02:22:20.258Z  INFO 29528 --- [settings-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@1cfbcd9f
+2026-10-09T02:22:20.259Z  INFO 29528 --- [settings-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-10-09T02:22:20.278Z  INFO 29528 --- [settings-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/settings_db_test (PostgreSQL 16.15)
+2026-10-09T02:22:20.294Z  INFO 29528 --- [settings-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.007s)
+2026-10-09T02:22:20.322Z  INFO 29528 --- [settings-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:22:20.323Z  INFO 29528 --- [settings-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:22:20.358Z  INFO 29528 --- [settings-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:22:20.361Z  INFO 29528 --- [settings-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:22:20.383Z  INFO 29528 --- [settings-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:22:20.423Z  INFO 29528 --- [settings-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:22:20.445Z  INFO 29528 --- [settings-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:22:21.426Z  INFO 29528 --- [settings-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:22:24.133Z  INFO 29528 --- [settings-service] [           main] c.b.settings.outbox.OutboxPublisherTest  : Started OutboxPublisherTest in 4.618 seconds (process running for 42.21)
+2026-10-09T02:22:24.940Z  INFO 29528 --- [settings-service] [           main] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: [localhost:5672]
+2026-10-09T02:22:25.027Z  INFO 29528 --- [settings-service] [           main] o.s.a.r.c.CachingConnectionFactory       : Created new connection: rabbitConnectionFactory#7511928e:0/SimpleConnection@7c66040f [delegate=amqp://guest@127.0.0.1:5672/, localPort=48678]
+2026-10-09T02:22:25.716Z  INFO 29528 --- [settings-service] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.bookinghub.settings.controller.SettingsControllerIntegrationTest]: SettingsControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-09T02:22:25.729Z  INFO 29528 --- [settings-service] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.bookinghub.settings.SettingsServiceApplication for test class com.bookinghub.settings.controller.SettingsControllerIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-10-09T02:22:25.913Z  INFO 29528 --- [settings-service] [           main] .b.s.c.SettingsControllerIntegrationTest : Starting SettingsControllerIntegrationTest using Java 21.0.12.1 with PID 29528 (started by root in /home/daytona/project/services/settings-service)
+2026-10-09T02:22:25.913Z  INFO 29528 --- [settings-service] [           main] .b.s.c.SettingsControllerIntegrationTest : The following 1 profile is active: "test"
+2026-10-09T02:22:26.210Z  INFO 29528 --- [settings-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-09T02:22:26.218Z  INFO 29528 --- [settings-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 7 ms. Found 2 JPA repository interfaces.
+2026-10-09T02:22:26.396Z  INFO 29528 --- [settings-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-09T02:22:26.397Z  INFO 29528 --- [settings-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T02:22:26.397Z  INFO 29528 --- [settings-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
+2026-10-09T02:22:26.419Z  INFO 29528 --- [settings-service] [           main] o.a.c.c.C.[Tomcat-3].[localhost].[/]     : Initializing Spring embedded WebApplicationContext
+2026-10-09T02:22:26.420Z  INFO 29528 --- [settings-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 505 ms
+2026-10-09T02:22:26.676Z  INFO 29528 --- [settings-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-10-09T02:22:26.723Z  INFO 29528 --- [settings-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@35737e55
+2026-10-09T02:22:26.723Z  INFO 29528 --- [settings-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-10-09T02:22:26.725Z  INFO 29528 --- [settings-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/settings_db_test (PostgreSQL 16.15)
+2026-10-09T02:22:26.741Z  INFO 29528 --- [settings-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.007s)
+2026-10-09T02:22:26.767Z  INFO 29528 --- [settings-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-10-09T02:22:26.767Z  INFO 29528 --- [settings-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-09T02:22:26.817Z  INFO 29528 --- [settings-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-09T02:22:26.819Z  INFO 29528 --- [settings-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-09T02:22:26.828Z  INFO 29528 --- [settings-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-09T02:22:26.940Z  INFO 29528 --- [settings-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-09T02:22:26.958Z  INFO 29528 --- [settings-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-09T02:22:27.835Z  INFO 29528 --- [settings-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-09T02:22:28.269Z  INFO 29528 --- [settings-service] [           main] o.a.c.c.C.[Tomcat-3].[localhost].[/]     : Initializing Spring TestDispatcherServlet ''
+2026-10-09T02:22:28.269Z  INFO 29528 --- [settings-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-09T02:22:28.270Z  INFO 29528 --- [settings-service] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-09T02:22:28.319Z  INFO 29528 --- [settings-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 38823 (http) with context path '/'
+2026-10-09T02:22:28.330Z  INFO 29528 --- [settings-service] [           main] .b.s.c.SettingsControllerIntegrationTest : Started SettingsControllerIntegrationTest in 2.596 seconds (process running for 46.407)
 ```
 
