@@ -92,18 +92,8 @@ public class CustomFieldService {
                 .toList();
         }
 
-        List<CustomFieldTemplate> applicableTemplates =
-            customFieldTemplateRepository.findApplicableToContext(contextId);
-
-        Set<UUID> fieldIds = new LinkedHashSet<>();
-        for (CustomFieldTemplate template : applicableTemplates) {
-            customFieldJoinRepository.findByCustomFieldTemplateId(template.getId())
-                .forEach(join -> fieldIds.add(join.getCustomFieldId()));
-        }
-
-        return fieldIds.stream()
-            .map(customFieldRepository::findByIdAndDeletedAtIsNull)
-            .flatMap(java.util.Optional::stream)
+        // Optimized single-query fetch to avoid N+1 problem (W2 fix)
+        return customFieldRepository.findApplicableToContext(contextId).stream()
             .map(this::toResponse)
             .toList();
     }
