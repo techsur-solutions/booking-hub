@@ -15,6 +15,23 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        auto-startup: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}
+
+outbox:
+  poll-interval-ms: 2000
+  batch-size: 100
 
 management:
   endpoints:
