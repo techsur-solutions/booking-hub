@@ -101,7 +101,7 @@ Plans:
   3. Admin can define custom field definitions and field templates (select-type fields require a non-empty `options[]`) and associate a template with a booking context.
   4. Custom field values attach to bookings via a join model distinct from field definitions, ready for the booking form to render applicable fields dynamically once Phase 5 builds it.
   5. Admin can toggle the `approveBooking` flag and configure calendar display parameters (slot size, min/max time); settings exist as a single enforced singleton, are admin-only to modify, and are readable by the Booking Service for creation-time status logic.
-**Plans**: 6 plans
+**Plans**: 7 plans
 
 Plans:
 - [ ] 04-01-PLAN.md — locations-resources-service: F0 schema-completion migration, entities/repos, ApiError contract, Tier-2 security
@@ -110,6 +110,7 @@ Plans:
 - [ ] 04-04-PLAN.md — custom-field-service: CustomField/FieldTemplate CRUD controllers, applicability-query endpoint, outbox publisher
 - [ ] 04-05-PLAN.md — settings-service: outbox migration, singleton entity, ApiError contract, Tier-2 security
 - [ ] 04-06-PLAN.md — settings-service: GET/PUT controller (validation + immediate propagation), outbox publisher
+- [ ] 04-07-PLAN.md — Gap closure: Fix frontend Keycloak URL configuration (UAT Test 1 blocker)
 
 ### Phase 5: Core Booking & Approval Workflow
 **Goal**: Users can create, edit, delete, and clone bookings with full conflict detection and an approval workflow, so no two conflicting bookings for the same room or resource ever go unnoticed regardless of how they were entered, and every approval/denial decision is final and reaches the right outcome.
