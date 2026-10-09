@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-10-09T00:07:05.085Z"
+stopped_at: Completed 04-04-PLAN.md
+last_updated: "2026-10-09T02:15:40.012Z"
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 41
-  completed_plans: 27
+  completed_plans: 28
   percent: 13
 ---
 
@@ -77,6 +77,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 04-reference-data-extensibility-configuration P03 | 55min | 3 tasks | 26 files |
 | Phase 04-reference-data-extensibility-configuration P05 | 35min | 2 tasks | 20 files |
 | Phase 04-reference-data-extensibility-configuration P01 | 47min | 3 tasks | 20 files |
+| Phase 04-reference-data-extensibility-configuration P04 | 95min | 3 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -129,6 +130,10 @@ Recent decisions affecting current work:
 - [Phase 04-01]: F0-driven schema completion: locations.colour/description and resources.type/description/is_unique/restrict_locations added additively in V2, closing open-questions.md #11/#12
 - [Phase 04-01]: Tier-2 deliberately stricter than Tier-1 for GET /locations,/resources: Gateway requires authenticated-only, this service's controllers (plan 04-02) require role_calendar_viewer - proven never-weaker by Tier1Tier2ConsistencyTest
 - [Phase 04-01]: LOCATION_IN_USE/RESOURCE_IN_USE (409) deliberately NOT implemented - unreachable under this phase's never-block soft-delete policy
+- [Phase 04-04]: F0-confirmed 5-value field_type enum (textfield/select/textarea/radio/checkbox) enforced via DTO @Pattern, correcting TechArch's pre-F0 4-value placeholder guess
+- [Phase 04-04]: options[] required for all 3 choice-based types (select/radio/checkbox), not just select - deliberate improvement over legacy's confirmed zero-validation
+- [Phase 04-04]: Field Template context_id references a SPECIFIC Location id (null=global) - more granular than legacy's all-locations-blanket scoping
+- [Phase 04-04]: [Rule 1 - Bug] Added explicit JwtAuthenticationConverter mapping realm_access.roles to ROLE_-prefixed authorities - Spring Security's default only reads flat scope/scp claims, so every @PreAuthorize check would have silently denied all real Keycloak-issued tokens (same root cause independently found/fixed in parallel plan 04-06)
 
 ### Pending Todos
 
@@ -142,6 +147,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T00:07:05.078Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-10-09T02:15:40.002Z
+Stopped at: Completed 04-04-PLAN.md
 Resume file: None
