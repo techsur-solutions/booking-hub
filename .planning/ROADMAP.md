@@ -114,7 +114,7 @@ Plans:
 
 ### Phase 5: Core Booking & Approval Workflow
 **Goal**: Users can create, edit, delete, and clone bookings with full conflict detection and an approval workflow, so no two conflicting bookings for the same room or resource ever go unnoticed regardless of how they were entered, and every approval/denial decision is final and reaches the right outcome.
-**Status**: In progress
+**Status**: Failed
 **Depends on**: Phase 4 (locations, resources, custom fields, approveBooking setting must exist)
 **Requirements**: F1 (F1.1–F1.7), F2 (F2.1–F2.5), F3 (F3.1–F3.4)
 **Success Criteria** (what must be TRUE):
@@ -190,7 +190,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Platform Foundation & Infrastructure | 12/12 | Complete | 2026-10-07 |
 | 3. Identity & Access Control | 5/5 | Complete | 2026-10-08 |
 | 4. Reference Data, Extensibility & Configuration | 6/6 | Complete | 2026-10-09 |
-| 5. Core Booking & Approval Workflow | 0/TBD | In progress | - |
+| 5. Core Booking & Approval Workflow | 0/TBD | Failed | - |
 | 6. Notifications & Audit Logging | 0/TBD | Not started | - |
 | 7. Public Feeds | 0/3 | Not started | - |
 | 8. Regression Verification & Test Traceability | 0/4 | Not started | - |
