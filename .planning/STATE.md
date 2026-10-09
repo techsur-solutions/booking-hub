@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-10-09T02:17:00.808Z"
+stopped_at: Completed 04-06-PLAN.md
+last_updated: "2026-10-09T02:17:43.081Z"
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 41
-  completed_plans: 29
+  completed_plans: 30
   percent: 13
 ---
 
@@ -79,6 +79,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 04-reference-data-extensibility-configuration P01 | 47min | 3 tasks | 20 files |
 | Phase 04-reference-data-extensibility-configuration P04 | 95min | 3 tasks | 17 files |
 | Phase 04-reference-data-extensibility-configuration P02 | 95min | 3 tasks | 25 files |
+| Phase 04-reference-data-extensibility-configuration P06 | 100min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -137,6 +138,9 @@ Recent decisions affecting current work:
 - [Phase 04-04]: [Rule 1 - Bug] Added explicit JwtAuthenticationConverter mapping realm_access.roles to ROLE_-prefixed authorities - Spring Security's default only reads flat scope/scp claims, so every @PreAuthorize check would have silently denied all real Keycloak-issued tokens (same root cause independently found/fixed in parallel plan 04-06)
 - [Phase 04-02]: getById() on Location/Resource deliberately uses plain findById (not findByIdAndDeletedAtIsNull), so soft-deleted rows return 200 with last-known values instead of 404 - satisfies Success Criterion 2's cross-service lookup requirement for Phase 5
 - [Phase 04-02]: Critical JWT role-converter bugfix: SecurityConfig lacked a JwtAuthenticationConverter mapping realm_access.roles to ROLE_-prefixed authorities - every @PreAuthorize(hasRole(...)) check was unreachable by any real caller until fixed (same bug independently found in settings-service/custom-field-service)
+- [Phase 04-06]: Fixed sentinel UUID (00000000-0000-0000-0000-000000000001) used as outbox aggregate_id for the Settings singleton - its own PK is the integer 1 but the outbox schema needs a UUID-shaped value for cross-service consistency
+- [Phase 04-06]: Rule 1 bugfix: explicit JwtAuthenticationConverter wiring realm_access.roles to ROLE_-prefixed authorities was required for @PreAuthorize to function at all against a real Keycloak JWT - without it every hasRole() check silently denied all callers
+- [Phase 04-06]: No in-memory settings cache at all - getCurrent() reads the DB directly on every call, closing F0's confirmed legacy restart-required caching quirk
 
 ### Pending Todos
 
@@ -150,6 +154,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T02:17:00.801Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-10-09T02:17:43.007Z
+Stopped at: Completed 04-06-PLAN.md
 Resume file: None
