@@ -1,5 +1,6 @@
 package com.bookinghub.booking.conflict.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,10 +30,10 @@ public class ConflictDtos {
      * resourceId:  present and equal to the specific unique resource when conflictType="resource", null for location
      */
     public record ConflictFlag(
-            UUID conflictingBookingId,
-            String conflictType,
-            UUID locationId,
-            UUID resourceId) {
+            @JsonProperty("conflicting_booking_id") UUID conflictingBookingId,
+            @JsonProperty("conflict_type") String conflictType,
+            @JsonProperty("location_id") UUID locationId,
+            @JsonProperty("resource_id") UUID resourceId) {
     }
 
     /**
@@ -43,8 +44,8 @@ public class ConflictDtos {
      * conflicts: the union of all detected conflicts; empty list when hasConflict=false.
      */
     public record ConflictCheckResult(
-            boolean hasConflict,
-            java.util.List<ConflictFlag> conflicts) {
+            @JsonProperty("has_conflict") boolean hasConflict,
+            @JsonProperty("conflicts") java.util.List<ConflictFlag> conflicts) {
     }
 
     /**
