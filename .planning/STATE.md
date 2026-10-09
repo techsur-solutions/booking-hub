@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 04-05-PLAN.md
-last_updated: "2026-10-09T00:03:32.663Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-10-09T00:07:05.085Z"
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 41
-  completed_plans: 26
+  completed_plans: 27
   percent: 13
 ---
 
@@ -76,6 +76,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 03-identity-access-control P05 | 10min | 3 tasks | 13 files |
 | Phase 04-reference-data-extensibility-configuration P03 | 55min | 3 tasks | 26 files |
 | Phase 04-reference-data-extensibility-configuration P05 | 35min | 2 tasks | 20 files |
+| Phase 04-reference-data-extensibility-configuration P01 | 47min | 3 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,9 @@ Recent decisions affecting current work:
 - [Phase 04-05]: Settings singleton entity (no @GeneratedValue) enforces F10.3 at the code layer alongside the existing DB CHECK constraint
 - [Phase 04-05]: SETTINGS_UNAVAILABLE (503) deliberately not implemented in settings-service - it is the calling service's (Phase 5 booking-service) error when this service is unreachable
 - [Phase 04-05]: pgcrypto extension added in V2 migration (absent from V1) to support outbox table's gen_random_uuid() defaults
+- [Phase 04-01]: F0-driven schema completion: locations.colour/description and resources.type/description/is_unique/restrict_locations added additively in V2, closing open-questions.md #11/#12
+- [Phase 04-01]: Tier-2 deliberately stricter than Tier-1 for GET /locations,/resources: Gateway requires authenticated-only, this service's controllers (plan 04-02) require role_calendar_viewer - proven never-weaker by Tier1Tier2ConsistencyTest
+- [Phase 04-01]: LOCATION_IN_USE/RESOURCE_IN_USE (409) deliberately NOT implemented - unreachable under this phase's never-block soft-delete policy
 
 ### Pending Todos
 
@@ -138,6 +142,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T00:03:32.655Z
-Stopped at: Completed 04-05-PLAN.md
+Last session: 2026-10-09T00:07:05.078Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
