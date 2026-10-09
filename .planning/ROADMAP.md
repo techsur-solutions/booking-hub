@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Legacy Functional Audit** - Document every legacy controller/model/route/workflow and produce the authoritative Open Questions list before any build work begins (completed 2026-10-07)
 - [x] **Phase 2: Platform Foundation & Infrastructure** - Stand up the nine bounded-context service scaffolds, per-service Postgres, RabbitMQ topology, Keycloak realm, Gateway, and the frontend SPA shell (completed 2026-10-07)
 - [x] **Phase 3: Identity & Access Control** - Users authenticate via Keycloak and every legacy permission flag has a confirmed, enforced Keycloak-role mapping (completed 2026-10-08)
-- [ ] **Phase 4: Reference Data, Extensibility & Configuration** - Admins manage locations, resources, custom fields, and system-wide settings that booking depends on
+- [x] **Phase 4: Reference Data, Extensibility & Configuration** - Admins manage locations, resources, custom fields, and system-wide settings that booking depends on (completed 2026-10-09)
 - [ ] **Phase 5: Core Booking & Approval Workflow** - Users create/edit/delete/clone bookings with full conflict detection and an approval workflow
 - [ ] **Phase 6: Notifications & Audit Logging** - Booking/account lifecycle events reliably trigger emails and produce an immutable, queryable audit trail
 - [ ] **Phase 7: Public Feeds** - Approved upcoming bookings are exposed via RSS2/iCal/JSON/display-board feeds with zero login required
@@ -92,7 +92,7 @@ Plans:
 
 ### Phase 4: Reference Data, Extensibility & Configuration
 **Goal**: Admins can manage the reference data and configuration that booking depends on — locations, resources, custom fields, and system-wide settings — so the Core Booking phase has real data and rules to build against.
-**Status**: In progress
+**Status**: Complete (2026-10-09)
 **Depends on**: Phase 3 (admin-only actions are permission-gated)
 **Requirements**: F4 (F4.1–F4.4), F5 (F5.1–F5.4), F10 (F10.1–F10.4)
 **Success Criteria** (what must be TRUE):
@@ -188,7 +188,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Legacy Functional Audit | 0/TBD | Complete | 2026-10-07 |
 | 2. Platform Foundation & Infrastructure | 12/12 | Complete | 2026-10-07 |
 | 3. Identity & Access Control | 5/5 | Complete | 2026-10-08 |
-| 4. Reference Data, Extensibility & Configuration | 0/6 | In progress | - |
+| 4. Reference Data, Extensibility & Configuration | 6/6 | Complete | 2026-10-09 |
 | 5. Core Booking & Approval Workflow | 0/TBD | Not started | - |
 | 6. Notifications & Audit Logging | 0/TBD | Not started | - |
 | 7. Public Feeds | 0/3 | Not started | - |
