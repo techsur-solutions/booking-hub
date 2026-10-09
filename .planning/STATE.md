@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 04-04-PLAN.md
-last_updated: "2026-10-09T02:15:40.012Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-10-09T02:17:00.808Z"
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 41
-  completed_plans: 28
+  completed_plans: 29
   percent: 13
 ---
 
@@ -78,6 +78,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 04-reference-data-extensibility-configuration P05 | 35min | 2 tasks | 20 files |
 | Phase 04-reference-data-extensibility-configuration P01 | 47min | 3 tasks | 20 files |
 | Phase 04-reference-data-extensibility-configuration P04 | 95min | 3 tasks | 17 files |
+| Phase 04-reference-data-extensibility-configuration P02 | 95min | 3 tasks | 25 files |
 
 ## Accumulated Context
 
@@ -134,6 +135,8 @@ Recent decisions affecting current work:
 - [Phase 04-04]: options[] required for all 3 choice-based types (select/radio/checkbox), not just select - deliberate improvement over legacy's confirmed zero-validation
 - [Phase 04-04]: Field Template context_id references a SPECIFIC Location id (null=global) - more granular than legacy's all-locations-blanket scoping
 - [Phase 04-04]: [Rule 1 - Bug] Added explicit JwtAuthenticationConverter mapping realm_access.roles to ROLE_-prefixed authorities - Spring Security's default only reads flat scope/scp claims, so every @PreAuthorize check would have silently denied all real Keycloak-issued tokens (same root cause independently found/fixed in parallel plan 04-06)
+- [Phase 04-02]: getById() on Location/Resource deliberately uses plain findById (not findByIdAndDeletedAtIsNull), so soft-deleted rows return 200 with last-known values instead of 404 - satisfies Success Criterion 2's cross-service lookup requirement for Phase 5
+- [Phase 04-02]: Critical JWT role-converter bugfix: SecurityConfig lacked a JwtAuthenticationConverter mapping realm_access.roles to ROLE_-prefixed authorities - every @PreAuthorize(hasRole(...)) check was unreachable by any real caller until fixed (same bug independently found in settings-service/custom-field-service)
 
 ### Pending Todos
 
@@ -147,6 +150,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T02:15:40.002Z
-Stopped at: Completed 04-04-PLAN.md
+Last session: 2026-10-09T02:17:00.801Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
