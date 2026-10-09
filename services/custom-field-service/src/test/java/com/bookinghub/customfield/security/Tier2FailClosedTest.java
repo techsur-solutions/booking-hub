@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,13 +34,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * All outcomes must produce ApiError JSON shape, verified by deserializing response bodies.
  *
- * No controllers exist yet in this plan (04-03) — plan 04-04 adds
- * CustomFieldController/FieldTemplateController. JPA/Flyway autoconfiguration
- * is excluded so this test runs without a live Postgres connection; the
- * TestSecurityController below exercises the exact same @PreAuthorize +
- * SecurityConfig + CustomFieldAccessDeniedHandler wiring real controllers will use.
+ * Named deviation (plan 04-04, Rule 1 - Bug fix): plan 04-03 wrote this test
+ * BEFORE CustomFieldController/FieldTemplateController existed, excluding
+ * JPA/DataSource/Flyway autoconfiguration so the context could load without a
+ * live Postgres connection. Now that plan 04-04's real controllers exist
+ * (with real repository dependencies), that exclusion breaks context load
+ * entirely (NoSuchBeanDefinitionException for CustomFieldRepository). Switched
+ * to @ActiveProfiles("test") (same docker-compose Postgres pattern as every
+ * other integration test this plan) instead of excluding JPA — the
+ * TestSecurityController below still exercises the exact same @PreAuthorize +
+ * SecurityConfig + CustomFieldAccessDeniedHandler wiring real controllers use.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 class Tier2FailClosedTest {
 
@@ -60,7 +67,8 @@ class Tier2FailClosedTest {
      * 3. Actual runtime JWKS failures would be caught the same way
      */
     @Nested
-    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"})
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+    @ActiveProfiles("test")
     @AutoConfigureMockMvc
     @DisplayName("Scenario 1: JWKS fail-closed handler wiring verified")
     class JwksFailClosedVerification {
@@ -89,7 +97,8 @@ class Tier2FailClosedTest {
      * Must return 401 with ApiError body (plain unauthenticated case, not 503).
      */
     @Nested
-    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"})
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+    @ActiveProfiles("test")
     @AutoConfigureMockMvc
     @DisplayName("Scenario 2: Missing token → 401 AUTH_UNAUTHENTICATED")
     class MissingTokenTest {
@@ -168,7 +177,8 @@ class Tier2FailClosedTest {
      * not Spring Boot's default whitelabel {"timestamp":...,"status":403,"error":"Forbidden"}.
      */
     @Nested
-    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"})
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+    @ActiveProfiles("test")
     @AutoConfigureMockMvc
     @DisplayName("Scenario 3: Authenticated but insufficient role → 403 CUSTOM_FIELD_FORBIDDEN")
     class InsufficientRoleTest {

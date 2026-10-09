@@ -110,12 +110,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: customfld_db
       DB_USER: customfld_svc
       DB_PASSWORD: customfld_svc_pw
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O- http://localhost:8083/actuator/health/readiness || exit 1"]
       interval: 10s
