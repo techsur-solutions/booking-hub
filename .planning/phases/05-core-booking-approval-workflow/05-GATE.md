@@ -69,3 +69,11 @@ FATAL: Non-resolvable parent POM: org.springframework.boot:spring-boot-starter-p
 **Fix attempts:** 2 (retry after cooldown — both returned 429)
 
 **Note:** This is an environment/network constraint, not a code defect. The booking-service code was verified by all 4 executor self-checks which ran inside Docker containers with pre-cached Maven dependencies. The app's logic, tests, and integration tests all passed inside Docker. The verifier MUST treat this as a gap until the full stack can be booted and verified.
+
+## Backend pre-push gate
+
+- Status: skipped
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=6202abe7bb42a32047d767c1f9b9f04568293359 test_files=63 skip_marks=2 shadow_files=0
+```
