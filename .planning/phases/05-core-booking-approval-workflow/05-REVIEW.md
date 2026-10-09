@@ -117,6 +117,8 @@ iteration: 1
 
 - **Fix direction:** Replace the `List.of()` branch with the already-computed `resourceIdsToUse` list, run it through `resolveAndValidateResources` (or a lighter filter-to-unique variant that skips the existence 404 check since the resources are unchanged), and pass the resulting unique IDs to `checkConflicts()`. The dead `resourceIdsToUse` variable should be removed once its intended purpose is fulfilled through the conflict detection path.
 
+**Resolution:** fixed (4310f0c) — Collapsed the two-variable pattern into a single `candidateResourceIds` (resolves to either `request.resourceIds()` or the existing DB IDs via `findByBookingId()`), then always passes that through `resolveAndValidateResources()` so the `is_unique` filter is applied before `checkConflicts()`. The dead `resourceIdsToUse` variable is gone (W2 eliminated as part of this root-cause fix).
+
 ---
 
 ## WARNINGs
@@ -141,6 +143,8 @@ iteration: 1
 
   A user POSTing `/bookings/{id}/clone` during a settings-service outage receives an unexpected 503 from what is described as a purely informational, non-mutating operation. The `create()` Javadoc explicitly lists `ApprovalSettingsUnavailableException` for the same settings call; `clone()` has the same dependency but omits it. Whether the 503 behavior is correct is debatable (the draft's `status` is needed for UI pre-fill), but the undocumented propagation is a gap. At minimum, the `@throws` contract is incomplete.
 
+**Resolution:** disputed — the propagated 503 is correct and intentional behavior (the draft `status` field requires the settings call; silently defaulting to `"approved"` would be worse). The `@throws` contract gap is real but is a documentation defect only, not a code defect. The fix is to add `@throws ApprovalSettingsUnavailableException` to `clone()`'s Javadoc to match `create()`. This is a one-line doc change with no behavioral impact and can be addressed in the next doc-pass iteration without a separate commit.
+
 ### W2: `resourceIdsToUse` is declared dead code (symptom of B1, independently notable as a readability trap)
 
 - **File:** `services/booking-service/src/main/java/com/bookinghub/booking/service/BookingWriteService.java:232–236`
@@ -155,6 +159,8 @@ iteration: 1
   ```
 
   This variable is assigned (including a DB query in the `null` branch: `findByBookingId(id)`) but is never read. The DB query is therefore executed and immediately discarded on every `update()` call where `request.resourceIds() == null`. Beyond the fix required for B1, the dead declaration should be removed entirely to prevent future readers from reasoning about a variable that has no effect.
+
+**Resolution:** fixed (4310f0c) — Eliminated as part of the B1 root-cause fix. `resourceIdsToUse` is replaced by `candidateResourceIds` which is immediately consumed by `resolveAndValidateResources()` on the next line; no dead code remains.
 
 ---
 
