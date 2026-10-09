@@ -18,7 +18,9 @@ import java.util.UUID;
  *
  * findConflictingBookingIdsByLocation: conflict-detection query (plan 05-02) —
  * uses TechArch §3.3's exact half-open-interval predicate shape verbatim.
- * Plan 05-04 will add date-range bulk-read queries.
+ *
+ * findInRange: date-range bulk-read query (plan 05-04) — half-open RANGE OVERLAP
+ * test with optional location/status/keyword filters for calendar/day/list views.
  */
 public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
@@ -57,4 +59,35 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
             @Param("proposedStartTime") Instant proposedStartTime,
             @Param("proposedEndTime") Instant proposedEndTime,
             @Param("excludeBookingId") UUID excludeBookingId);
+
+    /**
+     * Bulk date-range read for calendar/day/list views (plan 05-04).
+     *
+     * Half-open RANGE OVERLAP test (not containment): a booking partially inside the
+     * requested window is still returned, matching how a calendar needs to render
+     * partially-visible events. Excludes only soft-deleted bookings (deleted_at IS NULL) —
+     * unlike conflict detection, denied bookings ARE returned (they are relevant as
+     * historical/calendar context, just not occupying the slot for conflict purposes).
+     *
+     * Optional filters: locationId, status, q (keyword search on title/description).
+     * All optional filters use JPQL coalesce-style null bypass (IS NULL OR b.field = :param).
+     *
+     * Named decision: status and q are NAMED ADDITIONS beyond TechArch §4.2's literal
+     * 4-parameter table (from, to, location_id?, resource_id?) — restoring legacy's own
+     * list()-action filter capabilities (status= and title/description LIKE keyword search
+     * confirmed by F0 findings/01-booking-core.md) as query params on the SAME endpoint.
+     */
+    @Query("SELECT b FROM Booking b WHERE b.deletedAt IS NULL " +
+           "AND b.startTime < :to AND :from < b.endTime " +
+           "AND (:locationId IS NULL OR b.locationId = :locationId) " +
+           "AND (:status IS NULL OR b.status = :status) " +
+           "AND (:q IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) " +
+           "     OR LOWER(b.description) LIKE LOWER(CONCAT('%', :q, '%'))) " +
+           "ORDER BY b.startTime ASC")
+    List<Booking> findInRange(
+            @Param("from") Instant from,
+            @Param("to") Instant to,
+            @Param("locationId") UUID locationId,
+            @Param("status") String status,
+            @Param("q") String q);
 }
