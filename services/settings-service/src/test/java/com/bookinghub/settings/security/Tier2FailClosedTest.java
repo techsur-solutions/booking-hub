@@ -1,5 +1,7 @@
 package com.bookinghub.settings.security;
 
+import com.bookinghub.settings.repository.OutboxEventRepository;
+import com.bookinghub.settings.repository.SettingsRepository;
 import com.bookinghub.settings.error.ApiError;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -43,6 +46,23 @@ class Tier2FailClosedTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    // SettingsRepository/OutboxEventRepository are JPA repositories, unavailable
+    // since DataSourceAutoConfiguration/HibernateJpaAutoConfiguration are
+    // excluded for this fail-closed-focused test. Every JPA-backed bean in this
+    // service's context (SettingsService -> SettingsController, OutboxPublisher)
+    // transitively needs them, so mocking the two repositories here lets the
+    // WHOLE real bean graph (controller, service, publisher) construct normally
+    // — only the persistence layer is faked — same pattern as every other
+    // service's equivalent test. Declared ONLY here (not re-declared in
+    // @Nested classes): Spring's TestContextManager merges @MockBean fields
+    // across the enclosing-instance hierarchy, so re-declaring the same type
+    // in a @Nested class produces a "Duplicate mock definition" error.
+    @MockBean
+    private SettingsRepository settingsRepository;
+
+    @MockBean
+    private OutboxEventRepository outboxEventRepository;
 
     /**
      * Scenario 1: JWKS endpoint fails at runtime → 503 SERVICE_UNAVAILABLE (fail-closed)
