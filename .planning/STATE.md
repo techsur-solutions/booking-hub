@@ -3,15 +3,15 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 6
-status: planning
-last_updated: "2026-10-08T18:24:39.631Z"
+status: unknown
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-10-09T00:02:22.656Z"
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 38
-  completed_plans: 24
-  percent: 38
-last_activity: "2026-10-08 — Phase 3 complete"
+  total_plans: 41
+  completed_plans: 25
+  percent: 13
 ---
 
 # Project State
@@ -74,6 +74,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 03-identity-access-control P03 | 8min | 3 tasks | 11 files |
 | Phase 03-identity-access-control P04 | 8min | 2 tasks | 16 files |
 | Phase 03-identity-access-control P05 | 10min | 3 tasks | 13 files |
+| Phase 04-reference-data-extensibility-configuration P03 | 55min | 3 tasks | 26 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,9 @@ Recent decisions affecting current work:
 - [Phase 03-04]: createUser generates random initial password with temporary=true (improvement over legacy's permanent password)
 - [Phase 03-05]: F0 Open Question #18 resolved: no in-memory permission cache (changes take effect on next JWT issue, improvement over legacy's restart-required behavior)
 - [Phase 03-05]: TechArch §5 choice: scheduled polling-publisher bean (not Debezium CDC) for outbox relay - simpler, zero new infra, sets precedent
+- [Phase 04-03]: F0-driven schema completion: custom_fields.required column (TechArch's V1 DDL omitted it entirely) added additively in V2 - storage/retrieval only, enforcement deferred to Phase 5's booking-service
+- [Phase 04-03]: custom-field-service Tier-2 role requirement is an EXACT match (not merely not-weaker) to Gateway's Tier-1 for the entire /custom-fields/**+/field-templates/** route group - no read/write split, unlike locations-resources-service
+- [Phase 04-03]: CUSTOM_FIELD_VALUE_INVALID error code deliberately NOT implemented in custom-field-service - validating custom_field_values[] is Phase 5 booking-service scope
 
 ### Pending Todos
 
@@ -130,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-08T15:37:53.943Z
-Stopped at: Completed 03-05-PLAN.md
+Last session: 2026-10-09T00:02:22.649Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
