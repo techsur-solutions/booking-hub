@@ -169,7 +169,13 @@ Plans:
   2. Automated test coverage exists for every validation rule, workflow transition, and permission check identified in F0, including explicit edge-case coverage for conflict-detection, approval/auto-approve interactions, recurring-booking edit/delete scoping, and permission-matrix boundaries.
   3. A CI-enforced regression suite runs on every change and blocks merge/release if a previously passing parity test now fails.
   4. Every F0 Open Question that gets resolved has its decision recorded and a new corresponding test added — a resolution without a new test is rejected.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Traceability matrix foundation: seed from baseline-inventory.md, map findings to FRD requirements
+- [ ] 08-02-PLAN.md — Test coverage analysis: gap report, test-writing guide with patterns from Phase 3 tests
+- [ ] 08-03-PLAN.md — CI regression pipeline: GitHub Actions workflow, branch protection setup, local pre-push runner
+- [ ] 08-04-PLAN.md — Open Question resolution protocol: 6-step workflow, test stubs for 13 open questions, F13 completion criteria
 
 ## Progress
 
@@ -185,7 +191,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Core Booking & Approval Workflow | 0/TBD | Not started | - |
 | 6. Notifications & Audit Logging | 0/TBD | Not started | - |
 | 7. Public Feeds | 0/3 | Not started | - |
-| 8. Regression Verification & Test Traceability | 0/TBD | Not started | - |
+| 8. Regression Verification & Test Traceability | 0/4 | Not started | - |
 
 ---
 *Roadmap created: 2026-10-06*
