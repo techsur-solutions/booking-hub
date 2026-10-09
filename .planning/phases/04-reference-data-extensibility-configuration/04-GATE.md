@@ -3,9 +3,11 @@ phase: 04
 gate_status: passed
 build_command: "(cd services/locations-resources-service && mvn -q compile -DskipTests) && (cd services/custom-field-service && mvn -q compile -DskipTests) && (cd services/settings-service && mvn -q compile -DskipTests)"
 test_command: "(cd services/locations-resources-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/custom-field-service && mvn -q test -Dtest='!ApplicationContextBootTest') && (cd services/settings-service && mvn -q test -Dtest='!ApplicationContextBootTest')"
-last_updated: 2026-10-09T00:22:36Z
+last_updated: 2026-10-09T15:47:45Z
 tests_disabled_during_fixes: none
 shadowed_sources: 0
+review_blockers_open: 0
+boot_smoke: pass
 waves:
   - wave: 1
     build: pass
@@ -860,3 +862,12 @@ Hibernate: insert into settings (approve_booking,calendar_max_time,calendar_min_
 TEST_EXIT=0
 ```
 
+
+## Backend pre-push gate
+
+- Status: skipped
+- Wave-gate coverage: INCOMPLETE — wave(s) 2 ran with no GATE.md entry
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=bf4ce13480e8f588a1aff808ba54a9602e8c6b1f test_files=48 skip_marks=2 shadow_files=0
+```
