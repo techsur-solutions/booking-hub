@@ -228,16 +228,18 @@ public class BookingWriteService {
             validateLocationForCreate(locationId);
         }
 
-        // Re-validate resources and get unique IDs if changed
-        List<UUID> resourceIdsToUse = request.resourceIds() != null
+        // Re-validate resources and get unique IDs for conflict detection.
+        // When resource_ids is absent the existing DB resource set is used so that a
+        // time-only update still runs the full resource-level conflict check.
+        // resolveAndValidateResources() filters to is_unique=true (caller responsibility
+        // per ConflictDetectionService's named decision).
+        List<UUID> candidateResourceIds = request.resourceIds() != null
                 ? request.resourceIds()
                 : bookingResourceRepository.findByBookingId(id).stream()
                         .map(BookingResource::getResourceId)
                         .collect(Collectors.toList());
 
-        List<UUID> uniqueResourceIds = request.resourceIds() != null
-                ? resolveAndValidateResources(request.resourceIds())
-                : List.of(); // No re-validation for unchanged resources (we use current db state)
+        List<UUID> uniqueResourceIds = resolveAndValidateResources(candidateResourceIds);
 
         // Step 4: Re-run conflict detection, excluding this booking's own prior state
         ConflictCheckResult conflictResult = conflictDetectionService.checkConflicts(
