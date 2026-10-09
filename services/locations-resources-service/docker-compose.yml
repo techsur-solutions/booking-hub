@@ -15,6 +15,17 @@ services:
     ports:
       - "5433:5432"
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics check_port_connectivity"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+
   app:
     build: .
     ports:
@@ -25,8 +36,14 @@ services:
       DB_NAME: locres_db
       DB_USER: locres_svc
       DB_PASSWORD: locres_svc_pw
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
     depends_on:
       db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
 volumes:

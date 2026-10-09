@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,9 +35,28 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * All outcomes must produce ApiError JSON shape, verified by deserializing response bodies.
  *
- * Excludes datasource/JPA/Flyway autoconfiguration since this test only exercises
- * the security filter chain, not persistence — the real controllers (plan 04-02)
- * would otherwise require a live database.
+ * Plan 04-02 update: this test used to exclude datasource/JPA/Flyway
+ * autoconfiguration and route through a test-only TestLocationsController
+ * stub mapped to /locations, because the real LocationController didn't
+ * exist yet. Now that plan 04-02's LocationController is the real @PostMapping
+ * /GetMapping("/locations") handler, excluding JPA/DataSource/Flyway breaks
+ * LocationController's bean wiring (it depends on LocationService ->
+ * LocationRepository, a Spring Data JPA repository) AND the stub's identical
+ * @GetMapping("/locations")/@PostMapping("/locations") mappings collide with
+ * the real controller's ("Ambiguous mapping" at context-refresh time) [Rule 3
+ * - Blocking, discovered while verifying Task 3]. Fixed by: (1) activating
+ * the "test" Spring profile (same application-test.properties pointing at
+ * the real docker-compose Postgres used by SchemaCompletionTest, rather than
+ * excluding persistence autoconfiguration) so LocationController's real
+ * dependency chain resolves, and (2) deleting the now-redundant
+ * TestLocationsController stub below — the real LocationController exercises
+ * the exact same @PreAuthorize role-gating + LocationResourceAccessDeniedHandler
+ * integration this test asserts on, so the stub's job is already done for real.
+ *
+ * @ActiveProfiles("test") is applied on each @Nested inner class directly
+ * (not just the outer class) because each one carries its own @SpringBootTest
+ * and Spring's nested-test-config inheritance is not guaranteed across that
+ * combination.
  */
 class Tier2FailClosedTest {
 
@@ -47,7 +67,8 @@ class Tier2FailClosedTest {
      * Must return 401 with ApiError body (plain unauthenticated case, not 503).
      */
     @Nested
-    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"})
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+    @ActiveProfiles("test")
     @AutoConfigureMockMvc
     @DisplayName("Scenario 2: Missing token -> 401 AUTH_UNAUTHENTICATED")
     class MissingTokenTest {
@@ -121,7 +142,8 @@ class Tier2FailClosedTest {
      * principal with NO realm roles, then accesses an admin-only endpoint.
      */
     @Nested
-    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"})
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+    @ActiveProfiles("test")
     @AutoConfigureMockMvc
     @DisplayName("Scenario 3: Authenticated but insufficient role -> 403 LOCATION_RESOURCE_FORBIDDEN")
     class InsufficientRoleTest {
@@ -172,7 +194,14 @@ class Tier2FailClosedTest {
         @Test
         @DisplayName("Authenticated user with NO roles accessing role-protected endpoint yields 403 LOCATION_RESOURCE_FORBIDDEN")
         void insufficientRole_returns403ApiError() throws Exception {
+            // A well-formed JSON body is required here: @RequestBody argument
+            // resolution happens before the @PreAuthorize method-security proxy
+            // intercepts the call, so a missing/unparsable body short-circuits
+            // to 400 before role-gating ever runs. This test's whole point is
+            // proving the ROLE check fires 403, so the body must be valid.
             String responseBody = mockMvc.perform(post("/locations")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"name\":\"Test Room\"}")
                             .with(jwt()
                                     .jwt(jwt -> jwt
                                             .claim("sub", "test-user-id")
@@ -211,26 +240,5 @@ class Tier2FailClosedTest {
         void jwksOutageHandlerExists() {
             assertTrue(true, "Handler wiring verified via SecurityConfig grep check; runtime behavior proven by Scenario 2/3 integration tests exercising the same entry point/handler wiring");
         }
-    }
-}
-
-/**
- * Test-only controller exercising the @PreAuthorize + LocationResourceAccessDeniedHandler
- * integration for the write-role requirement this service will enforce for real
- * once plan 04-02's LocationController exists.
- */
-@org.springframework.web.bind.annotation.RestController
-class TestLocationsController {
-
-    @org.springframework.web.bind.annotation.GetMapping("/locations")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('role_calendar_viewer')")
-    public String list() {
-        return "[]";
-    }
-
-    @org.springframework.web.bind.annotation.PostMapping("/locations")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('role_location_admin')")
-    public String create() {
-        return "{}";
     }
 }

@@ -62,6 +62,14 @@
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
 
+        <!-- Spring Boot AMQP (outbox-to-RabbitMQ polling publisher, F4's event relay -
+             not present in Phase 2's scaffold, this service needed no messaging
+             dependency until this plan) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
         <!-- Flyway -->
         <dependency>
             <groupId>org.flywaydb</groupId>
