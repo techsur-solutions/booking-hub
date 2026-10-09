@@ -28,9 +28,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Integration test for CustomFieldController.
  *
  * Tests field_type enum + options[] validation (scenarios 1-4), the
- * no-read-carve-out uniform admin gating (scenario 5), and the
+ * no-read-carve-out uniform admin gating (scenario 5), the
  * applicability-query endpoint's global + context-specific resolution
- * (scenario 6) — against the running docker-compose Postgres (switched from
+ * (scenario 6), and a real-Keycloak-shaped realm_access.roles claim actually
+ * granting access through SecurityConfig's JwtAuthenticationConverter
+ * (scenario 7) — against the running docker-compose Postgres (switched from
  * Testcontainers due to Docker API compatibility in this sandbox, same
  * deviation already established by DomainRepositoryTest in plan 04-03).
  */
@@ -53,6 +55,10 @@ class CustomFieldControllerIntegrationTest {
 
     @Autowired
     private OutboxEventRepository outboxEventRepository;
+
+    @Autowired
+    private org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
+        jwtAuthenticationConverter;
 
     @BeforeEach
     void setUp() {
@@ -201,5 +207,48 @@ class CustomFieldControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.id=='" + fieldA.getId() + "')]").exists())
                 .andExpect(jsonPath("$[?(@.id=='" + fieldB.getId() + "')]").doesNotExist());
+    }
+
+    /**
+     * Scenario 7: a REAL Keycloak-shaped token — realm_access.roles nested
+     * claim run through this service's ACTUAL JwtAuthenticationConverter bean
+     * — must produce a ROLE_-prefixed authority @PreAuthorize can match.
+     *
+     * Named regression guard (Rule 1 bugfix, same root cause independently
+     * found in plan 04-06's settings-service): every other scenario in this
+     * file uses jwt().authorities(() -> "ROLE_...") which sets Spring Security
+     * authorities DIRECTLY on the mock Authentication, which is why it would
+     * pass identically whether or not a JwtAuthenticationConverter bean is
+     * wired at all — Spring Security Test's jwt() post-processor builds its
+     * own JwtAuthenticationToken and does NOT invoke the application's
+     * configured oauth2ResourceServer().jwt().jwtAuthenticationConverter(...)
+     * bean on its own. To actually exercise this service's REAL
+     * realmRoleJwtAuthenticationConverter logic (not merely assert it compiles),
+     * this test autowires that exact bean and feeds its extracted authorities
+     * into the jwt() post-processor — proving the application's own conversion
+     * logic (not a test shortcut) correctly turns a realistic nested
+     * realm_access.roles claim into something @PreAuthorize("hasRole(...)")
+     * actually matches.
+     */
+    @Test
+    void realKeycloakShapedToken_withRealmAccessRolesClaim_grantsAccess() throws Exception {
+        org.springframework.security.oauth2.jwt.Jwt sampleJwt =
+            org.springframework.security.oauth2.jwt.Jwt.withTokenValue("test-token")
+                .header("alg", "none")
+                .claim("sub", UUID.randomUUID().toString())
+                .claim("realm_access", java.util.Map.of(
+                    "roles", java.util.List.of("role_customfield_admin")))
+                .build();
+
+        var authorities = jwtAuthenticationConverter.convert(sampleJwt).getAuthorities();
+
+        mockMvc.perform(get("/custom-fields")
+                        .with(jwt()
+                                .jwt(jwtBuilder -> jwtBuilder
+                                    .claim("sub", sampleJwt.getSubject())
+                                    .claim("realm_access", java.util.Map.of(
+                                        "roles", java.util.List.of("role_customfield_admin"))))
+                                .authorities(authorities)))
+                .andExpect(status().isOk());
     }
 }
