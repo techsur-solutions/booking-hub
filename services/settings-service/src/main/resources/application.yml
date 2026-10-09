@@ -32,6 +32,10 @@ spring:
         # will cause startup failure with "No bean of type RabbitListenerContainerFactory"
         auto-startup: false
 
+outbox:
+  poll-interval-ms: 2000
+  batch-size: 100
+
 management:
   endpoints:
     web:
