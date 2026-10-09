@@ -77,13 +77,17 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
      * list()-action filter capabilities (status= and title/description LIKE keyword search
      * confirmed by F0 findings/01-booking-core.md) as query params on the SAME endpoint.
      */
-    @Query("SELECT b FROM Booking b WHERE b.deletedAt IS NULL " +
-           "AND b.startTime < :to AND :from < b.endTime " +
-           "AND (:locationId IS NULL OR b.locationId = :locationId) " +
-           "AND (:status IS NULL OR b.status = :status) " +
-           "AND (:q IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) " +
-           "     OR LOWER(b.description) LIKE LOWER(CONCAT('%', :q, '%'))) " +
-           "ORDER BY b.startTime ASC")
+    @Query(value = """
+            SELECT * FROM bookings
+            WHERE deleted_at IS NULL
+              AND start_time < :to AND :from < end_time
+              AND (:locationId IS NULL OR location_id = :locationId)
+              AND (CAST(:status AS text) IS NULL OR status = :status)
+              AND (CAST(:q AS text) IS NULL
+                   OR LOWER(title) LIKE LOWER(CONCAT('%', CAST(:q AS text), '%'))
+                   OR LOWER(COALESCE(description, '')) LIKE LOWER(CONCAT('%', CAST(:q AS text), '%')))
+            ORDER BY start_time ASC
+            """, nativeQuery = true)
     List<Booking> findInRange(
             @Param("from") Instant from,
             @Param("to") Instant to,
