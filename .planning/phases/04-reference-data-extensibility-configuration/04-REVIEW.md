@@ -135,6 +135,8 @@ iteration: 1
   *Refutation attempt:* Could argue that `AmqpException` covers all Spring AMQP exceptions. Checked Spring AMQP source — `AmqpException` IS the root of the Spring AMQP exception hierarchy, so in practice `rabbitTemplate.send()` will only throw `AmqpException` subclasses for AMQP failures. However, the save-outside-try is still structurally wrong: if `outboxEventRepository.save()` throws, the exception escapes the loop, aborting the transaction, and the batch continues with partially-committed state on retrial. This is a real, not theoretical, failure path when the DB connection is briefly interrupted mid-batch.
 - **Fix direction:** Move `outboxEventRepository.save(event)` inside the `try` block (after the status-set lines) and add a separate catch for the save itself, OR wrap the entire loop body (including the save) in an individual per-event try/catch so a single-event failure never aborts the remaining batch.
 
+**Resolution:** fixed (c826c0d) — moved `outboxEventRepository.save(event)` inside both branches of the try/catch (success path after status set; AmqpException path after attemptCount increment) in all three OutboxPublisher files. A non-AmqpException from `rabbitTemplate.send()` now propagates without calling save, leaving the DB row untouched in `pending` state — correct outbox-pattern behaviour.
+
 ---
 
 ## WARNINGs
@@ -154,6 +156,8 @@ iteration: 1
   Phase 4 is now complete. The comment says "Disabled until Phase 3" — the current phase IS Phase 4, and Phase 3 has already shipped. There are no `@RabbitListener` beans in settings-service (confirmed by grep), so `auto-startup: false` is harmless, but the comment is factually wrong about the failure condition ("No bean of type RabbitListenerContainerFactory" is not what happens when listener beans are absent — it's what happens when the listener container factory itself is absent) and is misleading about which phase this was deferred to. It is not a functional defect but could cause an operator/dev to incorrectly believe they must add a listener bean before enabling this.
 - **Fix direction:** Remove the entire `listener.simple.auto-startup: false` block (it is no longer needed since settings-service will never have RabbitMQ consumer beans — it is a pure publisher) or update the comment to accurately reflect that this setting should remain `false` permanently for settings-service.
 
+**Resolution:** fixed (427d94e) — replaced the three-line stale Phase 3 comment with an accurate comment stating that `auto-startup: false` is a permanent setting because settings-service is a pure outbox publisher with no `@RabbitListener` beans.
+
 ---
 
 ### W2: `SettingsService.update()` performs partial-update logic with a structural inconsistency: individual domain setters (`setApproveBooking`, `setCalendarMinTime`, etc.) each independently call `Instant.now()` to update `updatedAt`, which is then overwritten by an explicit `settings.setUpdatedAt(Instant.now())` call. This means `updatedAt` gets set up to four times in a single update, and the FINAL explicit `setUpdatedAt` always wins — but the outbox payload `payload.put("updated_at", settings.getUpdatedAt().toString())` captures this final value correctly. The only real risk is that IF a downstream reader ever receives a slightly earlier timestamp (e.g., if the outbox row was written between two setter calls instead of at the end), there would be a discrepancy. In the current code this cannot happen since the payload is built AFTER the final `setUpdatedAt`.
@@ -172,6 +176,8 @@ iteration: 1
   Only `api-gateway` receives `KEYCLOAK_HOST: keycloak` and `KEYCLOAK_PORT: 8080` (docker-compose.yml:295-296). `locations-resources-service` (lines 91-112), `custom-field-service` (lines 114-135), and `settings-service` (lines 206-227) have no `KEYCLOAK_HOST`/`KEYCLOAK_PORT` entries. When these services start inside docker-compose, Spring Security's OAuth2 resource server will attempt to fetch JWKS from `http://localhost:8180/realms/bookinghub/.well-known/openid-configuration` (the default), which is unreachable from inside the container network. Any request bearing a real JWT will fail at token validation time with a `JwksOutageAuthenticationEntryPoint` 503 response — not a startup failure, but every authenticated call will be 503 in the docker-compose stack.  
   *Note:* This same omission pre-exists for `users-permissions-service` (phase 3, not this phase's introduction), so it is a cross-phase pattern. The phase-04 contribution to the problem is adding three more services with the same gap.
 - **Fix direction:** Add `KEYCLOAK_HOST: keycloak`, `KEYCLOAK_PORT: 8080`, and `KEYCLOAK_REALM: bookinghub` to the `environment` blocks of `locations-resources-service`, `custom-field-service`, and `settings-service` in `docker-compose.yml`.
+
+**Resolution:** fixed (e88609b) — added `KEYCLOAK_HOST: keycloak`, `KEYCLOAK_PORT: 8080`, and `KEYCLOAK_REALM: bookinghub` to the environment blocks of all three services, and added `keycloak: condition: service_healthy` to their `depends_on` blocks so they wait for Keycloak to be ready before starting.
 
 ---
 
