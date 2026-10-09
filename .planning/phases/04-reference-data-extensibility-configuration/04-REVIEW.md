@@ -1,8 +1,8 @@
 ---
 phase: 4
 status: issues_found
-blockers: 1
-warnings: 3
+blockers: 0
+warnings: 1
 files_reviewed: 87
 files_reviewed_list:
   - services/locations-resources-service/src/main/java/com/bookinghub/locationsresources/service/LocationService.java
@@ -103,111 +103,66 @@ files_reviewed_list:
   - services/settings-service/src/test/java/com/bookinghub/settings/security/Tier2FailClosedTest.java
   - services/settings-service/src/test/resources/application-test.properties
   - docker-compose.yml
-reviewed_at: 2026-10-09T15:04:42Z
-iteration: 1
+reviewed_at: 2026-10-09T16:00:00Z
+iteration: 2
 ---
 
 # Phase 4 Code Review
 
 ## BLOCKERs
 
-### B1: `locations-resources-service` and `custom-field-service` outbox publishers fail with an unhandled non-`AmqpException` runtime exception — the outer `outboxEventRepository.save(event)` call is placed unconditionally AFTER the try/catch, but a non-`AmqpException` thrown during publish will escape the loop and skip persisting all remaining events' state changes in the same batch.
-
-- **File:** `services/locations-resources-service/src/main/java/com/bookinghub/locationsresources/outbox/OutboxPublisher.java`:65-88  
-  `services/custom-field-service/src/main/java/com/bookinghub/customfield/outbox/OutboxPublisher.java`:54-78  
-  `services/settings-service/src/main/java/com/bookinghub/settings/outbox/OutboxPublisher.java`:59-84
-- **Category:** bug
-- **Evidence:**  
-  In every `OutboxPublisher.relayPendingEvents()` the structure is:
-  ```java
-  for (OutboxEvent event : batch) {
-      try {
-          rabbitTemplate.send(...);
-          event.setStatus("published");
-          event.setPublishedAt(Instant.now());
-      } catch (AmqpException ex) {
-          event.incrementAttemptCount();
-      }
-      outboxEventRepository.save(event);  // ← outside the try/catch
-  }
-  ```
-  The catch only handles `AmqpException`. `RabbitTemplate.send()` can additionally throw unchecked `AmqpConnectException` (which IS a subclass of `AmqpException` and is caught), but the `outboxEventRepository.save(event)` call itself can throw `DataAccessException` (e.g. if the DB connection drops between the batch load and the save). That exception will propagate out of the loop, aborting the `@Transactional` and rolling back ALL saves in the batch that were already executed — meaning events whose status was just set to `"published"` are silently rolled back to `"pending"` in the DB (fine, they'll retry), but the bigger concern is a bug at the **start** of the loop: if an exception escapes the `try/catch` block inside the loop (e.g., from a hypothetical `RuntimeException` thrown by `rabbitTemplate.send` that is NOT an `AmqpException` subclass), the `outboxEventRepository.save(event)` for that event is also skipped — the event's in-memory state is mutated (`setStatus("published")`), but the save never runs for it, and the transaction eventually rolls back. This is a silent data-integrity gap where the message was delivered to RabbitMQ but the outbox row is never marked `published`, causing a re-publish on the next poll (a correctness issue: downstream consumers must handle duplicate delivery, which the `idempotency_key` header is supposed to support, but the design comment claims "never loses" guarantees that the loop structure doesn't fully back up). The identical pattern is present in all three services.  
-  *Refutation attempt:* Could argue that `AmqpException` covers all Spring AMQP exceptions. Checked Spring AMQP source — `AmqpException` IS the root of the Spring AMQP exception hierarchy, so in practice `rabbitTemplate.send()` will only throw `AmqpException` subclasses for AMQP failures. However, the save-outside-try is still structurally wrong: if `outboxEventRepository.save()` throws, the exception escapes the loop, aborting the transaction, and the batch continues with partially-committed state on retrial. This is a real, not theoretical, failure path when the DB connection is briefly interrupted mid-batch.
-- **Fix direction:** Move `outboxEventRepository.save(event)` inside the `try` block (after the status-set lines) and add a separate catch for the save itself, OR wrap the entire loop body (including the save) in an individual per-event try/catch so a single-event failure never aborts the remaining batch.
-
-**Resolution:** fixed (c826c0d) — moved `outboxEventRepository.save(event)` inside both branches of the try/catch (success path after status set; AmqpException path after attemptCount increment) in all three OutboxPublisher files. A non-AmqpException from `rabbitTemplate.send()` now propagates without calling save, leaving the DB row untouched in `pending` state — correct outbox-pattern behaviour.
+_None. B1 from iteration 1 is resolved._
 
 ---
 
 ## WARNINGs
 
-### W1: `settings-service/application.yml` contains a stale/wrong comment block inherited from a previous phase that could mislead operators and future developers.
-
-- **File:** `services/settings-service/src/main/resources/application.yml`:28-33
-- **Evidence:**  
-  ```yaml
-  listener:
-    simple:
-      # Disabled until Phase 3: RabbitMQ listener beans will be implemented in Phase 3
-      # when event-driven message processing is added. Enabling without listener beans
-      # will cause startup failure with "No bean of type RabbitListenerContainerFactory"
-      auto-startup: false
-  ```
-  Phase 4 is now complete. The comment says "Disabled until Phase 3" — the current phase IS Phase 4, and Phase 3 has already shipped. There are no `@RabbitListener` beans in settings-service (confirmed by grep), so `auto-startup: false` is harmless, but the comment is factually wrong about the failure condition ("No bean of type RabbitListenerContainerFactory" is not what happens when listener beans are absent — it's what happens when the listener container factory itself is absent) and is misleading about which phase this was deferred to. It is not a functional defect but could cause an operator/dev to incorrectly believe they must add a listener bean before enabling this.
-- **Fix direction:** Remove the entire `listener.simple.auto-startup: false` block (it is no longer needed since settings-service will never have RabbitMQ consumer beans — it is a pure publisher) or update the comment to accurately reflect that this setting should remain `false` permanently for settings-service.
-
-**Resolution:** fixed (427d94e) — replaced the three-line stale Phase 3 comment with an accurate comment stating that `auto-startup: false` is a permanent setting because settings-service is a pure outbox publisher with no `@RabbitListener` beans.
+### W1 (iteration 1) — RESOLVED ✓
+**`settings-service/application.yml` stale Phase 3 comment.**
+- **Fix (427d94e):** The three-line stale "Disabled until Phase 3" comment was replaced with an accurate comment: `settings-service is a pure outbox publisher — it has no @RabbitListener beans and never will. Keep auto-startup: false permanently to suppress the idle SimpleMessageListenerContainer Spring Boot would otherwise start.`
+- **Verification:** Read `services/settings-service/src/main/resources/application.yml` lines 28–33 — comment is accurate and no regression introduced.
+- **Status:** RESOLVED.
 
 ---
 
-### W2: `SettingsService.update()` performs partial-update logic with a structural inconsistency: individual domain setters (`setApproveBooking`, `setCalendarMinTime`, etc.) each independently call `Instant.now()` to update `updatedAt`, which is then overwritten by an explicit `settings.setUpdatedAt(Instant.now())` call. This means `updatedAt` gets set up to four times in a single update, and the FINAL explicit `setUpdatedAt` always wins — but the outbox payload `payload.put("updated_at", settings.getUpdatedAt().toString())` captures this final value correctly. The only real risk is that IF a downstream reader ever receives a slightly earlier timestamp (e.g., if the outbox row was written between two setter calls instead of at the end), there would be a discrepancy. In the current code this cannot happen since the payload is built AFTER the final `setUpdatedAt`.
-
-- **File:** `services/settings-service/src/main/java/com/bookinghub/settings/service/SettingsService.java`:110-161
-- **Evidence:**  
-  `setApproveBooking(value)` at line 111 calls `this.updatedAt = Instant.now()` inside the setter (Settings.java:79). Then `setCalendarMinTime`, `setCalendarMaxTime`, `setCalendarSlotSize` each do the same. Then line 151 calls `settings.setUpdatedAt(Instant.now())` explicitly, overwriting all prior values. Then the outbox payload is built using `settings.getUpdatedAt()` (line 161) which is the correct final value. The actual persisted `updated_at` is the value from the final `setUpdatedAt` call (line 151), which is also the value saved and published. However, the code is unnecessarily fragile: if the `setUpdatedAt` call at line 151 were removed or reordered, the outbox payload would capture a slightly different timestamp than what gets persisted.
-- **Fix direction:** Remove `this.updatedAt = Instant.now()` from the individual domain setters in `Settings.java` and rely solely on the explicit `setUpdatedAt` call in the service layer (matching the pattern used by `Location` and `Resource` entities where the service controls `updatedAt` explicitly). This makes the update logic unambiguous.
-
----
-
-### W3: `docker-compose.yml` is missing `KEYCLOAK_HOST`, `KEYCLOAK_PORT`, and `KEYCLOAK_REALM` environment variables for `locations-resources-service`, `custom-field-service`, and `settings-service`. All three services use `${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}` as their JWT issuer-uri default, which is correct for local development outside Docker but resolves to a non-routable address inside the docker-compose network where Keycloak is reachable only as `keycloak:8080`.
-
-- **File:** `docker-compose.yml`:91-135, 206-227 (the three new service entries)
-- **Evidence:**  
-  Only `api-gateway` receives `KEYCLOAK_HOST: keycloak` and `KEYCLOAK_PORT: 8080` (docker-compose.yml:295-296). `locations-resources-service` (lines 91-112), `custom-field-service` (lines 114-135), and `settings-service` (lines 206-227) have no `KEYCLOAK_HOST`/`KEYCLOAK_PORT` entries. When these services start inside docker-compose, Spring Security's OAuth2 resource server will attempt to fetch JWKS from `http://localhost:8180/realms/bookinghub/.well-known/openid-configuration` (the default), which is unreachable from inside the container network. Any request bearing a real JWT will fail at token validation time with a `JwksOutageAuthenticationEntryPoint` 503 response — not a startup failure, but every authenticated call will be 503 in the docker-compose stack.  
-  *Note:* This same omission pre-exists for `users-permissions-service` (phase 3, not this phase's introduction), so it is a cross-phase pattern. The phase-04 contribution to the problem is adding three more services with the same gap.
-- **Fix direction:** Add `KEYCLOAK_HOST: keycloak`, `KEYCLOAK_PORT: 8080`, and `KEYCLOAK_REALM: bookinghub` to the `environment` blocks of `locations-resources-service`, `custom-field-service`, and `settings-service` in `docker-compose.yml`.
-
-**Resolution:** fixed (e88609b) — added `KEYCLOAK_HOST: keycloak`, `KEYCLOAK_PORT: 8080`, and `KEYCLOAK_REALM: bookinghub` to the environment blocks of all three services, and added `keycloak: condition: service_healthy` to their `depends_on` blocks so they wait for Keycloak to be ready before starting.
+### W2 (iteration 1) — CARRY-FORWARD (not fixed; was not in scope for iteration 2)
+**`SettingsService.update()` / `Settings.java` setters each redundantly update `updatedAt`, which is then overwritten by an explicit `settings.setUpdatedAt(Instant.now())` call at line 151.**
+- **File:** `services/settings-service/src/main/java/com/bookinghub/settings/service/SettingsService.java`:110–161
+- **Evidence:** Individual domain setters (`setApproveBooking`, `setCalendarMinTime`, etc.) each call `this.updatedAt = Instant.now()` internally (Settings.java), and then the service explicitly calls `settings.setUpdatedAt(Instant.now())` after all field updates, overwriting the prior setter-side values. The final explicit `setUpdatedAt` always wins and is the value captured in the outbox payload and persisted — so there is no observable correctness defect in the current code. The concern is latent fragility: if the explicit `setUpdatedAt` call were accidentally removed or reordered, the outbox payload and persisted value could reflect a slightly earlier timestamp than intended. The fix from iteration 1 was not attempted (correctly — it is a WARNING, not a BLOCKER).
+- **Fix direction:** Remove `this.updatedAt = Instant.now()` from the individual domain setters in `Settings.java` and rely solely on the explicit `setUpdatedAt` call in the service layer, matching the pattern used by `Location` and `Resource` entities.
 
 ---
 
-## Cross-file seams checked
+### W3 (iteration 1) — RESOLVED ✓
+**`docker-compose.yml` missing `KEYCLOAK_HOST`/`KEYCLOAK_PORT`/`KEYCLOAK_REALM` for `locations-resources-service`, `custom-field-service`, and `settings-service`.**
+- **Fix (e88609b):** Added `KEYCLOAK_HOST: keycloak`, `KEYCLOAK_PORT: 8080`, `KEYCLOAK_REALM: bookinghub` to the `environment` block of all three services. Also added `keycloak: condition: service_healthy` to each service's `depends_on` block.
+- **Verification:**
+  - `docker-compose.yml` lines 98–112: `locations-resources-service` now has all three vars and the keycloak health dependency. ✓
+  - `docker-compose.yml` lines 126–140: `custom-field-service` likewise. ✓
+  - `docker-compose.yml` lines 223–237: `settings-service` likewise. ✓
+  - `keycloak` service (lines 48–64) has a `healthcheck` defined (TCP probe against port 8080 for `openid-configuration`), so `service_healthy` is a valid dependency condition. ✓
+  - No regression: `RABBITMQ_USER`/`RABBITMQ_USERNAME` naming convention for each service is unchanged and still consistent with each service's `application.yml`. ✓
+- **Status:** RESOLVED.
 
-- `LocationController` → `LocationService` → `LocationRepository`/`OutboxEventRepository`: call signatures match, return types consistent. OK
-- `ResourceController` → `ResourceService` → `ResourceRepository`/`OutboxEventRepository`: call signatures match. OK
-- `LocationDtos.LocationUpsertRequest` ↔ `Location` constructor (6-arg): all fields passed in correct order. OK
-- `ResourceDtos.ResourceUpsertRequest` ↔ `Resource` constructor (5-arg): all fields passed in correct order. OK
-- `LocationResponse` record ↔ `LocationService.toResponse()`: all 10 fields mapped. OK
-- `ResourceResponse` record ↔ `ResourceService.toResponse()`: all 9 fields mapped. OK
-- `CustomFieldController` → `CustomFieldService`: `listApplicableToContext(UUID)`, `get(UUID)`, `create`, `update`, `delete` — signatures match. OK
-- `FieldTemplateController` → `FieldTemplateService`: `list()`, `get(UUID)`, `create`, `update`, `delete` — signatures match. OK
-- `CustomFieldDtos.CustomFieldUpsertRequest` ↔ `CustomField` constructor (4-arg): `Boolean.TRUE.equals(request.required())` correctly handles null. OK
-- `FieldTemplateDtos.FieldTemplateUpsertRequest` ↔ `CustomFieldTemplate` constructor: name/contextId match. OK
-- `FieldTemplateResponse` ↔ `FieldTemplateService.toResponse()`: all 6 fields (id, name, contextId, fieldIds, createdAt, updatedAt) mapped. OK
-- `CustomFieldTemplateRepository.findApplicableToContext(UUID)` JPQL: `WHERE t.contextId = :contextId OR t.contextId IS NULL` — correctly implements global+context logic. OK
-- `SettingsController` → `SettingsService.getCurrent()`/`update()`: no `@Valid` on `SettingsUpdateRequest` — intentional (all fields optional, validation is in service layer). OK
-- `SettingsDtos.SettingsUpdateRequest` ↔ `SettingsService.update()` partial-merge logic: null-check pattern for all four fields is consistent. OK
-- `Settings.id` field type (`Integer`) ↔ `SettingsRepository extends JpaRepository<Settings, Integer>`: consistent. OK
-- `OutboxEvent` entity ↔ `V2` DDL (`outbox` table): all 10 columns map to entity fields in all three services. OK
-- `OutboxPublisher.relayPendingEvents()` ↔ `OutboxEventRepository.findTop100ByStatusOrderByCreatedAtAsc(String)`: derived method name matches `status` field and `createdAt` field on entity. OK
-- `SecurityConfig` `realmRoleJwtAuthenticationConverter()` bean type `Converter<Jwt, ? extends AbstractAuthenticationToken>` ↔ `jwt.jwtAuthenticationConverter(...)` parameter: compatible — `JwtAuthenticationConverter` implements this interface. OK
-- `@PreAuthorize("hasRole('role_location_admin')")` ↔ `SecurityConfig.extractRealmRoleAuthorities()` producing `ROLE_role_location_admin`: Spring's `hasRole()` prepends `ROLE_` prefix automatically, so `hasRole('role_location_admin')` matches `ROLE_role_location_admin`. OK
-- `LocationControllerIntegrationTest.withRole("role_location_admin")` → `SimpleGrantedAuthority("ROLE_role_location_admin")`: consistent with converter output. OK
-- `SettingsControllerIntegrationTest` scenario 2 uses `.authorities(() -> "ROLE_role_settings_admin")` (not via converter) — correct for mock JWT test. OK
-- `docker-compose.yml` `RABBITMQ_USER: guest` for `locations-resources-service` and `custom-field-service` ↔ `application.yml` `${RABBITMQ_USER:guest}`: match. OK
-- `docker-compose.yml` `RABBITMQ_USERNAME: guest` for `settings-service` ↔ `application.yml` `${RABBITMQ_USERNAME:guest}`: match. OK
-- `docker-compose.yml` `KEYCLOAK_HOST`/`KEYCLOAK_PORT` not set for `locations-resources-service`, `custom-field-service`, `settings-service` ↔ issuer-uri default `localhost:8180`: MISMATCH — see W3
-- `custom_field_joins` V1 DDL `ON DELETE CASCADE` on `custom_field_template_id` ↔ `FieldTemplateService.delete()` relying on cascade (not manually deleting joins): correct and consistent. OK
-- `FieldTemplateService.update()` `deleteByCustomFieldTemplateId(id)` (derived Spring Data delete method, no `@Modifying` needed) ↔ `CustomFieldJoinRepository`: works correctly — Spring Data derived delete methods execute within the caller's transaction. OK
-- `CustomFieldService.validateOptions()` uses `CHOICE_BASED_TYPES = Set.of("select", "radio", "checkbox")` ↔ `@Pattern` regex `textfield|select|textarea|radio|checkbox` on DTO: complementary (DTO gatekeeps enum membership; service gatekeeps options requirement for choice subset). OK
-- `settings-service` `V1__init_schema.sql` `chk_settings_singleton CHECK (id = 1)` ↔ `Settings.id` with no `@GeneratedValue` and `SINGLETON_ID = 1` constant: two independent layers both enforce singleton. OK
+---
+
+## B1 (iteration 1) — RESOLVED ✓
+**All three OutboxPublishers: `outboxEventRepository.save(event)` placed after the try/catch, skipped on non-AmqpException.**
+
+- **Fix (c826c0d):** `outboxEventRepository.save(event)` moved inside both branches of the try/catch in all three services:
+  - `locations-resources-service/outbox/OutboxPublisher.java`: `save()` at line 82 (success path, inside try) and line 88 (AmqpException path, inside catch). ✓
+  - `custom-field-service/outbox/OutboxPublisher.java`: `save()` at line 71 (success path) and line 76 (catch). ✓
+  - `settings-service/outbox/OutboxPublisher.java`: `save()` at line 76 (success path) and line 82 (catch). ✓
+- **Regression check:** Both success and failure paths each call `save()` exactly once. A non-AmqpException from `rabbitTemplate.send()` now propagates out of the loop without calling `save()`, leaving the DB row untouched at `pending` — correct outbox-pattern behaviour (the `@Transactional` on the scheduler method rolls back cleanly). No duplicate saves, no skipped saves, no in-memory/DB state divergence. ✓
+- **Status:** RESOLVED. No regression introduced.
+
+---
+
+## Cross-file seams checked (iteration 2 re-verification of affected seams)
+
+- `OutboxPublisher` (all three services) success path: `rabbitTemplate.send()` → `setStatus("published")` / `setPublishedAt()` → `outboxEventRepository.save(event)` — all inside `try`. ✓
+- `OutboxPublisher` (all three services) failure path: `catch (AmqpException)` → `incrementAttemptCount()` → `outboxEventRepository.save(event)` — all inside `catch`. ✓
+- `docker-compose.yml` `KEYCLOAK_HOST: keycloak` / `KEYCLOAK_PORT: 8080` for `locations-resources-service`, `custom-field-service`, `settings-service` ↔ `application.yml` `${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}` default: MISMATCH now resolved — env vars supplied override defaults inside docker-compose. ✓
+- `keycloak` healthcheck defined (`exec 3<>/dev/tcp/localhost/8080`) ↔ `service_healthy` used in `depends_on`: valid — healthcheck exists and probes the correct internal port 8080. ✓
+- `settings-service/application.yml` `listener.simple.auto-startup: false` comment: accurate, no functional change introduced. ✓
+- All other seams verified in iteration 1 (controller→service→repository chains, DTO↔entity constructors, security config, DDL↔entity field mapping) remain unchanged by the fix commits. ✓
