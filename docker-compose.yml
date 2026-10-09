@@ -52,6 +52,10 @@ services:
       # Local-dev-only admin credential - same category as POSTGRES_PASSWORD
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      # Support proxy headers and dynamic hostnames for preview URLs
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
     volumes:
       - ./infra/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     ports:
