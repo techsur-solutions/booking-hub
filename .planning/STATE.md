@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-10-09T18:28:47.992Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-10-09T18:53:25.156Z"
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 46
-  completed_plans: 31
+  completed_plans: 32
   percent: 13
 ---
 
@@ -81,6 +81,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 04-reference-data-extensibility-configuration P02 | 95min | 3 tasks | 25 files |
 | Phase 04-reference-data-extensibility-configuration P06 | 100min | 2 tasks | 10 files |
 | Phase 05-core-booking-approval-workflow P01 | 47min | 3 tasks | 24 files |
+| Phase 05-core-booking-approval-workflow P02 | 18min | 3 tasks | 27 files |
 
 ## Accumulated Context
 
@@ -146,6 +147,7 @@ Recent decisions affecting current work:
 - [Phase 05]: booking_custom_field_values owned by booking_db (not customfld_db): resolves TechArch §2.4/§3.3 DB-ownership contradiction via UUID cross-service reference
 - [Phase 05]: 3 error codes added beyond FRD catalogue: BOOKING_NOT_FOUND, BOOKING_FORBIDDEN, BOOKING_CUSTOM_FIELD_NOT_APPLICABLE
 - [Phase 05]: Tier-2 role split per-action is SUBSET of Gateway's 3-role coarse Tier-1 gate; approve/deny uses manual hasRole + ApprovalForbiddenException (Phase 3 PermissionController precedent)
+- [Phase 05-02]: ConflictDetectionService has ZERO cross-service HTTP calls — is_unique filtering is caller's pre-processing responsibility; 13 ApiException subclasses extracted to individual public files for cross-package throwability
 
 ### Pending Todos
 
@@ -159,6 +161,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T18:28:47.990Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-10-09T18:53:25.155Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
