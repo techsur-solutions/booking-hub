@@ -3,15 +3,15 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 6
-status: planning
-last_updated: "2026-10-09T17:26:50.671Z"
+status: unknown
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-10-09T19:36:42.535Z"
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 46
-  completed_plans: 30
-  percent: 38
-last_activity: "2026-10-09 — Phase 4 complete"
+  completed_plans: 34
+  percent: 13
 ---
 
 # Project State
@@ -80,6 +80,10 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 04-reference-data-extensibility-configuration P04 | 95min | 3 tasks | 17 files |
 | Phase 04-reference-data-extensibility-configuration P02 | 95min | 3 tasks | 25 files |
 | Phase 04-reference-data-extensibility-configuration P06 | 100min | 2 tasks | 10 files |
+| Phase 05-core-booking-approval-workflow P01 | 47min | 3 tasks | 24 files |
+| Phase 05-core-booking-approval-workflow P02 | 18min | 3 tasks | 27 files |
+| Phase 05-core-booking-approval-workflow P03 | 23 min | 3 tasks | 8 files |
+| Phase 05-core-booking-approval-workflow P04 | 13min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -141,6 +145,16 @@ Recent decisions affecting current work:
 - [Phase 04-06]: Fixed sentinel UUID (00000000-0000-0000-0000-000000000001) used as outbox aggregate_id for the Settings singleton - its own PK is the integer 1 but the outbox schema needs a UUID-shaped value for cross-service consistency
 - [Phase 04-06]: Rule 1 bugfix: explicit JwtAuthenticationConverter wiring realm_access.roles to ROLE_-prefixed authorities was required for @PreAuthorize to function at all against a real Keycloak JWT - without it every hasRole() check silently denied all callers
 - [Phase 04-06]: No in-memory settings cache at all - getCurrent() reads the DB directly on every call, closing F0's confirmed legacy restart-required caching quirk
+- [Phase 05]: emailcontact NOT persisted: transient request-only virtual flag, in BookingCreateRequest and event payload only
+- [Phase 05]: booking_custom_field_values owned by booking_db (not customfld_db): resolves TechArch §2.4/§3.3 DB-ownership contradiction via UUID cross-service reference
+- [Phase 05]: 3 error codes added beyond FRD catalogue: BOOKING_NOT_FOUND, BOOKING_FORBIDDEN, BOOKING_CUSTOM_FIELD_NOT_APPLICABLE
+- [Phase 05]: Tier-2 role split per-action is SUBSET of Gateway's 3-role coarse Tier-1 gate; approve/deny uses manual hasRole + ApprovalForbiddenException (Phase 3 PermissionController precedent)
+- [Phase 05-02]: ConflictDetectionService has ZERO cross-service HTTP calls — is_unique filtering is caller's pre-processing responsibility; 13 ApiException subclasses extracted to individual public files for cross-package throwability
+- [Phase 05-core-booking-approval-workflow]: Conflict-enforcement-policy implements ROADMAP's permission-conditional split (hard-block for non-approver, soft-warning for role_booking_approver) through single applyConflictPolicy() — DIVERGES from TechArch §1.5's uniform hard-block; TechArch §1.5 needs documentation correction
+- [Phase 05-core-booking-approval-workflow]: Recurring series bypass-approve applies ONLY to occurrence #1 (F0 confirmed legacy parity); no scope/EditScope field in any DTO (F0 confirmed no series-scoped edit concept); clone returns non-persisted draft with null id per F0 confirmed legacy behavior
+- [Phase 05-04]: calendar/day/list are query-parameter variants of ONE GET /bookings endpoint; status and q are named additions beyond TechArch §4.2's literal 4-param table
+- [Phase 05-04]: getById uses plain findById (not findByIdAndDeletedAtIsNull) for last-known-values policy, mirroring Phase 4's Locations/Resources precedent for cross-system consistency
+- [Phase 05-04]: BookingApprovalController has NO @PreAuthorize — manual hasRole check produces APPROVAL_FORBIDDEN (FRD-named) not generic BOOKING_FORBIDDEN, matching Phase 3 PermissionController precedent
 
 ### Pending Todos
 
@@ -154,6 +168,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T02:17:43.007Z
-Stopped at: Completed 04-06-PLAN.md
+Last session: 2026-10-09T19:36:42.534Z
+Stopped at: Completed 05-04-PLAN.md
 Resume file: None
