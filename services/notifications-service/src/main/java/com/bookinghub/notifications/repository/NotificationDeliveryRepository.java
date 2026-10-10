@@ -30,4 +30,12 @@ public interface NotificationDeliveryRepository
      * endpoint (optional status filter).
      */
     List<NotificationDelivery> findByStatus(String status);
+
+    /**
+     * Find a delivery record by its idempotency key.
+     * Used by:
+     * - NotificationConsumerService: lookup-first idempotency check (plan 06-02).
+     * - DatabaseTrackingMessageRecoverer: mark the row as dead_lettered on DLQ routing.
+     */
+    java.util.Optional<NotificationDelivery> findByIdempotencyKey(String idempotencyKey);
 }
