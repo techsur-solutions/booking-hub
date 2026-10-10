@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Platform Foundation & Infrastructure** - Stand up the nine bounded-context service scaffolds, per-service Postgres, RabbitMQ topology, Keycloak realm, Gateway, and the frontend SPA shell (completed 2026-10-07)
 - [x] **Phase 3: Identity & Access Control** - Users authenticate via Keycloak and every legacy permission flag has a confirmed, enforced Keycloak-role mapping (completed 2026-10-08)
 - [x] **Phase 4: Reference Data, Extensibility & Configuration** - Admins manage locations, resources, custom fields, and system-wide settings that booking depends on (completed 2026-10-09)
-- [ ] **Phase 5: Core Booking & Approval Workflow** - Users create/edit/delete/clone bookings with full conflict detection and an approval workflow
+- [x] **Phase 5: Core Booking & Approval Workflow** - Users create/edit/delete/clone bookings with full conflict detection and an approval workflow (completed 2026-10-10)
 - [ ] **Phase 6: Notifications & Audit Logging** - Booking/account lifecycle events reliably trigger emails and produce an immutable, queryable audit trail
 - [ ] **Phase 7: Public Feeds** - Approved upcoming bookings are exposed via RSS2/iCal/JSON/display-board feeds with zero login required
 - [ ] **Phase 8: Regression Verification & Test Traceability** - A CI-enforced regression suite and traceability matrix make "no functionality lost" continuously verifiable
@@ -114,7 +114,7 @@ Plans:
 
 ### Phase 5: Core Booking & Approval Workflow
 **Goal**: Users can create, edit, delete, and clone bookings with full conflict detection and an approval workflow, so no two conflicting bookings for the same room or resource ever go unnoticed regardless of how they were entered, and every approval/denial decision is final and reaches the right outcome.
-**Status**: Failed
+**Status**: Complete (2026-10-10)
 **Depends on**: Phase 4 (locations, resources, custom fields, approveBooking setting must exist)
 **Requirements**: F1 (F1.1–F1.7), F2 (F2.1–F2.5), F3 (F3.1–F3.4)
 **Success Criteria** (what must be TRUE):
@@ -190,7 +190,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Platform Foundation & Infrastructure | 12/12 | Complete | 2026-10-07 |
 | 3. Identity & Access Control | 5/5 | Complete | 2026-10-08 |
 | 4. Reference Data, Extensibility & Configuration | 6/6 | Complete | 2026-10-09 |
-| 5. Core Booking & Approval Workflow | 0/TBD | Failed | - |
+| 5. Core Booking & Approval Workflow | 0/TBD | Complete | 2026-10-10 |
 | 6. Notifications & Audit Logging | 0/TBD | Not started | - |
 | 7. Public Feeds | 0/3 | Not started | - |
 | 8. Regression Verification & Test Traceability | 0/4 | Not started | - |
