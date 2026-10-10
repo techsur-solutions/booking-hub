@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 06-03-PLAN.md
-last_updated: "2026-10-10T03:26:01.015Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-10-10T03:27:33.135Z"
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 46
-  completed_plans: 35
+  completed_plans: 36
   percent: 13
 ---
 
@@ -85,6 +85,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 05-core-booking-approval-workflow P03 | 23 min | 3 tasks | 8 files |
 | Phase 05-core-booking-approval-workflow P04 | 13min | 2 tasks | 8 files |
 | Phase 06-notifications-audit-logging P03 | 10min | 3 tasks | 19 files |
+| Phase 06-notifications-audit-logging P01 | 13min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -159,6 +160,9 @@ Recent decisions affecting current work:
 - [Phase 06-notifications-audit-logging]: hasAuthority('role_audit_viewer') not hasRole — JwtAuthenticationConverter grants realm roles WITHOUT ROLE_ prefix; hasAuthority matches Keycloak role name verbatim
 - [Phase 06-notifications-audit-logging]: [Phase 06-03]: V2 migration ADDITIVE only (ADD COLUMN NULL + partial unique index WHERE NOT NULL) — V1's REVOKE UPDATE/DELETE immutability grant untouched; multiple nulls allowed
 - [Phase 06-notifications-audit-logging]: [Phase 06-03]: No custom recoverer for audit-log-service RabbitMQ — audit_log_entries is pure append-only fact table; RejectAndDontRequeueRecoverer only (unlike notifications-service's DatabaseTrackingMessageRecoverer)
+- [Phase 06-notifications-audit-logging]: role_audit_viewer gates ALL non-actuator routes on notifications-service (frozen 11-role realm, no dedicated ops role)
+- [Phase 06-notifications-audit-logging]: hasAuthority('role_audit_viewer') without ROLE_ prefix — grant verbatim, match verbatim, avoids double-prefix collision
+- [Phase 06-notifications-audit-logging]: maxAttempts(4) = 1 initial + 3 retries (README's '3 attempts' = 3 retries, 3 backoff gaps for 3 distinct delay values)
 
 ### Pending Todos
 
@@ -172,6 +176,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-10T03:26:01.014Z
-Stopped at: Completed 06-03-PLAN.md
+Last session: 2026-10-10T03:27:33.133Z
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None
