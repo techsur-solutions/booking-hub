@@ -3,15 +3,15 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 6
-status: planning
-last_updated: "2026-10-10T03:08:48.642Z"
+status: unknown
+stopped_at: Completed 06-03-PLAN.md
+last_updated: "2026-10-10T03:26:01.015Z"
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 46
-  completed_plans: 34
-  percent: 50
-last_activity: "2026-10-10 — Phase 5 complete"
+  completed_plans: 35
+  percent: 13
 ---
 
 # Project State
@@ -84,6 +84,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 05-core-booking-approval-workflow P02 | 18min | 3 tasks | 27 files |
 | Phase 05-core-booking-approval-workflow P03 | 23 min | 3 tasks | 8 files |
 | Phase 05-core-booking-approval-workflow P04 | 13min | 2 tasks | 8 files |
+| Phase 06-notifications-audit-logging P03 | 10min | 3 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -155,6 +156,9 @@ Recent decisions affecting current work:
 - [Phase 05-04]: calendar/day/list are query-parameter variants of ONE GET /bookings endpoint; status and q are named additions beyond TechArch §4.2's literal 4-param table
 - [Phase 05-04]: getById uses plain findById (not findByIdAndDeletedAtIsNull) for last-known-values policy, mirroring Phase 4's Locations/Resources precedent for cross-system consistency
 - [Phase 05-04]: BookingApprovalController has NO @PreAuthorize — manual hasRole check produces APPROVAL_FORBIDDEN (FRD-named) not generic BOOKING_FORBIDDEN, matching Phase 3 PermissionController precedent
+- [Phase 06-notifications-audit-logging]: hasAuthority('role_audit_viewer') not hasRole — JwtAuthenticationConverter grants realm roles WITHOUT ROLE_ prefix; hasAuthority matches Keycloak role name verbatim
+- [Phase 06-notifications-audit-logging]: [Phase 06-03]: V2 migration ADDITIVE only (ADD COLUMN NULL + partial unique index WHERE NOT NULL) — V1's REVOKE UPDATE/DELETE immutability grant untouched; multiple nulls allowed
+- [Phase 06-notifications-audit-logging]: [Phase 06-03]: No custom recoverer for audit-log-service RabbitMQ — audit_log_entries is pure append-only fact table; RejectAndDontRequeueRecoverer only (unlike notifications-service's DatabaseTrackingMessageRecoverer)
 
 ### Pending Todos
 
@@ -168,6 +172,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T19:36:42.534Z
-Stopped at: Completed 05-04-PLAN.md
+Last session: 2026-10-10T03:26:01.014Z
+Stopped at: Completed 06-03-PLAN.md
 Resume file: None
