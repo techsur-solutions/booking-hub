@@ -42,6 +42,7 @@ spring:
 
 notifications:
   from-address: ${NOTIFICATIONS_FROM_EMAIL:noreply@bookinghub.local}
+  password-reset-link-base-url: ${NOTIFICATIONS_PASSWORD_RESET_LINK_BASE_URL:http://localhost:3000/reset-password}
 
 management:
   endpoints:
