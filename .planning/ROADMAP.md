@@ -133,7 +133,7 @@ Plans:
 
 ### Phase 6: Notifications & Audit Logging
 **Goal**: Every booking lifecycle event and password reset reliably triggers an email notification, and every state-changing action across the system is captured in an audit trail, so no event is silently lost and every change is accountable after the fact.
-**Status**: In progress
+**Status**: Failed
 **Depends on**: Phase 5 (booking.created/approved/denied events must exist to consume)
 **Requirements**: F8 (F8.1–F8.4), F11 (F11.1–F11.4)
 **Success Criteria** (what must be TRUE):
@@ -192,7 +192,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Identity & Access Control | 5/5 | Complete | 2026-10-08 |
 | 4. Reference Data, Extensibility & Configuration | 6/6 | Complete | 2026-10-09 |
 | 5. Core Booking & Approval Workflow | 0/TBD | Complete | 2026-10-10 |
-| 6. Notifications & Audit Logging | 0/TBD | In progress | - |
+| 6. Notifications & Audit Logging | 0/TBD | Failed | - |
 | 7. Public Feeds | 0/3 | Not started | - |
 | 8. Regression Verification & Test Traceability | 0/4 | Not started | - |
 
