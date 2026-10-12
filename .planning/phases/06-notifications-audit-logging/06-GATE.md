@@ -3,8 +3,9 @@ phase: 06
 gate_status: passed
 build_command: "none"
 test_command: "none"
-last_updated: 2026-10-12T17:36:48Z
+last_updated: 2026-10-12T20:09:08Z
 tests_disabled_during_fixes: none
+shadowed_sources: 0
 review_blockers_open: 0
 boot_smoke: pass
 waves:
@@ -13,6 +14,10 @@ waves:
     tests: pass
     fix_attempts: 0
   - wave: 2
+    build: pass
+    tests: pass
+    fix_attempts: 0
+  - wave: 3
     build: pass
     tests: pass
     fix_attempts: 0
@@ -38,3 +43,10 @@ waves:
 ```
 __GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=45595abbbf6443d40ad3c8088c1ddd30a2bcb8c1 test_files=72 skip_marks=2 shadow_files=0
 ```
+
+## Wave 3
+
+- Build: `none` → pass
+- Tests: `none` → pass
+- Fix attempts: 0/3
+
