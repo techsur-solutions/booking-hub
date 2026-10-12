@@ -42,6 +42,11 @@ spring:
 
 notifications:
   from-address: ${NOTIFICATIONS_FROM_EMAIL:noreply@bookinghub.local}
+  # Base URL of the frontend's reset-password screen. The rendered email appends
+  # "?token={reset_token}". Operator-configurable because the public origin differs
+  # per environment (local dev vs. deployed) and must be a URL the RECIPIENT's browser
+  # can actually reach — never an internal service name.
+  password-reset-link-base-url: ${NOTIFICATIONS_PASSWORD_RESET_LINK_BASE_URL:http://localhost:3000/reset-password}
 
 management:
   endpoints:
