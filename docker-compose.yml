@@ -298,6 +298,7 @@ services:
     environment:
       KEYCLOAK_HOST: keycloak
       KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: bookinghub
     ports:
       - "8080:8080"
     healthcheck:
