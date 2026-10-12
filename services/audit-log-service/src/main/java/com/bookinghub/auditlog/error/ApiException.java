@@ -55,7 +55,7 @@ public abstract class ApiException extends RuntimeException {
  * 403 AUDIT_LOG_FORBIDDEN — authenticated caller lacks role_audit_viewer.
  * Thrown by plan 06-04's AuditLogController via manual hasRole() check.
  */
-class AuditLogForbiddenException extends ApiException {
+public class AuditLogForbiddenException extends ApiException {
     public AuditLogForbiddenException(String message) {
         super(HttpStatus.FORBIDDEN, "AUDIT_LOG_FORBIDDEN", message);
     }
@@ -65,7 +65,7 @@ class AuditLogForbiddenException extends ApiException {
  * 400 AUDIT_LOG_INVALID_DATE_RANGE — from date is after to date, or date format invalid.
  * Thrown by plan 06-04's AuditLogController during parameter validation.
  */
-class AuditLogInvalidDateRangeException extends ApiException {
+public class AuditLogInvalidDateRangeException extends ApiException {
     public AuditLogInvalidDateRangeException(String message) {
         super(HttpStatus.BAD_REQUEST, "AUDIT_LOG_INVALID_DATE_RANGE", message);
     }
