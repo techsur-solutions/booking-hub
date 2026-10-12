@@ -9,7 +9,6 @@ import com.bookinghub.notifications.template.NotificationTemplateService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.AmqpHeaders;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.handler.annotation.Header;
@@ -72,7 +71,7 @@ public class NotificationConsumerService {
     public void onBookingEvent(
             Message message,
             @Header("idempotency_key") String idempotencyKey,
-            @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
+            @Header("amqp_receivedRoutingKey") String routingKey) {
         processEvent(message, idempotencyKey, routingKey);
     }
 
@@ -83,7 +82,7 @@ public class NotificationConsumerService {
     public void onPasswordResetEvent(
             Message message,
             @Header("idempotency_key") String idempotencyKey,
-            @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
+            @Header("amqp_receivedRoutingKey") String routingKey) {
         processEvent(message, idempotencyKey, routingKey);
     }
 
