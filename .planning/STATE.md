@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: unknown
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-10-12T17:27:24.776Z"
+stopped_at: Completed 06-04-PLAN.md
+last_updated: "2026-10-12T17:30:25.368Z"
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 46
-  completed_plans: 37
+  completed_plans: 38
   percent: 13
 ---
 
@@ -86,6 +86,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 05-core-booking-approval-workflow P04 | 13min | 2 tasks | 8 files |
 | Phase 06-notifications-audit-logging P03 | 10min | 3 tasks | 19 files |
 | Phase 06-notifications-audit-logging P01 | 13min | 3 tasks | 13 files |
+| Phase 06-notifications-audit-logging P04 | 25 min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -163,6 +164,10 @@ Recent decisions affecting current work:
 - [Phase 06-notifications-audit-logging]: role_audit_viewer gates ALL non-actuator routes on notifications-service (frozen 11-role realm, no dedicated ops role)
 - [Phase 06-notifications-audit-logging]: hasAuthority('role_audit_viewer') without ROLE_ prefix — grant verbatim, match verbatim, avoids double-prefix collision
 - [Phase 06-notifications-audit-logging]: maxAttempts(4) = 1 initial + 3 retries (README's '3 attempts' = 3 retries, 3 backoff gaps for 3 distinct delay values)
+- [Phase 06-04]: DomainEventParser uses routing-key-derived entity_type/action_type (split on last dot) for uniform extraction across all 23 routing keys — Scales to new queue without per-queue code; future 8th category needs only new @RabbitListener binding
+- [Phase 06-04]: Defensive fallback chains for entity_id/actor_id/occurred_at never throw, use nil-UUID and Instant.now() placeholders — Sparse payloads never cause audit loss; matches F11 principle 'never fail write because data absent'
+- [Phase 06-04]: Manual hasRole('role_audit_viewer') in controller produces FRD-specific AUDIT_LOG_FORBIDDEN (not generic AUTH_FORBIDDEN) — Mirrors Phase 3 PermissionController precedent; SecurityConfig gate + manual check provide defense-in-depth
+- [Phase 06-04]: GET-only API surface with no PUT/DELETE/POST — immutability enforced both at DB grant (06-03) and API layer — Defense-in-depth: even if future bug breaks grant, API surface ensures writes cannot occur
 
 ### Pending Todos
 
@@ -176,6 +181,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-12T17:27:24.775Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-10-12T17:30:12.560Z
+Stopped at: Completed 06-04-PLAN.md
 Resume file: None
