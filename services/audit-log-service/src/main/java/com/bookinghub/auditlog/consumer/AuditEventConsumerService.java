@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
@@ -60,7 +59,7 @@ public class AuditEventConsumerService {
     public void onBookingEvent(
             Message message,
             @Header(name = "idempotency_key", required = false) String idempotencyKey,
-            @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
+            @Header("amqp_receivedRoutingKey") String routingKey) {
         processEvent(message, idempotencyKey, routingKey);
     }
 
@@ -71,7 +70,7 @@ public class AuditEventConsumerService {
     public void onLocationEvent(
             Message message,
             @Header(name = "idempotency_key", required = false) String idempotencyKey,
-            @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
+            @Header("amqp_receivedRoutingKey") String routingKey) {
         processEvent(message, idempotencyKey, routingKey);
     }
 
@@ -82,7 +81,7 @@ public class AuditEventConsumerService {
     public void onResourceEvent(
             Message message,
             @Header(name = "idempotency_key", required = false) String idempotencyKey,
-            @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
+            @Header("amqp_receivedRoutingKey") String routingKey) {
         processEvent(message, idempotencyKey, routingKey);
     }
 
@@ -93,7 +92,7 @@ public class AuditEventConsumerService {
     public void onCustomFieldEvent(
             Message message,
             @Header(name = "idempotency_key", required = false) String idempotencyKey,
-            @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
+            @Header("amqp_receivedRoutingKey") String routingKey) {
         processEvent(message, idempotencyKey, routingKey);
     }
 
@@ -105,7 +104,7 @@ public class AuditEventConsumerService {
     public void onUserEvent(
             Message message,
             @Header(name = "idempotency_key", required = false) String idempotencyKey,
-            @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
+            @Header("amqp_receivedRoutingKey") String routingKey) {
         processEvent(message, idempotencyKey, routingKey);
     }
 
@@ -116,7 +115,7 @@ public class AuditEventConsumerService {
     public void onPermissionEvent(
             Message message,
             @Header(name = "idempotency_key", required = false) String idempotencyKey,
-            @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
+            @Header("amqp_receivedRoutingKey") String routingKey) {
         processEvent(message, idempotencyKey, routingKey);
     }
 
@@ -127,7 +126,7 @@ public class AuditEventConsumerService {
     public void onSettingsEvent(
             Message message,
             @Header(name = "idempotency_key", required = false) String idempotencyKey,
-            @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
+            @Header("amqp_receivedRoutingKey") String routingKey) {
         processEvent(message, idempotencyKey, routingKey);
     }
 
