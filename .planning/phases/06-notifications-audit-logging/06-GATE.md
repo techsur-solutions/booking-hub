@@ -50,3 +50,11 @@ __GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=45595a
 - Tests: `none` → pass
 - Fix attempts: 0/3
 
+
+## Backend pre-push gate
+
+- Status: skipped
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=d4e1ce189ec7d69221e83d5760c5b9f899ca576b test_files=74 skip_marks=2 shadow_files=0
+```
