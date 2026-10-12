@@ -51,6 +51,8 @@ iteration: 1
 
 - **Fix direction:** Replace all occurrences of `@Header(AmqpHeaders.RECEIVED_ROUTING_KEY)` with `@Header("amqp_receivedRoutingKey")` across all 7 listener methods in AuditEventConsumerService.java (lines 63, 74, 84, 96, 108, 119, 130). Remove the now-unused `import org.springframework.amqp.support.AmqpHeaders;` import.
 
+- **Resolution:** fixed (4c7d89c) — Replaced all 7 @Header annotations with string literal "amqp_receivedRoutingKey" to match Spring AMQP's actual header name. Removed unused AmqpHeaders import. Verified: test file confirms header name at AuditEventConsumerIntegrationTest:294,306.
+
 ## WARNINGs
 
 None found.
