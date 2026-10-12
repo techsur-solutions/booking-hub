@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -18,8 +19,6 @@ import java.util.UUID;
  *   controller uses this to build the optional event_type/status filters for
  *   GET /notifications/delivery-status and the status='dead_lettered' filter
  *   for GET /notifications/dead-letter.
- *
- * No extra derived-query methods needed beyond what both interfaces provide.
  */
 public interface NotificationDeliveryRepository
         extends JpaRepository<NotificationDelivery, UUID>, JpaSpecificationExecutor<NotificationDelivery> {
@@ -30,4 +29,11 @@ public interface NotificationDeliveryRepository
      * endpoint (optional status filter).
      */
     List<NotificationDelivery> findByStatus(String status);
+
+    /**
+     * Find a delivery by idempotency key. Used by plan 06-02's consumer for
+     * the lookup-first idempotency check, and by DatabaseTrackingMessageRecoverer
+     * to mark failed deliveries as dead_lettered.
+     */
+    Optional<NotificationDelivery> findByIdempotencyKey(String idempotencyKey);
 }
