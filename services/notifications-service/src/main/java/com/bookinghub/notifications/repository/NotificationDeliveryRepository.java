@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -30,4 +31,21 @@ public interface NotificationDeliveryRepository
      * endpoint (optional status filter).
      */
     List<NotificationDelivery> findByStatus(String status);
+
+    /**
+     * Look up a delivery row by its idempotency key — the consumer's authoritative
+     * idempotency boundary.
+     *
+     * <p>{@code NotificationConsumerService} calls this BEFORE inserting anything, so it
+     * can distinguish three cases that must behave very differently: an already-{@code sent}
+     * message (no-op, never send twice), a {@code pending}/{@code retrying} row belonging
+     * to the retry of this same message (continue the send attempt without re-inserting),
+     * and a genuinely new message (insert fresh). The table's UNIQUE constraint on
+     * {@code idempotency_key} remains the race-safe backstop for two truly concurrent
+     * deliveries, which no lookup can close on its own.
+     *
+     * <p>{@code DatabaseTrackingMessageRecoverer} also uses this to find the row it must
+     * mark {@code dead_lettered} before the message is rejected to the DLQ.
+     */
+    Optional<NotificationDelivery> findByIdempotencyKey(String idempotencyKey);
 }

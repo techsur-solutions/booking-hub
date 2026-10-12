@@ -3,7 +3,6 @@ package com.bookinghub.notifications.rabbit;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
@@ -20,7 +19,9 @@ import java.util.Map;
  * an initial attempt (natural English reading, gives exactly 3 distinct
  * backoff values for exactly 3 delay-gaps) → maxAttempts(4).
  *
- * DLQ routing: The RejectAndDontRequeueRecoverer causes a basic.reject(requeue=false)
+ * DLQ routing: The DatabaseTrackingMessageRecoverer records the failure as
+ * notification_deliveries.status='dead_lettered' and then delegates to
+ * RejectAndDontRequeueRecoverer, which causes a basic.reject(requeue=false)
  * at final exhaustion or non-retryable exception. The already-declared queue arguments
  * (x-dead-letter-exchange on notifications.booking.q and notifications.passwordreset.q,
  * defined in infra/rabbitmq/definitions.json) then route the rejected message to
@@ -39,7 +40,8 @@ public class RabbitConfig {
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-            ConnectionFactory connectionFactory) {
+            ConnectionFactory connectionFactory,
+            DatabaseTrackingMessageRecoverer databaseTrackingMessageRecoverer) {
 
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
@@ -57,9 +59,12 @@ public class RabbitConfig {
         RetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateless()
                 .retryPolicy(retryPolicy)
                 .backOffPolicy(new RabbitRetryBackOffPolicy())
-                // Final exhaustion / non-retryable path: reject without requeue →
-                // broker's existing x-dead-letter-exchange routes to <queue>.dlq
-                .recoverer(new RejectAndDontRequeueRecoverer())
+                // Final exhaustion path: mark the delivery row 'dead_lettered' (so an
+                // operator can see the system gave up) and THEN reject without requeue →
+                // broker's existing x-dead-letter-exchange routes to <queue>.dlq.
+                // Plan 06-01 used a bare RejectAndDontRequeueRecoverer as a placeholder;
+                // DatabaseTrackingMessageRecoverer delegates to it after the DB write.
+                .recoverer(databaseTrackingMessageRecoverer)
                 .build();
 
         factory.setAdviceChain(interceptor);

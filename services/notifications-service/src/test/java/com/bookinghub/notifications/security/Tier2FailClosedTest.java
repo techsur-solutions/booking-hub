@@ -156,6 +156,18 @@ class Tier2FailClosedTest {
         @MockBean
         private ConnectionFactory connectionFactory;
 
+        // This test class excludes DataSource/JPA and Mail auto-configuration (it is a
+        // pure security test), but plan 06-02 added application @Components that depend on
+        // the repository and mail sender — DatabaseTrackingMessageRecoverer,
+        // NotificationConsumerService and EmailSenderService. Without these mocks the
+        // context fails to load with NoSuchBeanDefinitionException before any security
+        // assertion runs. Same rationale as the ConnectionFactory mock above.
+        @MockBean
+        private com.bookinghub.notifications.repository.NotificationDeliveryRepository notificationDeliveryRepository;
+
+        @MockBean
+        private org.springframework.mail.javamail.JavaMailSender javaMailSender;
+
         @Autowired
         private MockMvc mockMvc;
 
@@ -247,6 +259,14 @@ class Tier2FailClosedTest {
         // Mock ConnectionFactory so context loads without a real RabbitMQ connection
         @MockBean
         private ConnectionFactory connectionFactory;
+
+        // See MissingTokenTest above: plan 06-02's consumer/recoverer/sender beans need
+        // these dependencies, which this context's auto-configuration exclusions remove.
+        @MockBean
+        private com.bookinghub.notifications.repository.NotificationDeliveryRepository notificationDeliveryRepository;
+
+        @MockBean
+        private org.springframework.mail.javamail.JavaMailSender javaMailSender;
 
         @Autowired
         private MockMvc mockMvc;
