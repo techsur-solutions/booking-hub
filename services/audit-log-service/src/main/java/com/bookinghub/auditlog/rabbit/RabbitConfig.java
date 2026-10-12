@@ -56,10 +56,25 @@ public class RabbitConfig {
 
         // Non-retryable exceptions: a message missing its idempotency key can never
         // succeed, so skip straight to DLQ without wasting retry attempts.
+        //
+        // IMPORTANT — why the map holds ONLY the non-retryable entry, and why defaultValue=true:
+        // Spring AMQP wraps whatever a listener throws in a ListenerExecutionFailedException
+        // before the retry interceptor sees it. Spring Retry's BinaryExceptionClassifier
+        // classifies that WRAPPER first and only walks to the cause when the wrapper's own
+        // classification equals the classifier's default. An earlier shape of this config also
+        // mapped Exception -> true; the wrapper's closest match was then that Exception entry,
+        // so the classifier answered "retryable" and never looked at the cause — making the
+        // MissingIdempotencyKeyException -> false entry unreachable dead code, and sending every
+        // malformed message through the full 5s+30s+2min backoff before it dead-lettered.
+        //
+        // With defaultValue=true, the wrapper matches nothing explicitly, classifies as the
+        // default, and the classifier therefore TRAVERSES to the real cause — where
+        // MissingIdempotencyKeyException -> false correctly fires and the message is rejected
+        // immediately. Unmatched (genuinely transient) failures still default to retryable,
+        // which is the behaviour the Exception -> true entry was there to express.
         Map<Class<? extends Throwable>, Boolean> retryable = new HashMap<>();
         retryable.put(MissingIdempotencyKeyException.class, false);
-        retryable.put(Exception.class, true);
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(4, retryable, true);
+        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(4, retryable, true, true);
         // maxAttempts=4: 1 initial + 3 retries, matching "3 attempts with 5s/30s/2min backoff"
         // from infra/rabbitmq/README.md (reading "3 retries" not "3 total attempts")
 
