@@ -61,16 +61,10 @@ cd frontend
 
 # Ensure test:e2e script exists; use playwright test directly as fallback
 if npm run --silent 2>&1 | grep -q 'test:e2e'; then
-  if npm run test:e2e 2>&1 | tee /tmp/pw-output.txt | grep -qE '^[0-9]+ (passed|failed)'; then
-    if grep -q 'failed' /tmp/pw-output.txt; then
-      echo "❌ Frontend tests FAILED"
-      FAILED=$((FAILED + 1))
-    else
-      echo "✅ Frontend tests passed"
-    fi
+  if npm run test:e2e; then
+    echo "✅ Frontend tests passed"
   else
-    # Playwright test exited non-zero
-    echo "❌ Frontend tests FAILED (non-zero exit)"
+    echo "❌ Frontend tests FAILED"
     FAILED=$((FAILED + 1))
   fi
 else
