@@ -14,3 +14,6 @@ data:
   FLYWAY_DB_NAME: "audit_db"
   RABBITMQ_HOST: "rabbitmq"
   RABBITMQ_PORT: "5672"
+  KEYCLOAK_HOST: "keycloak"
+  KEYCLOAK_PORT: "8180"
+  KEYCLOAK_REALM: "bookinghub"

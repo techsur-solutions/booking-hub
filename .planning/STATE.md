@@ -3,15 +3,15 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 6
-status: planning
-last_updated: "2026-10-10T03:08:48.642Z"
+status: unknown
+stopped_at: Completed 06-05-PLAN.md
+last_updated: "2026-10-12T20:07:04.159Z"
 progress:
   total_phases: 8
-  completed_phases: 4
-  total_plans: 46
-  completed_plans: 34
-  percent: 50
-last_activity: "2026-10-10 — Phase 5 complete"
+  completed_phases: 5
+  total_plans: 47
+  completed_plans: 39
+  percent: 13
 ---
 
 # Project State
@@ -84,6 +84,10 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 05-core-booking-approval-workflow P02 | 18min | 3 tasks | 27 files |
 | Phase 05-core-booking-approval-workflow P03 | 23 min | 3 tasks | 8 files |
 | Phase 05-core-booking-approval-workflow P04 | 13min | 2 tasks | 8 files |
+| Phase 06-notifications-audit-logging P03 | 10min | 3 tasks | 19 files |
+| Phase 06-notifications-audit-logging P01 | 13min | 3 tasks | 13 files |
+| Phase 06-notifications-audit-logging P04 | 25 min | 3 tasks | 10 files |
+| Phase 06-notifications-audit-logging P05 | 1 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -155,6 +159,16 @@ Recent decisions affecting current work:
 - [Phase 05-04]: calendar/day/list are query-parameter variants of ONE GET /bookings endpoint; status and q are named additions beyond TechArch §4.2's literal 4-param table
 - [Phase 05-04]: getById uses plain findById (not findByIdAndDeletedAtIsNull) for last-known-values policy, mirroring Phase 4's Locations/Resources precedent for cross-system consistency
 - [Phase 05-04]: BookingApprovalController has NO @PreAuthorize — manual hasRole check produces APPROVAL_FORBIDDEN (FRD-named) not generic BOOKING_FORBIDDEN, matching Phase 3 PermissionController precedent
+- [Phase 06-notifications-audit-logging]: hasAuthority('role_audit_viewer') not hasRole — JwtAuthenticationConverter grants realm roles WITHOUT ROLE_ prefix; hasAuthority matches Keycloak role name verbatim
+- [Phase 06-notifications-audit-logging]: [Phase 06-03]: V2 migration ADDITIVE only (ADD COLUMN NULL + partial unique index WHERE NOT NULL) — V1's REVOKE UPDATE/DELETE immutability grant untouched; multiple nulls allowed
+- [Phase 06-notifications-audit-logging]: [Phase 06-03]: No custom recoverer for audit-log-service RabbitMQ — audit_log_entries is pure append-only fact table; RejectAndDontRequeueRecoverer only (unlike notifications-service's DatabaseTrackingMessageRecoverer)
+- [Phase 06-notifications-audit-logging]: role_audit_viewer gates ALL non-actuator routes on notifications-service (frozen 11-role realm, no dedicated ops role)
+- [Phase 06-notifications-audit-logging]: hasAuthority('role_audit_viewer') without ROLE_ prefix — grant verbatim, match verbatim, avoids double-prefix collision
+- [Phase 06-notifications-audit-logging]: maxAttempts(4) = 1 initial + 3 retries (README's '3 attempts' = 3 retries, 3 backoff gaps for 3 distinct delay values)
+- [Phase 06-04]: DomainEventParser uses routing-key-derived entity_type/action_type (split on last dot) for uniform extraction across all 23 routing keys — Scales to new queue without per-queue code; future 8th category needs only new @RabbitListener binding
+- [Phase 06-04]: Defensive fallback chains for entity_id/actor_id/occurred_at never throw, use nil-UUID and Instant.now() placeholders — Sparse payloads never cause audit loss; matches F11 principle 'never fail write because data absent'
+- [Phase 06-04]: Manual hasRole('role_audit_viewer') in controller produces FRD-specific AUDIT_LOG_FORBIDDEN (not generic AUTH_FORBIDDEN) — Mirrors Phase 3 PermissionController precedent; SecurityConfig gate + manual check provide defense-in-depth
+- [Phase 06-04]: GET-only API surface with no PUT/DELETE/POST — immutability enforced both at DB grant (06-03) and API layer — Defense-in-depth: even if future bug breaks grant, API surface ensures writes cannot occur
 
 ### Pending Todos
 
@@ -168,6 +182,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-09T19:36:42.534Z
-Stopped at: Completed 05-04-PLAN.md
+Last session: 2026-10-12T20:07:04.158Z
+Stopped at: Completed 06-05-PLAN.md
 Resume file: None

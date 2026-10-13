@@ -7,4 +7,5 @@ data:
   SPRING_PROFILES_ACTIVE: "production"
   KEYCLOAK_HOST: "keycloak"
   KEYCLOAK_PORT: "8080"
+  KEYCLOAK_REALM: "bookinghub"
   RATE_LIMIT_PER_MINUTE: "120"

@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: audit-log-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:audit_db}
     username: ${DB_USER:audit_svc}
@@ -25,10 +30,7 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
     listener:
       simple:
-        # Disabled until Phase 3: RabbitMQ listener beans will be implemented in Phase 3
-        # when event-driven message processing is added. Enabling without listener beans
-        # will cause startup failure with "No bean of type RabbitListenerContainerFactory"
-        auto-startup: false
+        auto-startup: true
 
 management:
   endpoints:
