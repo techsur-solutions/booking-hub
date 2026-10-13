@@ -64,6 +64,17 @@ function applyE2EMockRoles(kc: Keycloak): void {
     preferred_username: 'e2e-user',
     realm_access: { roles },
   };
+
+  // Inject mock user ID for owner-check in BookingDetailModal (keycloak.subject)
+  const windowUserId =
+    typeof window !== 'undefined'
+      ? ((window as unknown as Record<string, unknown>).__E2E_USER_ID__ as
+          | string
+          | undefined)
+      : undefined;
+  if (windowUserId) {
+    (kc as unknown as Record<string, unknown>).subject = windowUserId;
+  }
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {

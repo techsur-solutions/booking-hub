@@ -193,6 +193,19 @@ export const routes: RouteObject[] = [
     element: <Navigate to="/admin/audit-log" replace />,
   },
 
+  // Booking detail audit trail link target: /admin/audit → admin/audit-log (with query params preserved)
+  // This allows BookingDetailModal to link to /admin/audit?entity_type=booking&entity_id={id}
+  {
+    path: '/admin/audit',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <AuditLogViewer />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+
   // Public routes (no ProtectedRoute wrapper)
   {
     path: '/feeds',

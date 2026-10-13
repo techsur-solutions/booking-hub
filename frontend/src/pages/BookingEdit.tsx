@@ -166,9 +166,11 @@ export function BookingEdit() {
         <h1>
           Edit Booking
           {isRecurring && (
-            <Badge variant="primary" className="recurring-badge" data-testid="recurring-badge">
-              Recurring
-            </Badge>
+            <span data-testid="recurring-badge">
+              <Badge variant="primary" className="recurring-badge">
+                Recurring
+              </Badge>
+            </span>
           )}
         </h1>
         {scope && (

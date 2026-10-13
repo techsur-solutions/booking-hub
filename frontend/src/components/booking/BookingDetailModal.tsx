@@ -336,6 +336,10 @@ export function BookingDetailModal({
                   href={`/admin/audit?entity_type=booking&entity_id=${booking.id}`}
                   className="booking-detail-modal__history-link"
                   data-testid="audit-trail-link"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate(`/admin/audit?entity_type=booking&entity_id=${booking.id}`);
+                  }}
                 >
                   View history
                 </a>
