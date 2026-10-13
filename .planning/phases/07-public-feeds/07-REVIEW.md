@@ -105,6 +105,13 @@ The scrutiny targets all held up under refutation:
   same as `updated` in `applyLocationEvent` (both carry `id`+`name`), so the cache is seeded at
   location creation rather than only on first edit. (Binding change is infra, outside this service's
   source; the consumer-side one-line action-match widening is in scope here.)
+- **Resolution:** fixed (ec0ec1e) — `applyLocationEvent` now seeds/back-fills the cache on
+  `location.created` as well as `location.updated` (both payloads carry `id`+`name`, verified against
+  LocationService.writeOutboxEvent); added the `feeds.location.q <- location.created` binding to
+  infra/rabbitmq/definitions.json (tracked file, kept idempotent/consistent with the existing
+  `location.updated`/`location.deleted` bindings); added `locationCreated_seedsCacheSoLaterBookingResolvesRealName`
+  proving the create-then-book path resolves the real name, not the placeholder. All 32 feeds-service
+  tests pass (31 prior + 1 new).
 
 ### W2: Inner `@Transactional` on `applyBookingEvent`/`applyLocationEvent` is ineffective via self-invocation — harmless today, but a latent trap if these methods are ever called directly in production
 - **File:** services/feeds-service/src/main/java/com/bookinghub/feeds/consumer/FeedProjectionService.java:124,154
@@ -123,6 +130,14 @@ The scrutiny targets all held up under refutation:
   `applyLocationEvent` methods (relying on the wrapper's boundary), or make them non-public helpers,
   so the annotation does not imply a boundary that self-invocation cannot provide. No behavior change
   required for the current call graph.
+- **Resolution:** fixed (a17ec1a + ec0ec1e) — both `applyBookingEvent`/`applyLocationEvent` dropped
+  `@Transactional` AND were demoted from `public` to package-visible helpers, so the annotation no
+  longer advertises a self-invocation boundary that cannot exist; they now run solely inside the
+  outer transaction of the `apply*EventIdempotent` wrappers. All callers are the in-class wrappers and
+  the same-package `FeedProjectionServiceTest`, so package visibility is sufficient. (The
+  `applyLocationEvent` half of this change rode in with the W1 commit ec0ec1e since both edits touch
+  the same contiguous hunk; the `applyBookingEvent` half is a17ec1a.) No behavior change; all 32 tests
+  pass.
 
 ## Cross-file seams checked
 - Routes ↔ frontend callers: feeds are public backend-only (RSS/iCal/display-board are consumed by
