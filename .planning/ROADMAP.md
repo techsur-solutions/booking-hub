@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Reference Data, Extensibility & Configuration** - Admins manage locations, resources, custom fields, and system-wide settings that booking depends on (completed 2026-10-09)
 - [x] **Phase 5: Core Booking & Approval Workflow** - Users create/edit/delete/clone bookings with full conflict detection and an approval workflow (completed 2026-10-10)
 - [x] **Phase 6: Notifications & Audit Logging** - Booking/account lifecycle events reliably trigger emails and produce an immutable, queryable audit trail (completed 2026-10-13)
-- [ ] **Phase 7: Public Feeds** - Approved upcoming bookings are exposed via RSS2/iCal/JSON/display-board feeds with zero login required
+- [x] **Phase 7: Public Feeds** - Approved upcoming bookings are exposed via RSS2/iCal/JSON/display-board feeds with zero login required (completed 2026-10-13)
 - [ ] **Phase 8: Regression Verification & Test Traceability** - A CI-enforced regression suite and traceability matrix make "no functionality lost" continuously verifiable
 
 ## Phase Details
@@ -152,7 +152,7 @@ Plans:
 
 ### Phase 7: Public Feeds
 **Goal**: Approved upcoming bookings are exposed via public, read-only feeds, so external viewers like reception staff and visitors can see room availability at a glance without ever logging in or being shown an unconfirmed booking.
-**Status**: Passed
+**Status**: Complete (2026-10-13)
 **Depends on**: Phase 5 (approved bookings must exist to project), Phase 4 (location filtering)
 **Requirements**: F9 (F9.1–F9.6)
 **Success Criteria** (what must be TRUE):
@@ -194,7 +194,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Reference Data, Extensibility & Configuration | 6/6 | Complete | 2026-10-09 |
 | 5. Core Booking & Approval Workflow | 0/TBD | Complete | 2026-10-10 |
 | 6. Notifications & Audit Logging | 0/TBD | Complete | 2026-10-13 |
-| 7. Public Feeds | 3/3 | Passed | - |
+| 7. Public Feeds | 3/3 | Complete | 2026-10-13 |
 | 8. Regression Verification & Test Traceability | 0/4 | Not started | - |
 
 ---
