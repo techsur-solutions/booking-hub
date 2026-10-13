@@ -43,23 +43,24 @@ echo "## Coverage by Feature" >> "$OUTPUT"
 echo "" >> "$OUTPUT"
 
 for feature in F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 F13; do
-  FEATURE_TOTAL=$(tail -n +2 "$MATRIX" | grep -c ",$feature" 2>/dev/null) || FEATURE_TOTAL=0
+  FEATURE_TOTAL=$(tail -n +2 "$MATRIX" | grep -cE "(,|\")$feature([^0-9]|$)" 2>/dev/null) || FEATURE_TOTAL=0
   if [ "$FEATURE_TOTAL" -eq 0 ]; then
     continue
   fi
   
-  FEATURE_TESTED=$(tail -n +2 "$MATRIX" | grep ",$feature" | grep -c -E ',tested,|,verified,' 2>/dev/null) || FEATURE_TESTED=0
+  FEATURE_TESTED=$(tail -n +2 "$MATRIX" | grep -E "(,|\")$feature([^0-9]|$)" | grep -c -E ',tested,|,verified,' 2>/dev/null) || FEATURE_TESTED=0
   FEATURE_PCT=$((FEATURE_TESTED * 100 / FEATURE_TOTAL))
   
-  # Get feature name from REQUIREMENTS.md
-  FEATURE_NAME=$(grep -A 1 "^\*\*$feature\*\*:" .planning/REQUIREMENTS.md | tail -1 | sed 's/^[[:space:]]*-[[:space:]]*\[[[:space:]]*\][[:space:]]*//' || echo "Unknown")
+  # Get feature name from REQUIREMENTS.md (format: "- [ ] **FN**: Description")
+  FEATURE_NAME=$(grep "\*\*$feature\*\*:" .planning/REQUIREMENTS.md | head -1 | sed "s/.*\*\*$feature\*\*:[[:space:]]*//" || echo "Unknown")
+  [ -z "$FEATURE_NAME" ] && FEATURE_NAME="Unknown"
   
   echo "### $feature: $FEATURE_NAME" >> "$OUTPUT"
   echo "" >> "$OUTPUT"
   echo "- **Coverage:** $FEATURE_TESTED/$FEATURE_TOTAL findings tested (${FEATURE_PCT}%)" >> "$OUTPUT"
   
   # List untested findings for this feature
-  UNTESTED=$(tail -n +2 "$MATRIX" | grep ",$feature" | grep -v ',tested,' | grep -v ',verified,' | cut -d, -f1) || UNTESTED=""
+  UNTESTED=$(tail -n +2 "$MATRIX" | grep -E "(,|\")$feature([^0-9]|$)" | grep -v ',tested,' | grep -v ',verified,' | cut -d, -f1) || UNTESTED=""
   if [ -n "$UNTESTED" ]; then
     echo "- **Gaps:** $(echo "$UNTESTED" | tr '\n' ' ' | xargs)" >> "$OUTPUT"
   fi
@@ -74,7 +75,7 @@ echo "" >> "$OUTPUT"
 
 # Conflict detection edge cases (F2)
 echo "### Conflict Detection (F2)" >> "$OUTPUT"
-CONFLICT_GAPS=$(tail -n +2 "$MATRIX" | grep ',F2' | grep -v ',tested,' | grep -v ',verified,' | cut -d, -f1) || CONFLICT_GAPS=""
+CONFLICT_GAPS=$(tail -n +2 "$MATRIX" | grep -E "(,|\")F2([^0-9]|$)" | grep -v ',tested,' | grep -v ',verified,' | cut -d, -f1) || CONFLICT_GAPS=""
 if [ -n "$CONFLICT_GAPS" ]; then
   echo "- Findings: $(echo "$CONFLICT_GAPS" | tr '\n' ' ' | xargs)" >> "$OUTPUT"
   echo "- **Required tests:** Half-open interval semantics, location AND resource overlap, exclude booking's own prior state, exclude deleted/denied bookings" >> "$OUTPUT"
@@ -85,7 +86,7 @@ echo "" >> "$OUTPUT"
 
 # Approval/auto-approve interactions (F3)
 echo "### Approval Workflow (F3)" >> "$OUTPUT"
-APPROVAL_GAPS=$(tail -n +2 "$MATRIX" | grep ',F3' | grep -v ',tested,' | grep -v ',verified,' | cut -d, -f1) || APPROVAL_GAPS=""
+APPROVAL_GAPS=$(tail -n +2 "$MATRIX" | grep -E "(,|\")F3([^0-9]|$)" | grep -v ',tested,' | grep -v ',verified,' | cut -d, -f1) || APPROVAL_GAPS=""
 if [ -n "$APPROVAL_GAPS" ]; then
   echo "- Findings: $(echo "$APPROVAL_GAPS" | tr '\n' ' ' | xargs)" >> "$OUTPUT"
   echo "- **Required tests:** Auto-approve on/off transitions, one-way approve/deny (no re-toggling), permission-gated actions" >> "$OUTPUT"
@@ -107,7 +108,7 @@ echo "" >> "$OUTPUT"
 
 # Permission matrix boundaries (F7)
 echo "### Permission Matrix (F7)" >> "$OUTPUT"
-PERMISSION_GAPS=$(tail -n +2 "$MATRIX" | grep ',F7' | grep -v ',tested,' | grep -v ',verified,' | cut -d, -f1) || PERMISSION_GAPS=""
+PERMISSION_GAPS=$(tail -n +2 "$MATRIX" | grep -E "(,|\")F7([^0-9]|$)" | grep -v ',tested,' | grep -v ',verified,' | cut -d, -f1) || PERMISSION_GAPS=""
 if [ -n "$PERMISSION_GAPS" ]; then
   echo "- Findings: $(echo "$PERMISSION_GAPS" | tr '\n' ' ' | xargs)" >> "$OUTPUT"
   echo "- **Required tests:** 17-flag inventory coverage, deny-by-default for unconfirmed flags, Tier1/Tier2 consistency" >> "$OUTPUT"

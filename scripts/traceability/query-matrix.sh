@@ -50,7 +50,7 @@ case "$CMD" in
     [ -z "${1:-}" ] && { echo "Error: Feature ID required"; usage; }
     FEATURE="$1"
     echo "Findings for feature $FEATURE:"
-    tail -n +2 "$MATRIX" | { grep ",$FEATURE" || true; } | cut -d, -f1,2,5
+    tail -n +2 "$MATRIX" | { grep -E "(,|\")$FEATURE([^0-9]|$)" || true; } | cut -d, -f1,2,5
     ;;
   by-status)
     [ -z "${1:-}" ] && { echo "Error: Status required"; usage; }
@@ -66,10 +66,10 @@ case "$CMD" in
     echo "Coverage summary by feature:"
     echo "Feature,not_started,implemented,tested,verified"
     for feature in F0 F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 F13; do
-      not_started=$(tail -n +2 "$MATRIX" | { grep ",$feature" || true; } | { grep ',not_started,' || true; } | wc -l | tr -d ' ')
-      implemented=$(tail -n +2 "$MATRIX" | { grep ",$feature" || true; } | { grep ',implemented,' || true; } | wc -l | tr -d ' ')
-      tested=$(tail -n +2 "$MATRIX" | { grep ",$feature" || true; } | { grep ',tested,' || true; } | wc -l | tr -d ' ')
-      verified=$(tail -n +2 "$MATRIX" | { grep ",$feature" || true; } | { grep ',verified,' || true; } | wc -l | tr -d ' ')
+      not_started=$(tail -n +2 "$MATRIX" | { grep -E "(,|\")$feature([^0-9]|$)" || true; } | { grep ',not_started,' || true; } | wc -l | tr -d ' ')
+      implemented=$(tail -n +2 "$MATRIX" | { grep -E "(,|\")$feature([^0-9]|$)" || true; } | { grep ',implemented,' || true; } | wc -l | tr -d ' ')
+      tested=$(tail -n +2 "$MATRIX" | { grep -E "(,|\")$feature([^0-9]|$)" || true; } | { grep ',tested,' || true; } | wc -l | tr -d ' ')
+      verified=$(tail -n +2 "$MATRIX" | { grep -E "(,|\")$feature([^0-9]|$)" || true; } | { grep ',verified,' || true; } | wc -l | tr -d ' ')
       total=$((not_started + implemented + tested + verified))
       [ "$total" -gt 0 ] && echo "$feature,$not_started,$implemented,$tested,$verified"
     done
