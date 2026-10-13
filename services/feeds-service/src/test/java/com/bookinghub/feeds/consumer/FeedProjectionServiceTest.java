@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * (the running docker-compose instance via application-test.properties):
  *  1. booking.created (pending) -> row with status=pending, placeholder location_name
  *  2. location.updated -> back-fills the existing row's location_name
+ *  2b. location.created -> seeds the cache at creation so a later booking resolves the real name
  *  3. booking.approved -> status flips to approved
  *  4. booking.denied -> row physically removed
  *  5. booking.created(approved) then booking.deleted -> row physically removed
@@ -126,6 +127,30 @@ class FeedProjectionServiceTest {
         assertThat(row.getLocationName()).isEqualTo("Conference Room A"); // back-fill worked
         assertThat(locationNameRepository.findById(locationId).orElseThrow().getName())
             .isEqualTo("Conference Room A"); // cache populated
+    }
+
+    @Test
+    void locationCreated_seedsCacheSoLaterBookingResolvesRealName() {
+        UUID locationId = UUID.randomUUID();
+
+        // location.created arrives first, seeding the cache (the W1 path: no edit required).
+        projectionService.applyLocationEvent("location.created",
+            locationPayload(locationId, "Conference Room A"));
+        flushClear();
+
+        assertThat(locationNameRepository.findById(locationId).orElseThrow().getName())
+            .isEqualTo("Conference Room A"); // cache seeded at creation, not only on edit
+
+        // A booking created afterwards must resolve the real name, never the placeholder.
+        UUID bookingId = UUID.randomUUID();
+        Instant start = Instant.now().plus(1, ChronoUnit.HOURS);
+        Instant end = Instant.now().plus(2, ChronoUnit.HOURS);
+        projectionService.applyBookingEvent("booking.created",
+            bookingPayload(bookingId, "Weekly Sync", locationId, start, end, "pending"));
+        flushClear();
+
+        FeedBooking row = feedBookingRepository.findById(bookingId).orElseThrow();
+        assertThat(row.getLocationName()).isEqualTo("Conference Room A"); // real name, no placeholder
     }
 
     @Test

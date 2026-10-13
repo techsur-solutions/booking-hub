@@ -25,8 +25,9 @@ import java.util.UUID;
  *
  * Also solves the cross-service denormalization problem: feeds-service must show
  * location NAMES but owns only location_ids in booking events and may never query
- * locations-resources-service's database. location_name is sourced ONLY from
- * location.updated events into the location_names cache (V3).
+ * locations-resources-service's database. location_name is sourced from
+ * location.created/location.updated events into the location_names cache (V3),
+ * so the cache is seeded at creation rather than only on first edit.
  *
  * ---
  * action_type is the routing-key suffix: {@code routingKey.substring(routingKey.lastIndexOf('.') + 1)}
@@ -55,7 +56,7 @@ import java.util.UUID;
  *       row (booking.created always precedes booking.approved), which this class does.
  *  - booking.deleted  (BookingWriteService.buildDeletePayload): id, deleted_at
  *    -> only id is needed (deleteById), matches.
- *  - location.updated / location.deleted (LocationService.writeOutboxEvent): id, name, ...
+ *  - location.created / location.updated / location.deleted (LocationService.writeOutboxEvent): id, name, ...
  *
  * All field reads are defensive (null-checked, log-and-skip) so a single malformed
  * message can never wedge the queue or corrupt the projection — EXCEPT a missing
@@ -151,18 +152,19 @@ public class FeedProjectionService {
         }
     }
 
-    @Transactional
-    public void applyLocationEvent(String routingKey, JsonNode body) {
-        String action = actionOf(routingKey); // updated|deleted
+    void applyLocationEvent(String routingKey, JsonNode body) {
+        String action = actionOf(routingKey); // created|updated|deleted
         UUID locationId = readUuid(body, "id");
         if (locationId == null) {
             log.warn("location.{} event missing 'id' field; skipping (routing_key={})", action, routingKey);
             return;
         }
-        if ("updated".equals(action)) {
+        // created and updated both carry id+name: seed the cache at creation (not only on
+        // first edit) so a created-but-never-edited location never shows the placeholder.
+        if ("created".equals(action) || "updated".equals(action)) {
             String name = readText(body, "name");
             if (name == null) {
-                log.warn("location.updated event {} missing 'name'; skipping", locationId);
+                log.warn("location.{} event {} missing 'name'; skipping", action, locationId);
                 return;
             }
             // Upsert the cache so future bookings at this location resolve the real name.
