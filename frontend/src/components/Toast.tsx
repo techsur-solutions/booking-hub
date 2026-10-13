@@ -1,4 +1,5 @@
-import React, { ReactNode, useCallback, useEffect, useState, createContext, useContext } from 'react';
+import type { ReactNode } from 'react';
+import { useCallback, useEffect, useState, createContext, useContext } from 'react';
 import { createPortal } from 'react-dom';
 
 /* =============================================================================

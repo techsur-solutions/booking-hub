@@ -23,6 +23,28 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/**
+ * In E2E mode (VITE_E2E_MODE=true), optionally inject mock roles via
+ * VITE_E2E_ROLES env var (comma-separated role names) so Playwright tests
+ * can verify permission-gated navigation without a live Keycloak server.
+ */
+function applyE2EMockRoles(kc: Keycloak): void {
+  const rolesEnv = import.meta.env.VITE_E2E_ROLES as string | undefined;
+  if (!rolesEnv) return;
+  const roles = rolesEnv
+    .split(',')
+    .map((r: string) => r.trim())
+    .filter(Boolean);
+  // Mutate keycloak's realmAccess so Sidebar reads the injected roles
+  (kc as unknown as Record<string, unknown>).realmAccess = { roles };
+  // Also set a minimal tokenParsed for UserMenu display name
+  (kc as unknown as Record<string, unknown>).tokenParsed = {
+    name: 'E2E Test User',
+    preferred_username: 'e2e-user',
+    realm_access: { roles },
+  };
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -30,6 +52,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     // E2E test mode bypass - skip real Keycloak initialization
     if (import.meta.env.VITE_E2E_MODE === 'true') {
+      applyE2EMockRoles(keycloak);
       setAuthenticated(true);
       setLoading(false);
       return;
