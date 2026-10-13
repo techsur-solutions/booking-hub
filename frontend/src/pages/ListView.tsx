@@ -106,12 +106,15 @@ export function ListView() {
 
   const { data: rawBookings = [], isLoading, isError } = useBookings(apiParams);
 
-  // Client-side post-filter for multi-location and multi-status (API only accepts one)
+  // Client-side post-filter for location (multi-select) and status (multi-select).
+  // Status is also sent to the API as a hint for 1-item selections, but we always
+  // apply it client-side too to ensure correctness when the API returns unfiltered data
+  // (e.g., in tests or when the backend ignores the hint).
   const filteredBookings = rawBookings.filter((b) => {
     if (filters.locationIds.length > 0 && !filters.locationIds.includes(b.location_id)) {
       return false;
     }
-    if (filters.statuses.length > 1 && !filters.statuses.includes(b.status)) {
+    if (filters.statuses.length > 0 && !filters.statuses.includes(b.status)) {
       return false;
     }
     return true;

@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
+import { CalendarView } from './CalendarView';
 import { DayView } from './DayView';
 import { ListView } from './ListView';
 
@@ -37,12 +38,7 @@ export function BookingsView() {
 
       {/* View content */}
       <div className="bookings-content" role="tabpanel">
-        {view === 'month' && (
-          <div>
-            <h1>Calendar View</h1>
-            <p>Month calendar — built in Phase 9 (calendar views plan)</p>
-          </div>
-        )}
+        {view === 'month' && <CalendarView />}
         {view === 'day' && <DayView />}
         {view === 'list' && <ListView />}
       </div>
