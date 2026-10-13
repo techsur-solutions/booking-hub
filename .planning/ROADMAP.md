@@ -20,7 +20,7 @@ Phase numbering continues from v1.0 (ended at Phase 8), so v2.0 runs Phases 9–
 ### Phase 9: Core User Interface
 **Goal**: Build the complete end-user booking experience with calendar/day/list views, booking creation/editing with conflict detection, approval workflow, public display board, and authentication flows, so users can discover, create, manage, and approve bookings with full feature parity to the legacy system.
 
-**Status**: Not started
+**Status**: In progress
 
 **Depends on**: v1.0 Phase 2 (SPA shell with routing + Keycloak exists)
 
@@ -103,7 +103,7 @@ Phases execute in numeric order: 9 → 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 9. Core User Interface | 0/15 | Not started | — |
+| 9. Core User Interface | 0/15 | In progress | — |
 | 10. Admin Interface & Polish | 0/14 | Not started | — |
 
 ---
