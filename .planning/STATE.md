@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 3
 status: unknown
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-10-13T04:16:13.468Z"
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-10-13T04:19:05.762Z"
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 47
-  completed_plans: 43
+  completed_plans: 44
   percent: 89
 ---
 
@@ -92,6 +92,7 @@ Progress: [█████████░] 89%
 | Phase 07-public-feeds P03 | 8min | 3 tasks | 8 files |
 | Phase 07-public-feeds P02 | 24 min | 2 tasks | 9 files |
 | Phase 08-regression-verification-test-traceability P03 | 2min | 3 tasks | 4 files |
+| Phase 08-regression-verification-test-traceability P01 | 5min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -184,6 +185,8 @@ Recent decisions affecting current work:
 - [Phase 07-public-feeds]: [07-02 Rule 1 fix] RabbitConfig retry policy classifies AmqpRejectAndDontRequeueException (not Exception blanket) as non-retryable with defaultValue=true + traverseCauses=true, so missing-key messages DLQ immediately instead of after the full 5s/30s/2min backoff (ListenerExecutionFailedException wrapper otherwise shadowed the specific non-retryable entry)
 - [Phase 07-public-feeds]: [07-02] projection transaction boundary lives on FeedProjectionService.apply*EventIdempotent (dedup+mutation+processed_events insert atomic), NOT the @RabbitListener method, so AmqpRejectAndDontRequeueException reaches the retry interceptor unwrapped — Phase 6 audit-log precedent
 - [Phase 08-regression-verification-test-traceability]: regression-summary CI job is the single branch protection status check covering both backend and frontend test results
+- [Phase 08-regression-verification-test-traceability]: Baseline has 113 findings (BF-001 through BF-113), not 111 as plan stated — BF-112/113 were post-audit additions documented in baseline-inventory.md
+- [Phase 08-regression-verification-test-traceability]: Traceability seed script is idempotent — always regenerates from baseline-inventory.md as source of truth; grep || true pattern used in query-matrix.sh to prevent set -e abort on zero-match queries
 
 ### Pending Todos
 
@@ -197,6 +200,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-13T04:16:13.466Z
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-10-13T04:19:05.760Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
