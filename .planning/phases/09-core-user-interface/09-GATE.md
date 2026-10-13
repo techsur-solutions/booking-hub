@@ -3,9 +3,10 @@ phase: 09
 gate_status: passed
 build_command: "(cd frontend && npm run build)"
 test_command: "(cd frontend && CI=true npm test)"
-last_updated: 2026-10-13T18:48:39Z
+last_updated: 2026-10-13T19:07:52Z
 tests_disabled_during_fixes: none
 shadowed_sources: 0
+review_blockers_open: 0
 waves:
   - wave: 1
     build: pass
@@ -23,6 +24,10 @@ waves:
     build: pass
     tests: pass
     fix_attempts: 0
+  - wave: 5
+    build: pass
+    tests: pass
+    fix_attempts: 1
 ---
 
 ## Wave 1
@@ -48,4 +53,10 @@ waves:
 - Build: `(cd frontend && npm run build)` → pass
 - Tests: `(cd frontend && CI=true npm test)` → pass
 - Fix attempts: 0/3 — Wave 4: 2 plans (09-12, 09-13). Build: tsc+vite 208 modules in 111ms. Tests: 74 passed (6 files). ConflictBanner with hard-block/soft-warn/grouped types. Approval Queue with optimistic updates, conflict-confirmation dialog, deny with reason.
+
+## Wave 5
+
+- Build: `(cd frontend && npm run build)` → pass
+- Tests: `(cd frontend && CI=true npm test)` → pass
+- Fix attempts: 1/3 — Phase gate (wave 5): full regression run after code review fixes. 1 fix: ListView.test.tsx mocks for ToastProvider + useBookingById + useLocationById after W1 upgrade from inline to canonical BookingDetailModal. Build: 208 modules. Tests: 74/74 passed.
 
