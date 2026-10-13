@@ -26,9 +26,13 @@ function isValidIsoDate(s: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(s);
 }
 
-/** Validates a UUID v4 string */
-function isValidUuid(s: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+/**
+ * Validates a location ID: non-empty, max 256 chars, only printable non-space chars.
+ * Note: actual IDs may be UUIDs or short strings like 'loc-a'; we accept both
+ * and rely on the backend to reject unknown IDs.
+ */
+function isValidLocationId(s: string): boolean {
+  return s.length > 0 && s.length <= 256 && /^[\w\-]+$/.test(s);
 }
 
 /** Valid view modes */
@@ -74,7 +78,7 @@ export function useViewState() {
     ? (rawView as ViewState['view'])
     : 'month';
 
-  const locationId: string | undefined = isValidUuid(rawLocationId)
+  const locationId: string | undefined = isValidLocationId(rawLocationId)
     ? rawLocationId
     : undefined;
 
@@ -122,7 +126,7 @@ export function useViewState() {
     }
 
     if ('locationId' in updates) {
-      if (updates.locationId !== undefined && isValidUuid(updates.locationId)) {
+      if (updates.locationId !== undefined && isValidLocationId(updates.locationId)) {
         current['location_id'] = updates.locationId;
       } else {
         delete current['location_id'];

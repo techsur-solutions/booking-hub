@@ -65,9 +65,12 @@ export function TableFilters({ locations, onChange }: TableFiltersProps) {
       newQuery: string
     ) => {
       const params: Record<string, string> = {};
-      // Preserve existing view param
+      // Preserve view-state params that TableFilters does not own (UI-CAL-04)
       const view = searchParams.get('view');
+      const date = searchParams.get('date');
       if (view) params['view'] = view;
+      if (date) params['date'] = date;
+      // Filter params (owned by TableFilters)
       if (newStart) params['start_date'] = newStart;
       if (newEnd) params['end_date'] = newEnd;
       if (newLocationIds.length > 0) params['location_id'] = newLocationIds.join(',');
@@ -118,9 +121,13 @@ export function TableFilters({ locations, onChange }: TableFiltersProps) {
     setStatuses([]);
     setQuery('');
     setDebouncedQuery('');
-    // Keep the view param, clear everything else
+    // Preserve non-filter view-state params (view, date) when clearing filters (UI-CAL-04)
     const view = searchParams.get('view');
-    setSearchParams(view ? { view } : {}, { replace: true });
+    const date = searchParams.get('date');
+    const preserved: Record<string, string> = {};
+    if (view) preserved['view'] = view;
+    if (date) preserved['date'] = date;
+    setSearchParams(preserved, { replace: true });
     onChange({ startDate: '', endDate: '', locationIds: [], statuses: [], query: '' });
   }
 
