@@ -24,17 +24,38 @@ interface AuthProviderProps {
 }
 
 /**
- * In E2E mode (VITE_E2E_MODE=true), optionally inject mock roles via
- * VITE_E2E_ROLES env var (comma-separated role names) so Playwright tests
- * can verify permission-gated navigation without a live Keycloak server.
+ * In E2E mode (VITE_E2E_MODE=true), optionally inject mock roles for
+ * permission-gated navigation testing. Roles come from either:
+ *   1. `window.__E2E_ROLES__` — set via page.addInitScript() in Playwright tests
+ *   2. VITE_E2E_ROLES env var — comma-separated string baked at build time
+ *
+ * This lets individual Playwright tests call
+ *   `await page.addInitScript(() => { window.__E2E_ROLES__ = ['role_booking_approver']; })`
+ * before navigating to inject a specific permission set per test.
  */
 function applyE2EMockRoles(kc: Keycloak): void {
+  // Priority: runtime window var (per-test) > build-time env var (server-wide)
+  const windowRoles =
+    typeof window !== 'undefined'
+      ? ((window as unknown as Record<string, unknown>).__E2E_ROLES__ as
+          | string[]
+          | undefined)
+      : undefined;
+
   const rolesEnv = import.meta.env.VITE_E2E_ROLES as string | undefined;
-  if (!rolesEnv) return;
-  const roles = rolesEnv
-    .split(',')
-    .map((r: string) => r.trim())
-    .filter(Boolean);
+
+  let roles: string[] = [];
+  if (windowRoles && Array.isArray(windowRoles)) {
+    roles = windowRoles.map((r: string) => String(r).trim()).filter(Boolean);
+  } else if (rolesEnv) {
+    roles = rolesEnv
+      .split(',')
+      .map((r: string) => r.trim())
+      .filter(Boolean);
+  }
+
+  if (roles.length === 0) return;
+
   // Mutate keycloak's realmAccess so Sidebar reads the injected roles
   (kc as unknown as Record<string, unknown>).realmAccess = { roles };
   // Also set a minimal tokenParsed for UserMenu display name
