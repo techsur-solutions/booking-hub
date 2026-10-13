@@ -1,185 +1,159 @@
-import { useState, useEffect } from 'react';
-import type { Location, Resource } from '../../api/types';
+import { useState } from 'react';
+import type { CustomField } from '../../api/types';
+import { Button } from '../Button';
 import { Input } from '../Input';
-import { Select } from '../Select';
 import { Textarea } from '../Textarea';
+import { Select } from '../Select';
+import { ConflictWarning } from './ConflictWarning';
 import { CustomFieldRenderer } from './CustomFieldRenderer';
-import type { CustomFieldValues } from './CustomFieldRenderer';
+import { useLocations } from '../../hooks/useLocations';
+import { useResources } from '../../hooks/useResources';
 import { useCustomFields } from '../../hooks/useCustomFields';
 
-export interface RecurrencePattern {
-  type: 'daily' | 'weekly';
-  until: string; // ISO date string YYYY-MM-DD
-}
+export type BookingMode = 'create' | 'edit';
 
 export interface BookingFormValues {
   title: string;
   location_id: string;
-  start_time: string; // datetime-local format: YYYY-MM-DDTHH:mm
+  start_time: string;
   end_time: string;
   resource_ids: string[];
   description: string;
-  custom_field_values: CustomFieldValues;
-  recurrence_pattern: RecurrencePattern | null;
+  custom_field_values: Record<string, string>; // field_id → value
+  recurrence_pattern?: { type: 'daily' | 'weekly'; until: string } | null;
 }
 
-export interface BookingFormErrors {
-  title?: string;
-  location_id?: string;
-  start_time?: string;
-  end_time?: string;
-  description?: string;
-  [key: string]: string | undefined;
-}
-
-interface BookingFormProps {
-  initialValues?: Partial<BookingFormValues>;
-  locations: Location[];
-  resources: Resource[];
-  onSubmit: (values: BookingFormValues) => Promise<void>;
-  onFormChange?: (values: BookingFormValues) => void;
+export interface BookingFormProps {
+  /** 'create' = new booking, 'edit' = editing existing */
   mode: 'create' | 'edit';
-  isSubmitting?: boolean;
-  submitDisabled?: boolean;
-  /** External errors from API response (e.g. 400 validation) */
-  externalErrors?: BookingFormErrors;
-  /** Additional content to render before the Save button (e.g. ConflictWarning) */
-  belowFields?: React.ReactNode;
+  initialValues?: Partial<BookingFormValues>;
+  /** For edit mode: the booking ID (used to exclude self from conflict check) */
+  bookingId?: string;
+  isLoading?: boolean;
+  onSubmit: (values: BookingFormValues) => Promise<void>;
+  onCancel?: () => void;
+}
+
+function toDatetimeLocal(iso: string): string {
+  // Converts ISO-8601 to datetime-local input format (YYYY-MM-DDTHH:mm)
+  return iso ? iso.slice(0, 16) : '';
 }
 
 /**
- * Reusable booking form component with all fields.
- * Handles: title, location, start/end datetime, resources, description,
- * custom fields (dynamic via useCustomFields), recurring pattern checkbox.
+ * Reusable booking form supporting create and edit modes.
+ *
+ * In create mode: shows recurring pattern toggle.
+ * In edit mode: hides recurring toggle (recurrence handled by scope dialog in parent).
+ *
+ * Re-validates conflicts on every field change (does not inherit from original booking).
  */
 export function BookingForm({
-  initialValues,
-  locations,
-  resources,
-  onSubmit,
-  onFormChange,
   mode,
-  isSubmitting = false,
-  submitDisabled = false,
-  externalErrors = {},
-  belowFields,
+  initialValues,
+  bookingId,
+  isLoading = false,
+  onSubmit,
+  onCancel,
 }: BookingFormProps) {
-  // ── Form state ───────────────────────────────────────────────────────────────
+  const defaultEndTime = () => {
+    if (initialValues?.start_time) {
+      const start = new Date(initialValues.start_time);
+      start.setHours(start.getHours() + 1);
+      return toDatetimeLocal(start.toISOString());
+    }
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+    return toDatetimeLocal(now.toISOString());
+  };
+
   const [title, setTitle] = useState(initialValues?.title ?? '');
   const [locationId, setLocationId] = useState(initialValues?.location_id ?? '');
-  const [startTime, setStartTime] = useState(initialValues?.start_time ?? '');
-  const [endTime, setEndTime] = useState(initialValues?.end_time ?? '');
+  const [startTime, setStartTime] = useState(
+    initialValues?.start_time ? toDatetimeLocal(initialValues.start_time) : toDatetimeLocal(new Date().toISOString())
+  );
+  const [endTime, setEndTime] = useState(
+    initialValues?.end_time ? toDatetimeLocal(initialValues.end_time) : defaultEndTime()
+  );
   const [resourceIds, setResourceIds] = useState<string[]>(initialValues?.resource_ids ?? []);
   const [description, setDescription] = useState(initialValues?.description ?? '');
-  const [customFieldValues, setCustomFieldValues] = useState<CustomFieldValues>(
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>(
     initialValues?.custom_field_values ?? {}
   );
-  const [isRecurring, setIsRecurring] = useState(!!initialValues?.recurrence_pattern);
-  const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern | null>(
-    initialValues?.recurrence_pattern ?? null
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceType, setRecurrenceType] = useState<'daily' | 'weekly'>('daily');
+  const [recurrenceUntil, setRecurrenceUntil] = useState('');
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [conflictState, setConflictState] = useState<{ hasConflicts: boolean; isBlocked: boolean }>(
+    { hasConflicts: false, isBlocked: false }
   );
 
-  // ── Validation errors ────────────────────────────────────────────────────────
-  const [errors, setErrors] = useState<BookingFormErrors>({});
+  const { data: locations = [] } = useLocations();
+  const { data: resources = [] } = useResources();
+  const { data: customFields = [] } = useCustomFields(locationId);
 
-  // ── Custom fields ────────────────────────────────────────────────────────────
-  const { data: customFields = [] } = useCustomFields(locationId || undefined);
-
-  // ── Auto-set end time = start + 1 hour when start changes ───────────────────
-  useEffect(() => {
-    if (startTime && !endTime) {
-      const start = new Date(startTime);
-      start.setHours(start.getHours() + 1);
-      const endLocal = toDatetimeLocal(start);
-      setEndTime(endLocal);
-    }
-  }, [startTime]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Notify parent on form change ─────────────────────────────────────────────
-  useEffect(() => {
-    if (onFormChange) {
-      onFormChange(buildValues());
-    }
-  }, [title, locationId, startTime, endTime, resourceIds, description, customFieldValues, recurrencePattern]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Filtered resources by location (restrict_locations) ─────────────────────
-  const filteredResources = resources.filter((r) => {
+  // Filter resources by location restriction
+  const availableResources = resources.filter((r) => {
     if (!r.restrict_locations || r.restrict_locations.length === 0) return true;
     return locationId ? r.restrict_locations.includes(locationId) : false;
   });
 
-  // ── Helpers ───────────────────────────────────────────────────────────────────
-  function buildValues(): BookingFormValues {
-    return {
-      title,
-      location_id: locationId,
-      start_time: startTime,
-      end_time: endTime,
-      resource_ids: resourceIds,
-      description,
-      custom_field_values: customFieldValues,
-      recurrence_pattern: isRecurring ? recurrencePattern : null,
-    };
+  function toggleResource(id: string) {
+    setResourceIds((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+    );
   }
 
-  function validate(): BookingFormErrors {
-    const errs: BookingFormErrors = {};
-    if (!title.trim()) errs.title = 'Title is required';
-    if (title.trim().length > 100) errs.title = 'Title must be 100 characters or less';
-    if (!locationId) errs.location_id = 'Location is required';
-    if (!startTime) errs.start_time = 'Start time is required';
-    if (!endTime) errs.end_time = 'End time is required';
-    if (startTime && endTime && endTime <= startTime) {
-      errs.end_time = 'End time must be after start time';
+  function validate(): boolean {
+    const newErrors: Record<string, string> = {};
+    if (!title.trim()) newErrors.title = 'Title is required';
+    if (title.trim().length > 100) newErrors.title = 'Title must be 100 characters or less';
+    if (!locationId) newErrors.location_id = 'Location is required';
+    if (!startTime) newErrors.start_time = 'Start time is required';
+    if (!endTime) newErrors.end_time = 'End time is required';
+    if (startTime && endTime && new Date(endTime) <= new Date(startTime)) {
+      newErrors.end_time = 'End time must be after start time';
     }
-    if (description.length > 500) errs.description = 'Description must be 500 characters or less';
-    // Validate required custom fields
-    for (const field of customFields) {
-      if (field.required && !customFieldValues[field.id]) {
-        errs[`custom_${field.id}`] = `${field.name} is required`;
+    if (description.length > 500) newErrors.description = 'Description must be 500 characters or less';
+    // Required custom fields
+    customFields.forEach((f: CustomField) => {
+      if (f.required && !customFieldValues[f.id]) {
+        newErrors[`custom_${f.id}`] = `${f.name} is required`;
       }
+    });
+    if (isRecurring && !recurrenceUntil) {
+      newErrors.recurrenceUntil = 'Until date is required for recurring bookings';
     }
-    return errs;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const errs = validate();
-    setErrors(errs);
-    if (Object.values(errs).some(Boolean)) return;
-    await onSubmit(buildValues());
+    if (!validate()) return;
+    if (conflictState.isBlocked) return; // hard block
+
+    const values: BookingFormValues = {
+      title: title.trim(),
+      location_id: locationId,
+      start_time: new Date(startTime).toISOString(),
+      end_time: new Date(endTime).toISOString(),
+      resource_ids: resourceIds,
+      description: description.trim(),
+      custom_field_values: customFieldValues,
+      recurrence_pattern:
+        mode === 'create' && isRecurring
+          ? { type: recurrenceType, until: recurrenceUntil }
+          : null,
+    };
+
+    await onSubmit(values);
   }
 
-  function handleCustomFieldChange(fieldId: string, value: string) {
-    setCustomFieldValues((prev) => ({ ...prev, [fieldId]: value }));
-  }
-
-  function handleResourceToggle(resourceId: string) {
-    setResourceIds((prev) =>
-      prev.includes(resourceId) ? prev.filter((id) => id !== resourceId) : [...prev, resourceId]
-    );
-  }
-
-  // Merge external errors (API validation) with local validation errors
-  const allErrors: BookingFormErrors = { ...errors, ...externalErrors };
-
-  const locationOptions = locations.map((l) => ({ value: l.id, label: l.name }));
-
-  // Custom field errors for CustomFieldRenderer (keyed by field.id)
-  const customFieldErrors: Record<string, string> = {};
-  for (const [key, val] of Object.entries(allErrors)) {
-    if (key.startsWith('custom_')) {
-      customFieldErrors[key.replace('custom_', '')] = val ?? '';
-    }
-  }
+  const isSaveDisabled = isLoading || conflictState.isBlocked;
 
   return (
-    <form
-      className="booking-form"
-      onSubmit={handleSubmit}
-      noValidate
-      data-testid="booking-form"
-    >
+    <form className="booking-form" onSubmit={handleSubmit} noValidate data-testid="booking-form">
       {/* Title */}
       <Input
         id="booking-title"
@@ -187,70 +161,75 @@ export function BookingForm({
         required
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        error={allErrors.title}
         maxLength={100}
-        placeholder="Enter booking title"
+        error={errors.title}
+        data-testid="booking-title"
       />
 
       {/* Location */}
-      <Select
-        id="booking-location"
-        label="Location"
-        required
-        value={locationId}
-        onChange={(e) => {
-          setLocationId(e.target.value);
-          // Clear resource selection when location changes
-          setResourceIds([]);
-          // Clear custom field values for previous location
-          setCustomFieldValues({});
-        }}
-        options={locationOptions}
-        placeholder="Select a location"
-        error={allErrors.location_id}
-      />
+      <div className="form-field">
+        <label htmlFor="booking-location">
+          Location <span className="required-mark" aria-hidden="true">*</span>
+        </label>
+        <Select
+          id="booking-location"
+          value={locationId}
+          onChange={(e) => {
+            setLocationId(e.target.value);
+            // Clear resources when location changes
+            setResourceIds([]);
+            setCustomFieldValues({});
+          }}
+          options={locations.map((l) => ({ value: l.id, label: l.name }))}
+          placeholder="Select a location"
+          required
+          error={errors.location_id}
+          data-testid="booking-location"
+        />
+      </div>
 
-      {/* Start Date/Time */}
+      {/* Start time */}
       <Input
         id="booking-start-time"
-        label="Start Date & Time"
-        required
+        label="Start Time"
         type="datetime-local"
+        required
         value={startTime}
         onChange={(e) => setStartTime(e.target.value)}
-        error={allErrors.start_time}
+        error={errors.start_time}
+        data-testid="booking-start-time"
       />
 
-      {/* End Date/Time */}
+      {/* End time */}
       <Input
         id="booking-end-time"
-        label="End Date & Time"
-        required
+        label="End Time"
         type="datetime-local"
+        required
         value={endTime}
         onChange={(e) => setEndTime(e.target.value)}
-        error={allErrors.end_time}
+        error={errors.end_time}
+        data-testid="booking-end-time"
       />
 
-      {/* Resources (multi-select checkboxes) */}
-      {filteredResources.length > 0 && (
+      {/* Resources */}
+      {availableResources.length > 0 && (
         <div className="form-field">
           <fieldset>
             <legend>Resources</legend>
-            <div className="form-checkbox-group">
-              {filteredResources.map((resource) => (
-                <label key={resource.id} className="form-checkbox-label">
-                  <input
-                    type="checkbox"
-                    value={resource.id}
-                    checked={resourceIds.includes(resource.id)}
-                    onChange={() => handleResourceToggle(resource.id)}
-                  />
-                  {resource.name}
-                  {resource.type && <span className="resource-type"> ({resource.type})</span>}
-                </label>
-              ))}
-            </div>
+            {availableResources.map((r) => (
+              <label key={r.id} className="resource-checkbox-label">
+                <input
+                  type="checkbox"
+                  value={r.id}
+                  checked={resourceIds.includes(r.id)}
+                  onChange={() => toggleResource(r.id)}
+                  data-testid={`resource-${r.id}`}
+                />
+                {r.name}
+                {r.type && ` (${r.type})`}
+              </label>
+            ))}
           </fieldset>
         </div>
       )}
@@ -261,122 +240,105 @@ export function BookingForm({
         label="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        error={allErrors.description}
         maxLength={500}
-        placeholder="Optional description"
-        rows={3}
+        error={errors.description}
+        data-testid="booking-description"
       />
 
-      {/* Dynamic Custom Fields */}
-      <CustomFieldRenderer
-        fields={customFields}
-        values={customFieldValues}
-        onChange={handleCustomFieldChange}
-        errors={customFieldErrors}
-      />
+      {/* Custom fields */}
+      {customFields.length > 0 && (
+        <div className="booking-form__custom-fields" data-testid="custom-fields-section">
+          {customFields.map((field: CustomField) => (
+            <CustomFieldRenderer
+              key={field.id}
+              field={field}
+              value={customFieldValues[field.id] ?? ''}
+              onChange={(fieldId, val) =>
+                setCustomFieldValues((prev) => ({ ...prev, [fieldId]: val }))
+              }
+              error={errors[`custom_${field.id}`]}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Recurring booking checkbox */}
-      <div className="form-field">
-        <label className="form-checkbox-label">
-          <input
-            type="checkbox"
-            id="booking-is-recurring"
-            checked={isRecurring}
-            onChange={(e) => {
-              setIsRecurring(e.target.checked);
-              if (!e.target.checked) setRecurrencePattern(null);
-            }}
-            data-testid="recurring-checkbox"
-          />
-          Make this a recurring booking
-        </label>
-      </div>
+      {/* Recurring pattern (create mode only) */}
+      {mode === 'create' && (
+        <div className="form-field">
+          <label className="recurring-toggle-label">
+            <input
+              type="checkbox"
+              checked={isRecurring}
+              onChange={(e) => setIsRecurring(e.target.checked)}
+              data-testid="recurring-toggle"
+            />
+            Make this a recurring booking
+          </label>
 
-      {/* Recurring Pattern fields (shown when recurring checked) */}
-      {isRecurring && (
-        <RecurringPatternInline
-          startDate={startTime ? startTime.split('T')[0] : ''}
-          value={recurrencePattern}
-          onChange={setRecurrencePattern}
+          {isRecurring && (
+            <div className="recurring-pattern" data-testid="recurring-pattern">
+              <Select
+                id="recurrence-type"
+                label="Repeat"
+                value={recurrenceType}
+                onChange={(e) => setRecurrenceType(e.target.value as 'daily' | 'weekly')}
+                options={[
+                  { value: 'daily', label: 'Daily' },
+                  { value: 'weekly', label: 'Weekly' },
+                ]}
+                data-testid="recurrence-type"
+              />
+              <Input
+                id="recurrence-until"
+                label="Until"
+                type="date"
+                required
+                value={recurrenceUntil}
+                onChange={(e) => setRecurrenceUntil(e.target.value)}
+                error={errors.recurrenceUntil}
+                data-testid="recurrence-until"
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Conflict detection */}
+      {locationId && startTime && endTime && (
+        <ConflictWarning
+          locationId={locationId}
+          resourceIds={resourceIds}
+          startTime={startTime ? new Date(startTime).toISOString() : ''}
+          endTime={endTime ? new Date(endTime).toISOString() : ''}
+          excludeBookingId={bookingId}
+          onBlockChange={(blocked) =>
+            setConflictState((prev) => ({ ...prev, isBlocked: blocked }))
+          }
         />
       )}
 
-      {/* Additional content slot (e.g. ConflictWarning) */}
-      {belowFields}
-
-      {/* Submit */}
+      {/* Form actions */}
       <div className="booking-form__actions">
-        <button
+        {onCancel && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            data-testid="booking-cancel"
+          >
+            Cancel
+          </Button>
+        )}
+        <Button
           type="submit"
-          className="btn btn--primary"
-          disabled={isSubmitting || submitDisabled}
-          data-testid="booking-submit"
+          variant="primary"
+          isLoading={isLoading}
+          disabled={isSaveDisabled}
+          data-testid="booking-save"
         >
-          {isSubmitting ? 'Saving…' : mode === 'create' ? 'Create Booking' : 'Save Changes'}
-        </button>
+          {mode === 'edit' ? 'Save Changes' : 'Create Booking'}
+        </Button>
       </div>
     </form>
-  );
-}
-
-// ── Inline recurring pattern (imported by BookingCreate page) ──────────────────
-
-interface RecurringPatternInlineProps {
-  startDate: string;
-  value: RecurrencePattern | null;
-  onChange: (pattern: RecurrencePattern | null) => void;
-}
-
-function RecurringPatternInline({ startDate, value, onChange }: RecurringPatternInlineProps) {
-  const type = value?.type ?? 'daily';
-  const until = value?.until ?? '';
-
-  function handleTypeChange(newType: 'daily' | 'weekly') {
-    onChange({ type: newType, until });
-  }
-
-  function handleUntilChange(newUntil: string) {
-    onChange({ type, until: newUntil });
-  }
-
-  return (
-    <div className="recurring-pattern-inline" data-testid="recurring-pattern-inline">
-      <div className="form-field">
-        <label htmlFor="recurring-type">Repeat</label>
-        <select
-          id="recurring-type"
-          className="form-select"
-          value={type}
-          onChange={(e) => handleTypeChange(e.target.value as 'daily' | 'weekly')}
-          data-testid="recurring-type-select"
-        >
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-        </select>
-      </div>
-      <div className="form-field">
-        <label htmlFor="recurring-until">Until</label>
-        <input
-          id="recurring-until"
-          type="date"
-          className="form-input"
-          value={until}
-          min={startDate}
-          onChange={(e) => handleUntilChange(e.target.value)}
-          required
-          data-testid="recurring-until-date"
-        />
-      </div>
-    </div>
-  );
-}
-
-// ── Utility ───────────────────────────────────────────────────────────────────
-
-function toDatetimeLocal(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
   );
 }

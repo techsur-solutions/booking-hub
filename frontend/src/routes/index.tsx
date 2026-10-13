@@ -4,7 +4,7 @@ import { Login } from '../pages/Login';
 import { PasswordReset } from '../pages/PasswordReset';
 import { PasswordResetComplete } from '../pages/PasswordResetComplete';
 import { BookingsView } from '../pages/BookingsView';
-import { BookingCreate } from '../pages/BookingCreate';
+import { BookingEdit } from '../pages/BookingEdit';
 import { ApprovalsQueue } from '../pages/ApprovalsQueue';
 import { MyAccount } from '../pages/MyAccount';
 import { LocationsAdmin } from '../pages/admin/LocationsAdmin';
@@ -47,6 +47,18 @@ export const routes: RouteObject[] = [
       <ProtectedRoute>
         <AppShell>
           <BookingsView />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+
+  // Booking Edit: /bookings/:id/edit
+  {
+    path: '/bookings/:id/edit',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <BookingEdit />
         </AppShell>
       </ProtectedRoute>
     ),

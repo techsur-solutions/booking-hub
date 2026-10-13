@@ -1,5 +1,8 @@
 import type { CustomField } from '../../api/types';
 
+/** Map of field_id → string value (used by BookingForm) */
+export type CustomFieldValues = Record<string, string>;
+
 export interface CustomFieldRendererProps {
   field: CustomField;
   value: string;
