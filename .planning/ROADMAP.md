@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Core Booking & Approval Workflow** - Users create/edit/delete/clone bookings with full conflict detection and an approval workflow (completed 2026-10-10)
 - [x] **Phase 6: Notifications & Audit Logging** - Booking/account lifecycle events reliably trigger emails and produce an immutable, queryable audit trail (completed 2026-10-13)
 - [x] **Phase 7: Public Feeds** - Approved upcoming bookings are exposed via RSS2/iCal/JSON/display-board feeds with zero login required (completed 2026-10-13)
-- [ ] **Phase 8: Regression Verification & Test Traceability** - A CI-enforced regression suite and traceability matrix make "no functionality lost" continuously verifiable
+- [x] **Phase 8: Regression Verification & Test Traceability** - A CI-enforced regression suite and traceability matrix make "no functionality lost" continuously verifiable (completed 2026-10-13)
 
 ## Phase Details
 
@@ -166,7 +166,7 @@ Plans:
 
 ### Phase 8: Regression Verification & Test Traceability
 **Goal**: Automated tests verify every legacy feature and business rule identified by F0, with a maintained traceability matrix, so "no functionality lost" is continuously and objectively verifiable — and a CI-enforced regression suite blocks any release that would silently regress parity.
-**Status**: Passed
+**Status**: Complete (2026-10-13)
 **Depends on**: Phases 1–7 (every feature and the F0 findings must exist to be traced and tested)
 **Requirements**: F13 (F13.1–F13.5)
 **Success Criteria** (what must be TRUE):
@@ -196,7 +196,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Core Booking & Approval Workflow | 0/TBD | Complete | 2026-10-10 |
 | 6. Notifications & Audit Logging | 0/TBD | Complete | 2026-10-13 |
 | 7. Public Feeds | 3/3 | Complete | 2026-10-13 |
-| 8. Regression Verification & Test Traceability | 4/4 | Passed | - |
+| 8. Regression Verification & Test Traceability | 4/4 | Complete | 2026-10-13 |
 
 ---
 *Roadmap created: 2026-10-06*
