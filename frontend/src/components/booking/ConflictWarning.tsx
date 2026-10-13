@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { bookingsApi } from '../../api/bookings';
 import type { ConflictFlag } from '../../api/types';
 import { hasApprovePermission } from '../../utils/permissions';
+import { ConflictBanner } from './ConflictBanner';
 
 interface ConflictWarningProps {
   locationId: string;
@@ -84,59 +85,23 @@ export function ConflictWarning({
 
   if (conflicts.length === 0) return null;
 
-  // Hard-block: non-approver sees red banner, Save DISABLED
-  if (!allowApproveBooking) {
-    return (
-      <div
-        className="conflict-warning conflict-warning--hard-block"
-        role="alert"
-        data-testid="conflict-hard-block"
-      >
-        <strong>⛔ Conflict detected.</strong> Resolve conflicts to proceed.
-        <ul className="conflict-warning__list">
-          {conflicts.map((c) => (
-            <li key={c.conflicting_booking_id}>
-              Conflict with booking{' '}
-              <a
-                href={`/bookings/${c.conflicting_booking_id}`}
-                className="conflict-warning__link"
-                data-testid={`conflict-link-${c.conflicting_booking_id}`}
-              >
-                {c.conflicting_booking_id}
-              </a>{' '}
-              ({c.conflict_type})
-            </li>
-          ))}
-        </ul>
-        {/* DISABLED hard-block — Save button is disabled by parent via onBlockChange */}
-      </div>
-    );
-  }
+  // Delegate rendering to ConflictBanner (enhanced UI with hard-block/soft-warn)
+  // Map ConflictFlag → ConflictBannerConflict (ConflictFlag has no title/resource_name, use ID as title)
+  const bannerConflicts = conflicts.map((c: ConflictFlag) => ({
+    booking_id: c.conflicting_booking_id,
+    booking_title: c.conflicting_booking_id, // ID used as title fallback (no title in ConflictFlag)
+    conflict_type: c.conflict_type,
+  }));
 
-  // Soft-warn: approver sees yellow banner, Save ENABLED
   return (
-    <div
-      className="conflict-warning conflict-warning--soft-warn"
-      role="alert"
-      data-testid="conflict-soft-warn"
-    >
-      <strong>⚠️ Warning: Conflict detected.</strong> You can save anyway (approvers only).
-      <ul className="conflict-warning__list">
-        {conflicts.map((c) => (
-          <li key={c.conflicting_booking_id}>
-            Conflict with booking{' '}
-            <a
-              href={`/bookings/${c.conflicting_booking_id}`}
-              className="conflict-warning__link"
-              data-testid={`conflict-link-${c.conflicting_booking_id}`}
-            >
-              {c.conflicting_booking_id}
-            </a>{' '}
-            ({c.conflict_type})
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ConflictBanner
+      conflicts={bannerConflicts}
+      userHasApprovePermission={allowApproveBooking}
+      onSaveAnyway={allowApproveBooking ? () => {
+        // When approver confirms "Save Anyway", unblock the form so parent can proceed
+        onBlockChange(false);
+      } : undefined}
+    />
   );
 }
 
