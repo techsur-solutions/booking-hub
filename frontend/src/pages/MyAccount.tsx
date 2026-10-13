@@ -23,9 +23,22 @@ export function MyAccount() {
   const queryClient = useQueryClient();
 
   // Fetch current user
-  const { data: user, isLoading, isError } = useQuery<User>({
+  const { data: user, isLoading, isError, error, refetch } = useQuery<User>({
     queryKey: ['users', 'me'],
-    queryFn: () => usersApi.getMe().then((r) => r.data),
+    queryFn: async () => {
+      // No need for per-call keycloak.updateToken() - client.ts interceptor handles it globally
+      try {
+        console.log('[MyAccount] Fetching user profile');
+        const response = await usersApi.getMe();
+        console.log('[MyAccount] User profile loaded:', response.data.email);
+        return response.data;
+      } catch (err) {
+        console.error('[MyAccount] Failed to load user profile:', err);
+        throw err;
+      }
+    },
+    retry: 2, // Retry failed requests 2 times
+    staleTime: 2 * 60 * 1000, // Cache for 2 minutes (profile data changes infrequently)
   });
 
   // Edit state
@@ -71,6 +84,18 @@ export function MyAccount() {
   const roles: string[] = keycloak.realmAccess?.roles ?? [];
   const displayName = user ? `${user.first_name} ${user.last_name}`.trim() : '—';
 
+  // Check authentication before rendering
+  if (!keycloak.authenticated) {
+    return (
+      <div style={{ padding: 'var(--spacing-xl)', textAlign: 'center' }}>
+        <p>Please log in to view your account.</p>
+        <button onClick={() => keycloak.login()} className="btn btn--primary">
+          Log In
+        </button>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div style={{ padding: 'var(--spacing-2xl)', display: 'flex', justifyContent: 'center' }}>
@@ -81,15 +106,46 @@ export function MyAccount() {
 
   if (isError) {
     return (
-      <div
-        role="alert"
-        style={{
-          padding: 'var(--spacing-2xl)',
-          color: 'var(--color-danger-dark)',
-          textAlign: 'center',
-        }}
-      >
-        Failed to load account information. Please try again.
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: 'var(--spacing-xl)' }}>
+        <h1 style={{ marginBottom: 'var(--spacing-xl)' }}>My Account</h1>
+        
+        <div
+          role="alert"
+          style={{
+            padding: 'var(--spacing-lg)',
+            backgroundColor: 'var(--color-danger-light)',
+            color: 'var(--color-danger-dark)',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: 'var(--spacing-md)',
+          }}
+        >
+          <p style={{ marginBottom: 'var(--spacing-md)' }}>
+            Failed to load account information. This may be due to:
+          </p>
+          <ul style={{ marginLeft: 'var(--spacing-lg)', marginBottom: 'var(--spacing-md)' }}>
+            <li>Network connectivity issue</li>
+            <li>Authentication token expired</li>
+            <li>Server temporarily unavailable</li>
+          </ul>
+          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>
+            Error: {error instanceof Error ? error.message : 'Unknown error'}
+          </p>
+        </div>
+
+        <button
+          onClick={() => refetch()}
+          className="btn btn--primary"
+          style={{ marginRight: 'var(--spacing-md)' }}
+        >
+          Retry
+        </button>
+        
+        <button
+          onClick={() => window.location.href = '/bookings'}
+          className="btn btn--secondary"
+        >
+          Back to Calendar
+        </button>
       </div>
     );
   }
