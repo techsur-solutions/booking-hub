@@ -166,6 +166,7 @@ Plans:
 
 ### Phase 8: Regression Verification & Test Traceability
 **Goal**: Automated tests verify every legacy feature and business rule identified by F0, with a maintained traceability matrix, so "no functionality lost" is continuously and objectively verifiable — and a CI-enforced regression suite blocks any release that would silently regress parity.
+**Status**: In progress
 **Depends on**: Phases 1–7 (every feature and the F0 findings must exist to be traced and tested)
 **Requirements**: F13 (F13.1–F13.5)
 **Success Criteria** (what must be TRUE):
@@ -195,7 +196,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Core Booking & Approval Workflow | 0/TBD | Complete | 2026-10-10 |
 | 6. Notifications & Audit Logging | 0/TBD | Complete | 2026-10-13 |
 | 7. Public Feeds | 3/3 | Complete | 2026-10-13 |
-| 8. Regression Verification & Test Traceability | 0/4 | Not started | - |
+| 8. Regression Verification & Test Traceability | 0/4 | In progress | - |
 
 ---
 *Roadmap created: 2026-10-06*
