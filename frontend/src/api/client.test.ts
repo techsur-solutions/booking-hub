@@ -2,10 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import MockAdapter from 'axios-mock-adapter';
 import { apiClient } from './client';
 
-// Mock the keycloak module so we can control keycloak.token and keycloak.login
+// Mock the keycloak module so we can control keycloak.token, keycloak.updateToken, and keycloak.login
 vi.mock('../auth/keycloak', () => ({
   keycloak: {
+    authenticated: false,
     token: undefined as string | undefined,
+    updateToken: vi.fn().mockResolvedValue(true),
     login: vi.fn().mockResolvedValue(undefined),
   },
 }));
@@ -24,6 +26,7 @@ describe('API Client', () => {
 
   it('includes JWT bearer token in request headers when token is set', async () => {
     const { keycloak } = await import('../auth/keycloak');
+    keycloak.authenticated = true;
     keycloak.token = 'fake-jwt-token';
 
     let capturedAuthHeader: string | undefined;
@@ -36,6 +39,7 @@ describe('API Client', () => {
     expect(capturedAuthHeader).toBe('Bearer fake-jwt-token');
 
     // Clean up
+    keycloak.authenticated = false;
     keycloak.token = undefined;
   });
 
