@@ -8,7 +8,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}
+          jwk-set-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}/protocol/openid-connect/certs
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:audit_db}
     username: ${DB_USER:audit_svc}
