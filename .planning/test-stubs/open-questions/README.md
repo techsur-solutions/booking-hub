@@ -10,19 +10,19 @@ This directory contains test stub templates for the 13 OPEN questions from Phase
 |----|----------|-----------|---------------------------|
 | OQ-02 | Conflict enforcement (hard-block vs soft-warning) | OQ-02-conflict-enforcement.md | services/booking-service/.../ConflictEnforcementTest.java |
 | OQ-03 | Multi-resource conflict scope | OQ-03-multi-resource-conflict.md | services/booking-service/.../MultiResourceConflictTest.java |
-| OQ-07 | Feed access gating (token vs fully public) | OQ-07-feed-access-gating.md | services/feeds-service/.../FeedAuthorizationTest.java |
-| OQ-12 | Assume-user admin-only enforcement | OQ-other-stubs.md | services/users-permissions-service/.../AssumeUserTest.java |
-| OQ-15 | Email enumeration on password reset | OQ-other-stubs.md | services/users-permissions-service/.../PasswordResetSecurityTest.java |
-| OQ-16 | Password reset token re-check at submit | OQ-other-stubs.md | services/users-permissions-service/.../PasswordResetTokenTest.java |
+| OQ-14 | Location/Resource deletion orphan-allow vs guard | OQ-other-stubs.md | services/locations-resources-service/.../DeletionPolicyTest.java |
+| OQ-15 | Resource checkavailability permission gate | OQ-other-stubs.md | services/locations-resources-service/.../ResourceAvailabilityTest.java |
 | OQ-17 | Session timeout values | OQ-other-stubs.md | Keycloak realm config + test |
 | OQ-18 | Permission change cache invalidation | OQ-other-stubs.md | services/users-permissions-service/.../PermissionCacheTest.java |
+| OQ-19 | Password reset token re-check at submit | OQ-other-stubs.md | services/users-permissions-service/.../PasswordResetTokenTest.java |
+| OQ-20 | Email enumeration on password reset | OQ-other-stubs.md | services/users-permissions-service/.../PasswordResetSecurityTest.java |
 | OQ-21 | Email uniqueness collation (case sensitivity) | OQ-other-stubs.md | services/users-permissions-service/.../UserEmailUniquenessTest.java |
-| OQ-22 | Resource checkavailability permission gate | OQ-other-stubs.md | services/locations-resources-service/.../ResourceAvailabilityTest.java |
-| OQ-23 | Location/Resource deletion orphan-allow vs guard | OQ-other-stubs.md | services/locations-resources-service/.../DeletionPolicyTest.java |
+| OQ-22 | Assume-user admin-only enforcement | OQ-other-stubs.md | services/users-permissions-service/.../AssumeUserTest.java |
+| OQ-23 | Event/Eventresource DB column list unconfirmed | OQ-other-stubs.md | services/audit-log-service/.../AuditLogTypeTest.java |
 | OQ-24 | Error email feature unimplemented or out-of-scope | OQ-other-stubs.md | services/*/error-handling tests or docs |
 | OQ-25 | `ajax` log type write-site not located | OQ-other-stubs.md | services/audit-log-service/.../AuditLogTypeTest.java |
 
-*Note: OQ IDs above map to open-questions.md items by question number (OQ-02 = item 2, etc.). Items 17 onward map to open-questions.md items 14–25 per the cross-reference at the bottom of open-questions.md.*
+*Note: OQ IDs map to open-questions.md item numbers directly (OQ-02 = item 2, OQ-14 = item 14, etc.). OQ-07 (Feed access gating) is omitted — item #7 is RESOLVED in open-questions.md; the OQ-07-feed-access-gating.md stub file documents the nuance for test coverage purposes.*
 
 ## Reference: open-questions.md item → OQ mapping
 
