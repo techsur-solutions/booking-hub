@@ -7,6 +7,7 @@ export function Sidebar() {
 
   // Read roles from Keycloak JWT: keycloak.realmAccess.roles (populated after login)
   const userRoles: string[] = (keycloak.realmAccess && keycloak.realmAccess.roles as string[]) || [];
+  // Legacy permission flag: allowApproveBooking → maps to Keycloak role: role_booking_approver
   const hasApprovePermission = userRoles.includes('role_booking_approver');
   const hasAnyAdminPermission = userRoles.some(
     (r: string) =>
