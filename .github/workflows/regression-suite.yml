@@ -1,0 +1,125 @@
+name: Regression Suite
+
+on:
+  push:
+    branches: [ main, 'feature/**' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '20'
+
+jobs:
+  backend-tests:
+    name: Backend Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run backend tests
+        working-directory: ./services
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: test_db
+          DB_USER: test_user
+          DB_PASSWORD: test_pass
+        run: |
+          # Run tests for all services (fail fast on first failure)
+          for service_dir in */; do
+            service_name=$(basename "$service_dir")
+            echo "Testing $service_name..."
+            (cd "$service_dir" && mvn clean test -B)
+          done
+
+      - name: Publish test report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Backend Test Results
+          path: 'services/*/target/surefire-reports/*.xml'
+          reporter: java-junit
+          fail-on-error: true
+
+  frontend-tests:
+    name: Frontend E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: ./frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: ./frontend
+        env:
+          VITE_E2E_MODE: 'true'
+        run: npx playwright test --workers=1 --reporter=list
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
+
+  regression-summary:
+    name: Regression Suite Summary
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.backend-tests.result }}" != "success" ] || [ "${{ needs.frontend-tests.result }}" != "success" ]; then
+            echo "❌ Regression suite FAILED"
+            echo "Backend: ${{ needs.backend-tests.result }}"
+            echo "Frontend: ${{ needs.frontend-tests.result }}"
+            exit 1
+          else
+            echo "✅ Regression suite PASSED"
+          fi
