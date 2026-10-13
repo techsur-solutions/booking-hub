@@ -159,3 +159,28 @@ iteration: 1
 - `open-question-resolution-protocol.md` OQ table → stub `README.md` OQ table: **WARNING W3** — three OQ IDs are mis-numbered; OQ-07 stub exists for an already-RESOLVED question.
 - `regression-suite.yml` `regression-summary` job `needs: [backend-tests, frontend-tests]` with `if: always()` → check logic: **OK** — the `if [ "…result" != "success" ] || [ "…result" != "success" ]` check correctly fails the summary when either job is non-success, even when jobs are skipped/cancelled.
 - `analyze-coverage.sh` feature name lookup → `REQUIREMENTS.md` format: **WARNING W1** — grep pattern `^\*\*$feature\*\*:` never matches; all feature names are "Unknown".
+
+---
+
+## Fix Pass Resolutions (iteration 1)
+
+### B1
+**Resolution:** fixed (6203a30) — Replaced the single "Run E2E tests" CI step (which set `VITE_E2E_MODE=true` globally) with two steps: (1) auth step sets `PW_TEST_TYPE=auth` only, causing `playwright.config.ts`'s `webServer.env` guard to omit `VITE_E2E_MODE`, so Keycloak is active for `auth-redirect.spec.ts`; (2) non-auth step sets `VITE_E2E_MODE=true` and skips `auth-redirect.spec.ts` via `--ignore`.
+
+### B2
+**Resolution:** fixed (8bf0de2) — Replaced all `grep ",$feature"` calls in `query-matrix.sh` and `analyze-coverage.sh` with `grep -E "(,|\")$feature([^0-9]|$)"`. Pattern uses end-of-field anchor (non-digit or EOL) so F1 no longer matches F10/F11/F12/F13. Also handles first-element-in-quoted-multi-value (e.g. `,"F1, F3"`). Regenerated `docs/testing/test-gap-report.md` — F1 now correctly reports 18 findings (was 25).
+
+### W1
+**Resolution:** fixed (8bf0de2, same commit as B2) — Changed `grep -A 1 "^\*\*$feature\*\*:"` to `grep "\*\*$feature\*\*:" | head -1 | sed "s/.*\*\*$feature\*\*: *//"`. The old pattern anchored at `^**` which never matched the `- [ ] **FN**:` format. All feature headings in the regenerated report now show correct names.
+
+### W2
+**Resolution:** fixed (8cc5ec8) — Changed `OQ-03-multi-resource-conflict.md` "Traceability findings" from `BF-029, BF-030` (F4.1/F4.2 reference-data schema findings) to `BF-113` (F2.1 multi-resource conflict aggregation Open Question). Updated step 6 of activation instructions to match.
+
+### W3
+**Resolution:** fixed (6aea392) — Reconciled stub README table against `open-question-resolution-protocol.md` as authoritative source: corrected OQ-12→OQ-22, OQ-15(email)→OQ-20, OQ-16→OQ-19, OQ-22(checkavailability)→OQ-15; added missing OQ-14 row; removed OQ-07 (RESOLVED, with explanatory note); corrected OQ-23 description.
+
+### W4
+**Resolution:** fixed (42ddf47) — Replaced brittle `tee /tmp/pw-output.txt | grep -qE '^[0-9]+ (passed|failed)'` logic (which failed because Playwright list reporter emits summary with leading spaces) with a simple exit-code check: `if npm run test:e2e; then`.
+
+### W5
+**Resolution:** fixed (1654466) — Added `BF-[0-9]{3}` input validation before the grep in the `finding` command; uses `grep -F` (fixed-string) after validation so no metacharacters can reach the grep engine. Invalid inputs (e.g. `BF-.28`, `BF-028|BF-001`) now produce a clear error message.
