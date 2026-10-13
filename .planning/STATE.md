@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 09-14-PLAN.md
-last_updated: "2026-10-13T18:08:33.245Z"
+stopped_at: Completed 09-15-PLAN.md
+last_updated: "2026-10-13T18:14:25.407Z"
 last_activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 15
-  completed_plans: 8
+  completed_plans: 9
 ---
 
 # Project State
@@ -100,6 +100,7 @@ Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 | Phase 09-core-user-interface P07 | 21min | 3 tasks | 9 files |
 | Phase 09-core-user-interface P05 | 22min | 3 tasks | 8 files |
 | Phase 09-core-user-interface P14 | 24min | 3 tasks | 12 files |
+| Phase 09-core-user-interface P15 | 29min | 4 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -215,6 +216,9 @@ Recent decisions affecting current work:
 - [Phase 09-core-user-interface]: FullCalendarWrapper exposes onDateClick/onEventClick props for modal integration in later plans
 - [Phase 09-14]: Playwright route mock uses regex not glob — **/locations** intercepted Vite JS module paths causing MIME-type error preventing React mounting
 - [Phase 09-14]: ApprovedOnlyBadge pointerEvents:none — badge does not block booking card interactions; FeedSubscription replaces FeedsLanding stub at /feeds route
+- [Phase 09-core-user-interface]: window.__E2E_LOGIN_TEST__ flag added to Login.tsx: suppresses auth redirect in Playwright login page tests
+- [Phase 09-core-user-interface]: ToastProvider added to App.tsx (required by PasswordResetComplete useToast() hook)
+- [Phase 09-core-user-interface]: Password reset request always returns identical success message regardless of email existence (T-09-15-01 information disclosure prevention, FRD §6.3)
 
 ### Pending Todos
 
@@ -287,6 +291,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-13T18:08:33.244Z
-Stopped at: Completed 09-14-PLAN.md
+Last session: 2026-10-13T18:14:25.405Z
+Stopped at: Completed 09-15-PLAN.md
 Resume file: None
