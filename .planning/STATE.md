@@ -2,10 +2,10 @@
 pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 09-17-PLAN.md
-last_updated: "2026-10-13T20:22:25.587Z"
-last_activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
+status: in_progress
+stopped_at: Completed 09-16-PLAN.md
+last_updated: "2026-10-13T20:23:00Z"
+last_activity: 2026-10-13 — Completed plan 09-16 (Create Booking button navigation)
 progress:
   total_phases: 2
   completed_phases: 0
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 
 Phase: 9 (Core User Interface) — IN PROGRESS
 Plan: 16 of 18
-Status: Executing
-Last activity: 2026-10-13 — Completed plan 09-17 (location dropdown data loading fix)
+Status: Completed 09-16-PLAN.md
+Last activity: 2026-10-13 — Completed plan 09-16 (Create Booking button navigation, UAT gap #6 closure)
 
 ## Performance Metrics
 
@@ -107,6 +107,7 @@ Last activity: 2026-10-13 — Completed plan 09-17 (location dropdown data loadi
 | Phase 09-core-user-interface P10 | 15min | 3 tasks | 7 files |
 | Phase 09-core-user-interface P13 | 6min | 4 tasks | 6 files |
 | Phase 09-core-user-interface P12 | 9min | 2 tasks | 5 files |
+| Phase 09-core-user-interface P16 | 5min | 2 tasks | 2 files |
 | Phase 09-core-user-interface P17 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
@@ -236,6 +237,8 @@ Recent decisions affecting current work:
 - [Phase 09-core-user-interface]: Approval components scoped to components/approval/ subdirectory
 - [Phase 09-12]: ConflictBanner accepts pre-fetched conflicts[] (renderer); ConflictWarning remains fetcher and delegates — clean separation matching component responsibilities
 - [Phase 09-12]: ConflictBadge reused inside ConflictBanner for inline badge display per UI-PATTERN-02 conflict visibility everywhere
+- [Phase 09-16]: Create Booking button positioned right of view tabs in BookingsView header — establishes pattern for action buttons in workspace headers
+- [Phase 09-16]: Button navigation pre-fills ?start_time=<date>T09:00 when ?date param exists — user-friendly default (9am) while preserving user context
 - [Phase 09-17]: JWT token refresh centralized in apiClient request interceptor using keycloak.updateToken(30) — applies to ALL API calls app-wide, not per-hook duplication
 - [Phase 09-17]: useLocations enhanced with retry: 2 and staleTime: 5min as secondary defense against transient failures (primary fix is centralized token refresh)
 - [Phase 09-17]: BookingForm location dropdown uses structural absence pattern for loading/error/empty states (conditional rendering) instead of disabled select
