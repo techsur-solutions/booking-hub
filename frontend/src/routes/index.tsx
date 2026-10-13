@@ -6,7 +6,7 @@ import { PasswordResetComplete } from '../pages/PasswordResetComplete';
 import { BookingsView } from '../pages/BookingsView';
 import { BookingEdit } from '../pages/BookingEdit';
 import { BookingCreate } from '../pages/BookingCreate';
-import { ApprovalsQueue } from '../pages/ApprovalsQueue';
+import { ApprovalQueue } from '../pages/ApprovalQueue';
 import { MyAccount } from '../pages/MyAccount';
 import { LocationsAdmin } from '../pages/admin/LocationsAdmin';
 import { ResourcesAdmin } from '../pages/admin/ResourcesAdmin';
@@ -97,7 +97,7 @@ export const routes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <AppShell>
-          <ApprovalsQueue />
+          <ApprovalQueue />
         </AppShell>
       </ProtectedRoute>
     ),
