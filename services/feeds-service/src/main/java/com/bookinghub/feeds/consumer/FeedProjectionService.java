@@ -122,8 +122,7 @@ public class FeedProjectionService {
         processedEventRepository.save(pe);
     }
 
-    @Transactional
-    public void applyBookingEvent(String routingKey, JsonNode body) {
+    void applyBookingEvent(String routingKey, JsonNode body) {
         String action = actionOf(routingKey); // created|updated|approved|denied|deleted
         UUID bookingId = readUuid(body, "id");
         if (bookingId == null) {
