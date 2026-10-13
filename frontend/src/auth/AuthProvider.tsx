@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { keycloak } from './keycloak';
+import { saveRememberMe } from '../utils/rememberMe';
 import type Keycloak from 'keycloak-js';
 
 interface AuthContextType {
@@ -99,6 +100,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       .then((auth) => {
         setAuthenticated(auth);
         setLoading(false);
+        // Consume "Remember Me" intent set before the Keycloak redirect.
+        // If the user checked "Remember Me" on first login (no stored email yet),
+        // Login.tsx wrote 'rememberMe_pending' to sessionStorage. Now that we have
+        // a valid token we can read the email from tokenParsed and save the cookie.
+        if (auth && sessionStorage.getItem('rememberMe_pending') === 'true') {
+          sessionStorage.removeItem('rememberMe_pending');
+          const email = keycloak.tokenParsed?.email;
+          if (email) {
+            saveRememberMe(email);
+          }
+        }
       })
       .catch((error) => {
         console.error('Keycloak initialization failed', error);
