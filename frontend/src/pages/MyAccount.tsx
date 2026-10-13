@@ -1,8 +1,404 @@
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../auth/AuthProvider';
+import { usersApi } from '../api/users';
+import { StateConfirmationBanner } from '../components/StateConfirmationBanner';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import type { User } from '../api/types';
+
+/**
+ * My Account self-service page — UI-AUTH-02
+ *
+ * Displays:
+ * - Name (editable inline with Edit/Save/Cancel)
+ * - Email (read-only, greyed out)
+ * - Roles (read-only chip list from keycloak.realmAccess.roles)
+ *
+ * Actions:
+ * - Change Password → keycloak.accountManagement()
+ * - View My Audit History → /admin/audit?actor={user.id}
+ */
 export function MyAccount() {
+  const { keycloak } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Fetch current user
+  const { data: user, isLoading, isError } = useQuery<User>({
+    queryKey: ['users', 'me'],
+    queryFn: () => usersApi.getMe().then((r) => r.data),
+  });
+
+  // Edit state
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+
+  // Confirmation banner
+  const [banner, setBanner] = useState<{ timestamp: Date } | null>(null);
+
+  // Save name mutation
+  const saveMutation = useMutation({
+    mutationFn: (name: string) => {
+      // Split name into first/last (simple split on first space)
+      const parts = name.trim().split(/\s+/);
+      const first_name = parts[0] ?? '';
+      const last_name = parts.slice(1).join(' ');
+      return usersApi.updateMe({ first_name, last_name });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'me'] });
+      setEditing(false);
+      setBanner({ timestamp: new Date() });
+    },
+  });
+
+  function startEditing() {
+    setEditName(user ? `${user.first_name} ${user.last_name}`.trim() : '');
+    setEditing(true);
+  }
+
+  function cancelEditing() {
+    setEditing(false);
+    setEditName('');
+  }
+
+  function handleSave() {
+    if (editName.trim()) {
+      saveMutation.mutate(editName.trim());
+    }
+  }
+
+  // Roles from Keycloak token
+  const roles: string[] = keycloak.realmAccess?.roles ?? [];
+  const displayName = user ? `${user.first_name} ${user.last_name}`.trim() : '—';
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: 'var(--spacing-2xl)', display: 'flex', justifyContent: 'center' }}>
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div
+        role="alert"
+        style={{
+          padding: 'var(--spacing-2xl)',
+          color: 'var(--color-danger-dark)',
+          textAlign: 'center',
+        }}
+      >
+        Failed to load account information. Please try again.
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1>My Account</h1>
-      <p>User profile and account settings — built in Phase 9 (account plan)</p>
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: 'var(--spacing-xl)' }}>
+      <h1 style={{ marginBottom: 'var(--spacing-xl)' }}>My Account</h1>
+
+      {/* Success banner */}
+      {banner && (
+        <StateConfirmationBanner
+          action="Name updated"
+          timestamp={banner.timestamp}
+          onDismiss={() => setBanner(null)}
+        />
+      )}
+
+      {/* Save error */}
+      {saveMutation.isError && (
+        <div
+          role="alert"
+          style={{
+            marginBottom: 'var(--spacing-md)',
+            padding: 'var(--spacing-sm) var(--spacing-md)',
+            background: '#fef2f2',
+            border: '1px solid var(--color-danger)',
+            borderRadius: 'var(--border-radius)',
+            color: 'var(--color-danger-dark)',
+            fontSize: 'var(--font-size-sm)',
+          }}
+        >
+          Failed to save name. Please try again.
+        </div>
+      )}
+
+      <div
+        style={{
+          background: 'var(--color-bg)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--border-radius-lg)',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Name field */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: 'var(--spacing-md) var(--spacing-lg)',
+            borderBottom: '1px solid var(--color-border)',
+            gap: 'var(--spacing-md)',
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                fontSize: 'var(--font-size-xs)',
+                fontWeight: 'var(--font-weight-medium)',
+                color: 'var(--color-text-light)',
+                marginBottom: 'var(--spacing-xs)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
+              Name
+            </div>
+            {editing ? (
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                autoFocus
+                data-testid="name-edit-input"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSave();
+                  if (e.key === 'Escape') cancelEditing();
+                }}
+                style={{
+                  padding: 'var(--spacing-xs) var(--spacing-sm)',
+                  border: '1px solid var(--color-border-focus)',
+                  borderRadius: 'var(--border-radius)',
+                  fontSize: 'var(--font-size-base)',
+                  width: '100%',
+                  outline: 'none',
+                  boxShadow: 'var(--focus-ring)',
+                }}
+              />
+            ) : (
+              <div style={{ fontSize: 'var(--font-size-base)' }} data-testid="name-display">
+                {displayName}
+              </div>
+            )}
+          </div>
+
+          {/* Edit / Save / Cancel buttons */}
+          {!editing ? (
+            <button
+              type="button"
+              onClick={startEditing}
+              data-testid="name-edit-button"
+              style={{
+                padding: 'var(--spacing-xs) var(--spacing-md)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--border-radius)',
+                background: 'var(--color-bg)',
+                cursor: 'pointer',
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-text)',
+              }}
+            >
+              Edit
+            </button>
+          ) : (
+            <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saveMutation.isPending}
+                data-testid="name-save-button"
+                style={{
+                  padding: 'var(--spacing-xs) var(--spacing-md)',
+                  border: 'none',
+                  borderRadius: 'var(--border-radius)',
+                  background: 'var(--color-primary)',
+                  color: '#fff',
+                  cursor: saveMutation.isPending ? 'not-allowed' : 'pointer',
+                  fontSize: 'var(--font-size-sm)',
+                  fontWeight: 'var(--font-weight-medium)',
+                }}
+              >
+                {saveMutation.isPending ? 'Saving…' : 'Save'}
+              </button>
+              <button
+                type="button"
+                onClick={cancelEditing}
+                data-testid="name-cancel-button"
+                style={{
+                  padding: 'var(--spacing-xs) var(--spacing-md)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--border-radius)',
+                  background: 'var(--color-bg)',
+                  cursor: 'pointer',
+                  fontSize: 'var(--font-size-sm)',
+                  color: 'var(--color-text)',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Email field — read-only */}
+        <div
+          style={{
+            padding: 'var(--spacing-md) var(--spacing-lg)',
+            borderBottom: '1px solid var(--color-border)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 'var(--font-size-xs)',
+              fontWeight: 'var(--font-weight-medium)',
+              color: 'var(--color-text-light)',
+              marginBottom: 'var(--spacing-xs)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
+          >
+            Email
+          </div>
+          <div
+            style={{
+              fontSize: 'var(--font-size-base)',
+              color: 'var(--color-text-light)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-sm)',
+            }}
+            data-testid="email-display"
+          >
+            {user?.email ?? '—'}
+            <span
+              title="Contact admin to change email"
+              style={{
+                fontSize: 'var(--font-size-xs)',
+                color: 'var(--color-text-muted)',
+                background: 'var(--color-bg-hover)',
+                padding: '2px 6px',
+                borderRadius: 'var(--border-radius-full)',
+                cursor: 'help',
+              }}
+            >
+              Read-only
+            </span>
+          </div>
+        </div>
+
+        {/* Roles — read-only chips */}
+        <div
+          style={{
+            padding: 'var(--spacing-md) var(--spacing-lg)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 'var(--font-size-xs)',
+              fontWeight: 'var(--font-weight-medium)',
+              color: 'var(--color-text-light)',
+              marginBottom: 'var(--spacing-sm)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
+          >
+            Roles
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-xs)' }} data-testid="roles-list">
+            {roles.length === 0 ? (
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>
+                No roles assigned
+              </span>
+            ) : (
+              roles.map((role) => (
+                <span
+                  key={role}
+                  style={{
+                    padding: '2px 10px',
+                    background: 'var(--color-primary-light)',
+                    color: 'var(--color-primary-dark)',
+                    borderRadius: 'var(--border-radius-full)',
+                    fontSize: 'var(--font-size-xs)',
+                    fontWeight: 'var(--font-weight-medium)',
+                  }}
+                >
+                  {role}
+                </span>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div
+        style={{
+          marginTop: 'var(--spacing-xl)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--spacing-md)',
+        }}
+      >
+        {/* Change Password → Keycloak account management */}
+        <button
+          type="button"
+          onClick={() => keycloak.accountManagement()}
+          data-testid="change-password-button"
+          style={{
+            padding: 'var(--spacing-sm) var(--spacing-md)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--border-radius)',
+            background: 'var(--color-bg)',
+            cursor: 'pointer',
+            fontSize: 'var(--font-size-base)',
+            color: 'var(--color-text)',
+            fontWeight: 'var(--font-weight-medium)',
+            textAlign: 'left',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-sm)',
+          }}
+        >
+          <span aria-hidden="true">🔑</span>
+          Change Password
+          <span
+            style={{
+              marginLeft: 'auto',
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            Opens Keycloak
+          </span>
+        </button>
+
+        {/* View My Audit History */}
+        {user && (
+          <a
+            href={`/admin/audit?actor=${user.id}`}
+            data-testid="audit-history-link"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-sm)',
+              padding: 'var(--spacing-sm) var(--spacing-md)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--border-radius)',
+              color: 'var(--color-text)',
+              textDecoration: 'none',
+              fontSize: 'var(--font-size-base)',
+              fontWeight: 'var(--font-weight-medium)',
+              background: 'var(--color-bg)',
+            }}
+          >
+            <span aria-hidden="true">📋</span>
+            View My Audit History
+          </a>
+        )}
+      </div>
     </div>
   );
 }

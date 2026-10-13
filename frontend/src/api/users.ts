@@ -29,4 +29,17 @@ export const usersApi = {
     apiClient.put<Permission>(`/users/${userId}/permissions`, data),
 
   getCurrentUser: () => apiClient.get<User>('/users/me'),
+
+  // Aliases used by auth flow pages (UI-AUTH-02)
+  getMe: () => apiClient.get<User>('/users/me'),
+
+  updateMe: (data: Partial<Pick<User, 'first_name' | 'last_name'>>) =>
+    apiClient.patch<User>('/users/me', data),
+
+  // Password reset endpoints (UI-AUTH-03, implemented in Phase 3)
+  requestPasswordReset: (email: string) =>
+    apiClient.post('/users/password-reset/request', { email }),
+
+  completePasswordReset: (token: string, new_password: string) =>
+    apiClient.post('/users/password-reset/complete', { token, new_password }),
 };
