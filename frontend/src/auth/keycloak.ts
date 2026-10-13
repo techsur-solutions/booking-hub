@@ -1,17 +1,13 @@
 import Keycloak from "keycloak-js";
 
-// Compute Keycloak URL at runtime to support dynamic preview URLs
+// Keycloak is served from the app's own origin: nginx forwards /realms/, /resources/ and /js/
+// to the keycloak container (frontend/nginx.conf). The browser never needs a second address,
+// which matters behind Pivota's preview — each preview URL is signed for ONE port, so a
+// Keycloak URL on another port (8180-...) is refused ("preview auth: invalid token").
+// `npm run dev` has no nginx in front, so it talks to Keycloak directly.
 function getKeycloakUrl(): string {
-  const hostname = window.location.hostname;
-  
-  // If hostname starts with 3000-, replace with 8180- to reach Keycloak on same preview domain
-  if (hostname.startsWith('3000-')) {
-    const keycloakHostname = hostname.replace(/^3000-/, '8180-');
-    return `${window.location.protocol}//${keycloakHostname}`;
-  }
-  
-  // Otherwise use env var or localhost fallback
-  return import.meta.env.VITE_KEYCLOAK_URL ?? "http://localhost:8180";
+  if (import.meta.env.VITE_KEYCLOAK_URL) return import.meta.env.VITE_KEYCLOAK_URL;
+  return import.meta.env.DEV ? "http://localhost:8180" : window.location.origin;
 }
 
 export const keycloak = new Keycloak({
