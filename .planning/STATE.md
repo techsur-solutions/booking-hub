@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 09-13-PLAN.md
-last_updated: "2026-10-13T18:45:02.172Z"
+stopped_at: Completed 09-12-PLAN.md
+last_updated: "2026-10-13T18:47:51.918Z"
 last_activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -106,6 +106,7 @@ Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 | Phase 09-core-user-interface P09 | 13min | 4 tasks | 8 files |
 | Phase 09-core-user-interface P10 | 15min | 3 tasks | 7 files |
 | Phase 09-core-user-interface P13 | 6min | 4 tasks | 6 files |
+| Phase 09-core-user-interface P12 | 9min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -232,6 +233,8 @@ Recent decisions affecting current work:
 - [Phase 09-core-user-interface]: Non-dismissible scope dialog pattern: no X/Escape/backdrop-close — user must select scope before editing recurring bookings (UI-BOOK-02 design principle)
 - [Phase 09-core-user-interface]: ApprovalQueue uses direct fetch over useBookings hook for optimistic UI control
 - [Phase 09-core-user-interface]: Approval components scoped to components/approval/ subdirectory
+- [Phase 09-12]: ConflictBanner accepts pre-fetched conflicts[] (renderer); ConflictWarning remains fetcher and delegates — clean separation matching component responsibilities
+- [Phase 09-12]: ConflictBadge reused inside ConflictBanner for inline badge display per UI-PATTERN-02 conflict visibility everywhere
 
 ### Pending Todos
 
@@ -304,6 +307,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-13T18:44:57.659Z
-Stopped at: Completed 09-13-PLAN.md
+Last session: 2026-10-13T18:47:51.916Z
+Stopped at: Completed 09-12-PLAN.md
 Resume file: None
