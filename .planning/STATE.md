@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 09-12-PLAN.md
-last_updated: "2026-10-13T18:47:51.918Z"
+stopped_at: Completed 09-17-PLAN.md
+last_updated: "2026-10-13T20:22:25.587Z"
 last_activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 progress:
   total_phases: 2
-  completed_phases: 1
-  total_plans: 15
-  completed_plans: 15
+  completed_phases: 0
+  total_plans: 18
+  completed_plans: 16
 ---
 
 # Project State
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 
 ## Current Position
 
-Phase: 9 (Core User Interface) — NOT STARTED
-Plan: 0 of 15
-Status: Ready to plan
-Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
+Phase: 9 (Core User Interface) — IN PROGRESS
+Plan: 16 of 18
+Status: Executing
+Last activity: 2026-10-13 — Completed plan 09-17 (location dropdown data loading fix)
 
 ## Performance Metrics
 
@@ -107,6 +107,7 @@ Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 | Phase 09-core-user-interface P10 | 15min | 3 tasks | 7 files |
 | Phase 09-core-user-interface P13 | 6min | 4 tasks | 6 files |
 | Phase 09-core-user-interface P12 | 9min | 2 tasks | 5 files |
+| Phase 09-core-user-interface P17 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -235,6 +236,9 @@ Recent decisions affecting current work:
 - [Phase 09-core-user-interface]: Approval components scoped to components/approval/ subdirectory
 - [Phase 09-12]: ConflictBanner accepts pre-fetched conflicts[] (renderer); ConflictWarning remains fetcher and delegates — clean separation matching component responsibilities
 - [Phase 09-12]: ConflictBadge reused inside ConflictBanner for inline badge display per UI-PATTERN-02 conflict visibility everywhere
+- [Phase 09-17]: JWT token refresh centralized in apiClient request interceptor using keycloak.updateToken(30) — applies to ALL API calls app-wide, not per-hook duplication
+- [Phase 09-17]: useLocations enhanced with retry: 2 and staleTime: 5min as secondary defense against transient failures (primary fix is centralized token refresh)
+- [Phase 09-17]: BookingForm location dropdown uses structural absence pattern for loading/error/empty states (conditional rendering) instead of disabled select
 
 ### Pending Todos
 
@@ -307,6 +311,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-13T18:47:51.916Z
-Stopped at: Completed 09-12-PLAN.md
+Last session: 2026-10-13T20:22:25.585Z
+Stopped at: Completed 09-17-PLAN.md
 Resume file: None
