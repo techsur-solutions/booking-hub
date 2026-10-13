@@ -47,6 +47,20 @@
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
+        <!-- Spring Retry: required by RabbitConfig's RetryInterceptorBuilder (Task 3).
+             NOTE: this service deliberately omits all authentication starters —
+             feeds-service is the intentionally-public service per F9.6. -->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+
+        <!-- Spring AOP (required by spring-retry) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
+        </dependency>
+
         <!-- Flyway Core -->
         <dependency>
             <groupId>org.flywaydb</groupId>

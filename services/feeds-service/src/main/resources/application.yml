@@ -30,10 +30,10 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
     listener:
       simple:
-        # Disabled until Phase 3: RabbitMQ listener beans will be implemented in Phase 3
-        # when event-driven message processing is added. Enabling without listener beans
-        # will cause startup failure with "No bean of type RabbitListenerContainerFactory"
-        auto-startup: false
+        # Enabled in Phase 7 (plan 07-01): the rabbitListenerContainerFactory bean now
+        # exists (RabbitConfig) and plan 07-02 adds the @RabbitListener consumer beans,
+        # so the Phase-2 boot-safety placeholder is no longer needed.
+        auto-startup: true
 
 management:
   endpoints:
