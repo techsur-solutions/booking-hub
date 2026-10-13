@@ -3,15 +3,15 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 3
-status: planning
-last_updated: "2026-10-13T04:10:50.017Z"
+status: unknown
+stopped_at: Completed 08-03-PLAN.md
+last_updated: "2026-10-13T04:16:13.468Z"
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 47
-  completed_plans: 42
-  percent: 75
-last_activity: "2026-10-13 — Phase 7 complete"
+  completed_plans: 43
+  percent: 89
 ---
 
 # Project State
@@ -91,6 +91,7 @@ Progress: [█████████░] 89%
 | Phase 07-public-feeds P01 | 11 min | 3 tasks | 16 files |
 | Phase 07-public-feeds P03 | 8min | 3 tasks | 8 files |
 | Phase 07-public-feeds P02 | 24 min | 2 tasks | 9 files |
+| Phase 08-regression-verification-test-traceability P03 | 2min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -182,6 +183,7 @@ Recent decisions affecting current work:
 - [Phase 07-public-feeds]: [07-02] location_name denormalized via event-fed V3 location_names cache; cache miss -> 'Location <uuid>' placeholder (satisfies NOT NULL), back-filled by later location.updated; location.deleted keeps last-known name — zero cross-service DB reads
 - [Phase 07-public-feeds]: [07-02 Rule 1 fix] RabbitConfig retry policy classifies AmqpRejectAndDontRequeueException (not Exception blanket) as non-retryable with defaultValue=true + traverseCauses=true, so missing-key messages DLQ immediately instead of after the full 5s/30s/2min backoff (ListenerExecutionFailedException wrapper otherwise shadowed the specific non-retryable entry)
 - [Phase 07-public-feeds]: [07-02] projection transaction boundary lives on FeedProjectionService.apply*EventIdempotent (dedup+mutation+processed_events insert atomic), NOT the @RabbitListener method, so AmqpRejectAndDontRequeueException reaches the retry interceptor unwrapped — Phase 6 audit-log precedent
+- [Phase 08-regression-verification-test-traceability]: regression-summary CI job is the single branch protection status check covering both backend and frontend test results
 
 ### Pending Todos
 
@@ -195,6 +197,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-13T03:00:33.377Z
-Stopped at: Completed 07-02-PLAN.md
+Last session: 2026-10-13T04:16:13.466Z
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
