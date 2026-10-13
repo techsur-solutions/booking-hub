@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 09-05-PLAN.md
-last_updated: "2026-10-13T18:05:21.302Z"
+stopped_at: Completed 09-14-PLAN.md
+last_updated: "2026-10-13T18:08:33.245Z"
 last_activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 15
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -99,6 +99,7 @@ Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 | Phase 09-core-user-interface P06 | 19min | 2 tasks | 7 files |
 | Phase 09-core-user-interface P07 | 21min | 3 tasks | 9 files |
 | Phase 09-core-user-interface P05 | 22min | 3 tasks | 8 files |
+| Phase 09-core-user-interface P14 | 24min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -212,6 +213,8 @@ Recent decisions affecting current work:
 - [Phase 09-core-user-interface]: Client-side status filter applied for all selections (not just multi-select) in ListView for defensive correctness when API returns unfiltered data
 - [Phase 09-core-user-interface]: E2E API route interception uses full base URL (http://localhost:8080/path**) not wildcard (**/path**) to avoid intercepting SPA page navigation
 - [Phase 09-core-user-interface]: FullCalendarWrapper exposes onDateClick/onEventClick props for modal integration in later plans
+- [Phase 09-14]: Playwright route mock uses regex not glob — **/locations** intercepted Vite JS module paths causing MIME-type error preventing React mounting
+- [Phase 09-14]: ApprovedOnlyBadge pointerEvents:none — badge does not block booking card interactions; FeedSubscription replaces FeedsLanding stub at /feeds route
 
 ### Pending Todos
 
@@ -284,6 +287,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-13T18:05:21.300Z
-Stopped at: Completed 09-05-PLAN.md
+Last session: 2026-10-13T18:08:33.244Z
+Stopped at: Completed 09-14-PLAN.md
 Resume file: None
