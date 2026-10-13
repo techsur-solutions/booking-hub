@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { locationsApi } from '../api/locations';
-import { Location } from '../api/types';
+import type { Location } from '../api/types';
 
 export function useLocations(params?: { include_deleted?: boolean }) {
   return useQuery({

@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Resource } from './types';
+import type { Resource } from './types';
 
 export const resourcesApi = {
   getResources: (params?: { include_deleted?: boolean }) =>

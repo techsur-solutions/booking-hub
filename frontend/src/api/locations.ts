@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Location } from './types';
+import type { Location } from './types';
 
 export const locationsApi = {
   getLocations: (params?: { include_deleted?: boolean }) =>

@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { User, Permission } from './types';
+import type { User, Permission } from './types';
 
 export const usersApi = {
   getUsers: (params?: { include_deleted?: boolean }) =>

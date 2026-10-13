@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { FeedBooking } from './types';
+import type { FeedBooking } from './types';
 
 export const feedsApi = {
   getFeedBookings: (params?: { location_id?: string; start?: string; end?: string }) =>

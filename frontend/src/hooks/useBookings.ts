@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookingsApi } from '../api/bookings';
-import { Booking } from '../api/types';
+import type { Booking } from '../api/types';
 
 type BookingParams = Parameters<typeof bookingsApi.getBookings>[0];
 

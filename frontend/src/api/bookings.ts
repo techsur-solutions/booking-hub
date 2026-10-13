@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Booking, ConflictFlag } from './types';
+import type { Booking, ConflictFlag } from './types';
 
 export const bookingsApi = {
   getBookings: (params: {

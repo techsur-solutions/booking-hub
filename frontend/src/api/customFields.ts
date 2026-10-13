@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { CustomField, CustomFieldValue } from './types';
+import type { CustomField, CustomFieldValue } from './types';
 
 export const customFieldsApi = {
   getCustomFields: (params?: { context_id?: string }) =>
