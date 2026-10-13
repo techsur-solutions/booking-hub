@@ -200,6 +200,62 @@ None yet.
 - F0 audit complete: of the 10 PRD Section 10 seed Open Questions plus 15 additional items Wave 1 discovered (25 total, see `.planning/phases/01-legacy-functional-audit/open-questions.md`), 12 are RESOLVED with direct code citation and 13 remain OPEN pending an explicit product/architecture decision (not a legacy-behavior ambiguity — the legacy facts are confirmed, but the forward-looking design choice is not this planning agent's to make). `open-questions.md` is the authoritative list going forward; the original roadmap-era "14 FRD-level flags" framing is superseded by this audit's actual, cited outcome.
 - F0 sign-off gate: `legacy-audit-findings.md` (12 controller + 7 model-group sections), `open-questions.md` (10 seed questions resolved-or-logged, plus 15 additional), and `baseline-inventory.md` (F13 seed, 113 rows) are complete and handed off. Any OPEN items remain tracked in open-questions.md and must be resolved via explicit product decision before the corresponding F1–F13 feature is finalized — they do not block the START of downstream phase planning, but do block FINALIZING the specific behavior they concern, per PRD Section 7's release-time success metric.
 
+## Phase 8: Regression Verification & Test Traceability (F13)
+
+**Status:** In Progress (plans 08-01 through 08-04 complete)
+
+**F13 Completion Criteria:**
+
+Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
+
+1. **Traceability matrix complete (F13.1):**
+   - [x] Matrix seeded with all 113 baseline findings (BF-001 through BF-113)
+   - [ ] All findings have requirement_ref populated
+   - [ ] All findings have implementation_ref populated (phases 4-7 responsibility)
+   - [ ] All findings have test_ref populated OR are marked deferred with product owner approval
+   - [ ] No finding is marked "tested" without a real, passing test
+
+2. **Test coverage complete (F13.2, F13.3):**
+   - [ ] Every validation rule from F0 has a test (query: `scripts/traceability/query-matrix.sh gaps`)
+   - [ ] Every workflow transition from F0 has a test
+   - [ ] Every permission check from F0 has a test
+   - [ ] High-priority edge cases tested:
+     - [ ] Conflict detection: half-open intervals, location+resource overlap, exclude self/deleted/denied
+     - [ ] Approval workflow: auto-approve on/off, one-way transitions, permission gates
+     - [ ] Recurring bookings: independent siblings, single-occurrence edit/delete
+     - [ ] Permission matrix: 17-flag coverage, deny-by-default, Tier1/Tier2 consistency
+
+3. **CI enforcement active (F13.4):**
+   - [x] GitHub Actions workflow exists (.github/workflows/regression-suite.yml)
+   - [ ] Workflow runs successfully on main branch (at least one green run)
+   - [ ] Branch protection rule enabled: "Require Regression Suite Summary status check"
+   - [ ] Test: create PR with failing test → merge blocked
+
+4. **Open Questions resolved (F13.5):**
+   - [ ] 13 OPEN questions either:
+     - RESOLVED with test added (preferred), OR
+     - Deferred to v2 with explicit product owner sign-off
+   - [ ] No question marked RESOLVED without corresponding test in traceability matrix
+   - [x] Test stubs exist for all 13 OPEN questions (.planning/test-stubs/open-questions/)
+   - [x] Resolution protocol documented (docs/testing/open-question-resolution-protocol.md)
+
+**Current Metrics (as of Phase 8 plan 04):**
+- Findings: 113 total (BF-001 through BF-113)
+- Tests: 20 existing (Phase 2-3 context-boot + integration tests)
+- Coverage: ~18% (only infrastructure/auth tested, no booking/reference-data tests yet)
+- Open Questions resolved: 12/25 (13 remain OPEN)
+- Open Questions with stubs: 13/13 (all have templates in .planning/test-stubs/open-questions/)
+
+**Blocking Dependencies:**
+- Phases 4-7 must implement features before tests can be written for them
+- Product owner must resolve 13 Open Questions before those findings can be marked tested
+
+**Next Actions (Post-Phase 8 Execution):**
+1. Phases 4-7: Populate traceability matrix's implementation_ref and test_ref as features land
+2. Admin: Enable GitHub branch protection after first workflow run
+3. Product Owner: Resolve Open Questions per docs/testing/open-question-resolution-protocol.md
+4. Final UAT: Run `bash scripts/traceability/analyze-coverage.sh` → verify 100% tested status before release
+
 ## Session Continuity
 
 Last session: 2026-10-13T04:21:16.493Z
