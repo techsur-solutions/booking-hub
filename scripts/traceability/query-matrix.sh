@@ -77,9 +77,13 @@ case "$CMD" in
   finding)
     [ -z "${1:-}" ] && { echo "Error: Finding ID required"; usage; }
     FINDING="$1"
+    if ! echo "$FINDING" | grep -qE '^BF-[0-9]{3}$'; then
+      echo "Error: Finding ID must match BF-NNN (e.g. BF-028)" >&2
+      exit 1
+    fi
     echo "Details for $FINDING:"
     head -1 "$MATRIX"
-    tail -n +2 "$MATRIX" | { grep "^$FINDING," || true; }
+    tail -n +2 "$MATRIX" | { grep -F "$FINDING," || true; }
     ;;
   *)
     echo "Error: Unknown command '$CMD'"
