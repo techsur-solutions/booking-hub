@@ -22,13 +22,19 @@ export function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const storedEmail = getRememberMeEmail();
 
-  // Auto-redirect when already authenticated
+  // Auto-redirect when already authenticated.
+  // Suppressed when window.__E2E_LOGIN_TEST__=true (set by Playwright login tests
+  // to prevent E2E mode's instant-authenticated state from redirecting away).
+  const isLoginTest =
+    typeof window !== 'undefined' &&
+    !!(window as unknown as Record<string, unknown>).__E2E_LOGIN_TEST__;
+
   useEffect(() => {
-    if (authenticated) {
+    if (authenticated && !isLoginTest) {
       // Navigate to intended route
       window.location.replace(redirectTo);
     }
-  }, [authenticated, redirectTo]);
+  }, [authenticated, isLoginTest, redirectTo]);
 
   function handleLogin() {
     if (rememberMe && storedEmail) {
@@ -44,8 +50,9 @@ export function Login() {
     });
   }
 
-  // Show a brief "Logging in…" spinner when already authenticated
-  if (authenticated) {
+  // Show a brief "Logging in…" spinner when already authenticated.
+  // Skipped in E2E login test mode so tests can interact with the login form.
+  if (authenticated && !isLoginTest) {
     return (
       <div className="login-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
         <div className="login-card" style={{ textAlign: 'center' }}>
