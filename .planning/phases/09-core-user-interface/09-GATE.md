@@ -3,10 +3,11 @@ phase: 09
 gate_status: passed
 build_command: "(cd frontend && npm run build)"
 test_command: "(cd frontend && CI=true npm test)"
-last_updated: 2026-10-13T19:07:52Z
+last_updated: 2026-10-13T19:08:49Z
 tests_disabled_during_fixes: none
 shadowed_sources: 0
 review_blockers_open: 0
+boot_smoke: pass
 waves:
   - wave: 1
     build: pass
