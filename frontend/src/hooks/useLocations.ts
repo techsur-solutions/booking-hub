@@ -5,7 +5,13 @@ import type { Location } from '../api/types';
 export function useLocations(params?: { include_deleted?: boolean }) {
   return useQuery({
     queryKey: ['locations', params],
-    queryFn: () => locationsApi.getLocations(params).then((res) => res.data),
+    queryFn: async () => {
+      const response = await locationsApi.getLocations(params);
+      console.log('[useLocations] Fetched', response.data.length, 'locations');
+      return response.data;
+    },
+    retry: 2, // Retry failed requests 2 times
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes (same pattern as useSettings from 09-02)
   });
 }
 

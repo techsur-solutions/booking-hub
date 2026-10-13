@@ -7,12 +7,23 @@ export const apiClient = axios.create({
   timeout: 15000,
 });
 
-// Request interceptor: inject JWT bearer token
+// Request interceptor: refresh token if needed, then inject JWT bearer token
 apiClient.interceptors.request.use(
-  (config) => {
-    const token = keycloak.token;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    if (keycloak.authenticated) {
+      try {
+        // Refresh token if it expires within 30 seconds
+        await keycloak.updateToken(30);
+        
+        const token = keycloak.token;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (error) {
+        console.error('[API Client] Token refresh failed:', error);
+        // Token refresh failed - force re-login
+        keycloak.login();
+      }
     }
     return config;
   },

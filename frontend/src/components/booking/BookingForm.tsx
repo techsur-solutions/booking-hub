@@ -88,7 +88,7 @@ export function BookingForm({
     { hasConflicts: false, isBlocked: false }
   );
 
-  const { data: locations = [] } = useLocations();
+  const { data: locations = [], isLoading: locationsLoading, isError: locationsError } = useLocations();
   const { data: resources = [] } = useResources();
   const { data: customFields = [] } = useCustomFields(locationId);
 
@@ -171,21 +171,34 @@ export function BookingForm({
         <label htmlFor="booking-location">
           Location <span className="required-mark" aria-hidden="true">*</span>
         </label>
-        <Select
-          id="booking-location"
-          value={locationId}
-          onChange={(e) => {
-            setLocationId(e.target.value);
-            // Clear resources when location changes
-            setResourceIds([]);
-            setCustomFieldValues({});
-          }}
-          options={locations.map((l) => ({ value: l.id, label: l.name }))}
-          placeholder="Select a location"
-          required
-          error={errors.location_id}
-          data-testid="booking-location"
-        />
+        {locationsLoading && <div className="loading-state">Loading locations...</div>}
+        {locationsError && (
+          <div className="error" role="alert">
+            Failed to load locations. Please refresh the page.
+          </div>
+        )}
+        {!locationsLoading && !locationsError && locations.length === 0 && (
+          <div className="warning" role="alert">
+            No locations available. Contact your administrator.
+          </div>
+        )}
+        {!locationsLoading && !locationsError && locations.length > 0 && (
+          <Select
+            id="booking-location"
+            value={locationId}
+            onChange={(e) => {
+              setLocationId(e.target.value);
+              // Clear resources when location changes
+              setResourceIds([]);
+              setCustomFieldValues({});
+            }}
+            options={locations.map((l) => ({ value: l.id, label: l.name }))}
+            placeholder="Select a location"
+            required
+            error={errors.location_id}
+            data-testid="booking-location"
+          />
+        )}
       </div>
 
       {/* Start time */}
