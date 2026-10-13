@@ -61,3 +61,11 @@ waves:
 - Tests: `(cd frontend && CI=true npm test)` → pass
 - Fix attempts: 1/3 — Phase gate (wave 5): full regression run after code review fixes. 1 fix: ListView.test.tsx mocks for ToastProvider + useBookingById + useLocationById after W1 upgrade from inline to canonical BookingDetailModal. Build: 208 modules. Tests: 74/74 passed.
 
+
+## Backend pre-push gate
+
+- Status: skipped
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=cf33dcfd594ae44ac58991d21d7e18ee02236e6c test_files=99 skip_marks=2 shadow_files=0
+```
