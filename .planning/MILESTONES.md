@@ -2,7 +2,7 @@
 
 ## v2.0 UI Implementation (In Progress: Started 2026-10-13)
 
-**Phases planned:** 8 phases (9-16), 29 plans
+**Phases planned:** 2 phases (9-10), 29 plans
 
 **Timeline:** Started 2026-10-13
 
@@ -29,14 +29,8 @@
 **Requirements:** 42 UI requirements organized across 10 functional areas (Navigation, Booking Views, Creation/Editing, Admin screens, Approval, Public surfaces, Auth, Responsive, Accessibility, Patterns)
 
 **Phase structure:**
-- Phase 9: UI Foundation & Shared Patterns (5 plans)
-- Phase 10: Core Booking Views (4 plans)
-- Phase 11: Booking Creation & Editing (4 plans)
-- Phase 12: Admin Screens: Reference Data (3 plans)
-- Phase 13: Admin Screens: Users, Permissions & Settings (4 plans)
-- Phase 14: Approval Workflow UI (2 plans)
-- Phase 15: Public Surfaces & Authentication (3 plans)
-- Phase 16: Polish, Testing & Documentation (4 plans)
+- Phase 9: Core User Interface (15 plans) - App shell, navigation, API client, booking views, CRUD forms, approval queue, display board, authentication
+- Phase 10: Admin Interface & Polish (14 plans) - Admin screens, responsive design, accessibility, E2E tests, documentation
 
 ---
 

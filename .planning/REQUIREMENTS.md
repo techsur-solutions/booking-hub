@@ -277,16 +277,16 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UI-NAV-01, UI-NAV-02 | Phase 9 — UI Foundation & Shared Patterns | Not started |
-| UI-PATTERN-01, UI-PATTERN-02, UI-PATTERN-03 | Phase 9 — UI Foundation & Shared Patterns | Not started |
-| UI-CAL-01, UI-CAL-02, UI-CAL-03, UI-CAL-04 | Phase 10 — Core Booking Views | Not started |
-| UI-BOOK-01, UI-BOOK-02, UI-BOOK-03, UI-BOOK-04 | Phase 11 — Booking Creation & Editing | Not started |
-| UI-ADMIN-01, UI-ADMIN-02, UI-ADMIN-03 | Phase 12 — Admin Screens: Reference Data | Not started |
-| UI-ADMIN-04, UI-ADMIN-05, UI-ADMIN-06, UI-ADMIN-07 | Phase 13 — Admin Screens: Users, Permissions & Settings | Not started |
-| UI-APPR-01, UI-APPR-02 | Phase 14 — Approval Workflow UI | Not started |
-| UI-PUB-01, UI-PUB-02 | Phase 15 — Public Surfaces & Authentication | Not started |
-| UI-AUTH-01, UI-AUTH-02, UI-AUTH-03 | Phase 15 — Public Surfaces & Authentication | Not started |
-| UI-RESP-01, UI-RESP-02, UI-RESP-03, UI-A11Y-01 | Phase 16 — Polish, Testing & Documentation | Not started |
+| UI-NAV-01, UI-NAV-02 | Phase 9 — Core User Interface | Not started |
+| UI-PATTERN-01, UI-PATTERN-02, UI-PATTERN-03 | Phase 9 — Core User Interface | Not started |
+| UI-CAL-01, UI-CAL-02, UI-CAL-03, UI-CAL-04 | Phase 9 — Core User Interface | Not started |
+| UI-BOOK-01, UI-BOOK-02, UI-BOOK-03, UI-BOOK-04 | Phase 9 — Core User Interface | Not started |
+| UI-APPR-01, UI-APPR-02 | Phase 9 — Core User Interface | Not started |
+| UI-PUB-01, UI-PUB-02 | Phase 9 — Core User Interface | Not started |
+| UI-AUTH-01, UI-AUTH-02, UI-AUTH-03 | Phase 9 — Core User Interface | Not started |
+| UI-ADMIN-01, UI-ADMIN-02, UI-ADMIN-03 | Phase 10 — Admin Interface & Polish | Not started |
+| UI-ADMIN-04, UI-ADMIN-05, UI-ADMIN-06, UI-ADMIN-07 | Phase 10 — Admin Interface & Polish | Not started |
+| UI-RESP-01, UI-RESP-02, UI-RESP-03, UI-A11Y-01 | Phase 10 — Admin Interface & Polish | Not started |
 
 ---
 *Generated: 2026-10-13*
