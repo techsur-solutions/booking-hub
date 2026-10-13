@@ -2,8 +2,10 @@ package com.bookinghub.feeds.consumer;
 
 import com.bookinghub.feeds.domain.FeedBooking;
 import com.bookinghub.feeds.domain.LocationName;
+import com.bookinghub.feeds.domain.ProcessedEvent;
 import com.bookinghub.feeds.repository.FeedBookingRepository;
 import com.bookinghub.feeds.repository.LocationNameRepository;
+import com.bookinghub.feeds.repository.ProcessedEventRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +68,57 @@ public class FeedProjectionService {
 
     private final FeedBookingRepository feedBookingRepository;
     private final LocationNameRepository locationNameRepository;
+    private final ProcessedEventRepository processedEventRepository;
 
     public FeedProjectionService(FeedBookingRepository feedBookingRepository,
-                                 LocationNameRepository locationNameRepository) {
+                                 LocationNameRepository locationNameRepository,
+                                 ProcessedEventRepository processedEventRepository) {
         this.feedBookingRepository = feedBookingRepository;
         this.locationNameRepository = locationNameRepository;
+        this.processedEventRepository = processedEventRepository;
+    }
+
+    /**
+     * Idempotently applies a booking event: lookup-first dedup, projection mutation, and
+     * processed_events insert — all in ONE transaction so a crash between them rolls back
+     * cleanly and the event safely redelivers.
+     *
+     * The transaction boundary lives HERE (not on the consumer's @RabbitListener method)
+     * so that a MissingIdempotencyKeyException thrown by the consumer BEFORE this call
+     * reaches plan 07-01's retry interceptor unwrapped — letting its non-retryable
+     * classification dead-letter the message immediately instead of burning the full
+     * 5s/30s/2min retry backoff. (Established pattern: Phase 6 audit-log-service keeps its
+     * listener non-transactional and its DB-mutating service method transactional.)
+     *
+     * @return true if applied, false if suppressed as a duplicate redelivery
+     */
+    @Transactional
+    public boolean applyBookingEventIdempotent(UUID idempotencyKey, String routingKey, JsonNode body) {
+        if (processedEventRepository.existsByIdempotencyKey(idempotencyKey)) {
+            return false; // duplicate redelivery -> safe no-op, projection never double-applied
+        }
+        applyBookingEvent(routingKey, body);
+        recordProcessed(idempotencyKey);
+        return true;
+    }
+
+    /**
+     * Idempotent location-event counterpart of {@link #applyBookingEventIdempotent}.
+     */
+    @Transactional
+    public boolean applyLocationEventIdempotent(UUID idempotencyKey, String routingKey, JsonNode body) {
+        if (processedEventRepository.existsByIdempotencyKey(idempotencyKey)) {
+            return false;
+        }
+        applyLocationEvent(routingKey, body);
+        recordProcessed(idempotencyKey);
+        return true;
+    }
+
+    private void recordProcessed(UUID idempotencyKey) {
+        ProcessedEvent pe = new ProcessedEvent();
+        pe.setIdempotencyKey(idempotencyKey);
+        processedEventRepository.save(pe);
     }
 
     @Transactional

@@ -1,5 +1,6 @@
 package com.bookinghub.feeds.rabbit;
 
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -9,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -55,12 +56,27 @@ public class RabbitConfig {
         // On rejection, never requeue — let the broker's x-dead-letter-exchange route it.
         factory.setDefaultRequeueRejected(false);
 
-        // Non-retryable exceptions: a message missing its idempotency key can never
-        // succeed, so skip straight to DLQ without wasting retry attempts.
-        Map<Class<? extends Throwable>, Boolean> retryable = new HashMap<>();
-        retryable.put(MissingIdempotencyKeyException.class, false);
-        retryable.put(Exception.class, true);
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(4, retryable, true);
+        // Non-retryable exceptions: a message missing its idempotency key (or otherwise
+        // structurally un-processable) can never succeed, so skip straight to DLQ without
+        // wasting retry attempts.
+        //
+        // Classification subtlety (the reason this is a singleton map on the SUPERTYPE,
+        // not an Exception->true blanket): Spring AMQP wraps a listener throwable in a
+        // ListenerExecutionFailedException before the retry template classifies it. A
+        // blanket {Exception->true} shadows a specific {MissingIdempotencyKeyException->false}
+        // entry, because BinaryExceptionClassifier matches the WRAPPER's own hierarchy
+        // (ListenerExecutionFailedException -> ... -> Exception == true) and returns BEFORE
+        // ever inspecting the wrapped cause. The message is then retried through the full
+        // 5s/30s/2min backoff instead of dead-lettering — defeating must-have truth #4.
+        //
+        // Fix: classify ONLY AmqpRejectAndDontRequeueException (MissingIdempotencyKeyException's
+        // supertype) as non-retryable, with defaultValue=true so every OTHER exception stays
+        // retryable, and traverseCauses=true so the classifier walks from the wrapper down to
+        // the real cause (which is-a AmqpRejectAndDontRequeueException) and correctly returns
+        // false -> immediate reject -> DLQ, no backoff.
+        Map<Class<? extends Throwable>, Boolean> nonRetryable =
+                Collections.singletonMap(AmqpRejectAndDontRequeueException.class, false);
+        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(4, nonRetryable, true, true);
         // maxAttempts=4: 1 initial + 3 retries (5s/30s/2min backoff), matching
         // infra/rabbitmq/README.md read as "3 retries".
 

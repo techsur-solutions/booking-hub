@@ -123,6 +123,25 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- Spring Boot's parent surefire config excludes **/*IntegrationTest.java
+                 (reserving that suffix for the failsafe plugin). feeds-service runs its
+                 broker-backed consumer integration test under `mvn test` (the plan's verify
+                 command), so override the includes to pick up *IntegrationTest alongside
+                 the standard *Test / *Tests patterns. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude/>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
