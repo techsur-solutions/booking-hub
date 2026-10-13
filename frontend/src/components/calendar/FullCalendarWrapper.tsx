@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import type { DateClickArg } from '@fullcalendar/interaction';
-import type { EventClickArg, EventContentArg } from '@fullcalendar/core';
+import type { EventClickArg, EventContentArg, DatesSetArg } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -21,9 +21,20 @@ interface FullCalendarWrapperProps {
   onDateClick?: (slot: SelectedSlot) => void;
   /** Called when user clicks an existing booking event; receives the booking */
   onEventClick?: (booking: Booking) => void;
+  /**
+   * Initial date to display when the calendar first mounts (ISO YYYY-MM-DD).
+   * If omitted the calendar defaults to today. Used by CalendarView to
+   * synchronise with the ?date= URL param (UI-CAL-04).
+   */
+  initialDate?: string;
+  /**
+   * Called when FullCalendar navigates to a new date (prev/next/today).
+   * Receives the new anchor date as an ISO YYYY-MM-DD string.
+   */
+  onDateNavigate?: (date: string) => void;
 }
 
-export function FullCalendarWrapper({ onDateClick, onEventClick }: FullCalendarWrapperProps) {
+export function FullCalendarWrapper({ onDateClick, onEventClick, initialDate, onDateNavigate }: FullCalendarWrapperProps) {
   const { data: bookings, isLoading } = useBookings({});
   const { data: locations } = useLocations();
 
@@ -84,11 +95,21 @@ export function FullCalendarWrapper({ onDateClick, onEventClick }: FullCalendarW
     );
   }
 
+  function handleDatesSet(arg: DatesSetArg) {
+    // FullCalendar fires this whenever the visible date range changes (prev/next/today).
+    // Report the start of the visible range as the anchor date (YYYY-MM-DD).
+    if (onDateNavigate) {
+      const anchor = arg.startStr.substring(0, 10);
+      onDateNavigate(anchor);
+    }
+  }
+
   return (
     <div className="calendar-wrapper" data-testid="fullcalendar-wrapper">
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
+        initialDate={initialDate}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
@@ -98,6 +119,7 @@ export function FullCalendarWrapper({ onDateClick, onEventClick }: FullCalendarW
         dateClick={handleDateClick}
         eventClick={handleEventClick}
         eventContent={renderEventContent}
+        datesSet={handleDatesSet}
         height="auto"
       />
     </div>

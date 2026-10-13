@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useBookings } from '../hooks/useBookings';
 import { useLocations } from '../hooks/useLocations';
 import { useResources } from '../hooks/useResources';
+import { useViewState } from '../hooks/useViewState';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { BookingTable } from '../components/list/BookingTable';
@@ -83,13 +84,19 @@ function BookingDetailModal({ booking, onClose }: BookingDetailModalProps) {
  * - CSV/JSON export of currently filtered bookings
  */
 export function ListView() {
+  // Read view state from URL (UI-CAL-04): TableFilters also syncs to URL,
+  // but useViewState ensures ListView itself reads the correct initial state
+  // when navigating to a bookmarked URL.
+  const { startDate: urlStartDate, endDate: urlEndDate, locationId: urlLocationId, status: urlStatus, query: urlQuery } = useViewState();
+
   const [detailBooking, setDetailBooking] = useState<Booking | null>(null);
   const [filters, setFilters] = useState<TableFiltersState>({
-    startDate: '',
-    endDate: '',
-    locationIds: [],
-    statuses: [],
-    query: '',
+    startDate: urlStartDate ?? '',
+    endDate: urlEndDate ?? '',
+    // TableFilters uses locationIds[] (multi-select); seed with single locationId from URL if present
+    locationIds: urlLocationId ? [urlLocationId] : [],
+    statuses: urlStatus ? [urlStatus] : [],
+    query: urlQuery ?? '',
   });
 
   // Fetch data

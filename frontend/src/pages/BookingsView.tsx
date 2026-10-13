@@ -15,8 +15,11 @@ export function BookingsView() {
   const [searchParams, setSearchParams] = useSearchParams();
   const view = (searchParams.get('view') as ViewMode) ?? 'month';
 
+  /** Switch view while preserving date, location, and filter params (UI-CAL-04) */
   function switchView(newView: ViewMode) {
-    setSearchParams({ view: newView });
+    const current: Record<string, string> = Object.fromEntries(searchParams.entries());
+    current['view'] = newView;
+    setSearchParams(current);
   }
 
   return (

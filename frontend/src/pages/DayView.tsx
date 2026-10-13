@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useBookings } from '../hooks/useBookings';
 import { useLocations } from '../hooks/useLocations';
 import { useSettings } from '../hooks/useSettings';
+import { useViewState } from '../hooks/useViewState';
 import { Modal } from '../components/Modal';
 import { HourlySlotGrid } from '../components/calendar/HourlySlotGrid';
 import type { Booking } from '../api/types';
@@ -132,9 +133,13 @@ function CreateFormModal({ locationId, time, date, onClose }: CreateFormModalPro
 export function DayView() {
   const today = toDateString(new Date());
 
-  // ── State ──
-  const [selectedDate, setSelectedDate] = useState(today);
-  const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
+  // ── URL state (UI-CAL-04 view state persistence) ──
+  const { date: urlDate, locationId: urlLocationId, updateState } = useViewState();
+
+  // Derive local working state from URL params; fall back to defaults
+  const selectedDate = isValidDate(urlDate) ? urlDate : today;
+  // URL locationId is a validated UUID (or undefined); represent 'all' as empty string
+  const selectedLocationId = urlLocationId ?? 'all';
 
   // Modal state
   const [detailBooking, setDetailBooking] = useState<Booking | null>(null);
@@ -191,7 +196,7 @@ export function DayView() {
             type="date"
             className="form-input day-view__date-picker"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(e) => updateState({ date: e.target.value })}
             data-testid="day-view-date-picker"
           />
 
@@ -203,7 +208,11 @@ export function DayView() {
             id="day-view-location"
             className="form-select day-view__location-select"
             value={selectedLocationId}
-            onChange={(e) => setSelectedLocationId(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              // Store UUID in URL when a specific location is selected; clear param for 'all'
+              updateState({ locationId: val !== 'all' ? val : undefined });
+            }}
             data-testid="day-view-location-select"
           >
             <option value="all">All Locations</option>
