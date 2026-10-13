@@ -70,3 +70,11 @@ analyze-coverage.sh: pass
 - Tests: `bash scripts/traceability/analyze-coverage.sh` → pass
 - Fix attempts: 0/3 — Final regression gate after code-review fixer pass: all 7 findings resolved, scripts clean
 
+
+## Backend pre-push gate
+
+- Status: skipped
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=90ddd7de7b7221565055a72be2e06fad01403eb5 test_files=80 skip_marks=2 shadow_files=0
+```
