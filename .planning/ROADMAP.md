@@ -152,6 +152,7 @@ Plans:
 
 ### Phase 7: Public Feeds
 **Goal**: Approved upcoming bookings are exposed via public, read-only feeds, so external viewers like reception staff and visitors can see room availability at a glance without ever logging in or being shown an unconfirmed booking.
+**Status**: In progress
 **Depends on**: Phase 5 (approved bookings must exist to project), Phase 4 (location filtering)
 **Requirements**: F9 (F9.1–F9.6)
 **Success Criteria** (what must be TRUE):
@@ -193,7 +194,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Reference Data, Extensibility & Configuration | 6/6 | Complete | 2026-10-09 |
 | 5. Core Booking & Approval Workflow | 0/TBD | Complete | 2026-10-10 |
 | 6. Notifications & Audit Logging | 0/TBD | Complete | 2026-10-13 |
-| 7. Public Feeds | 0/3 | Not started | - |
+| 7. Public Feeds | 0/3 | In progress | - |
 | 8. Regression Verification & Test Traceability | 0/4 | Not started | - |
 
 ---
