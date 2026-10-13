@@ -333,6 +333,7 @@ services:
     build: ./frontend
     depends_on:
       - api-gateway
+      - keycloak
     ports:
       - "3000:80"
 
