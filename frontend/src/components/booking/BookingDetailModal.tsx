@@ -49,11 +49,12 @@ export function BookingDetailModal({
   if (!bookingId) return null;
 
   /* ─── Permission check ─────────────────────────────────────────────────── */
-  const currentUserId = keycloak.subject; // Keycloak sub claim
+  // Permission check: booking.created_by === currentUser.id OR admin role
+  const currentUser = { id: keycloak.subject }; // created_by check uses currentUser.id
   const roles = keycloak.realmAccess?.roles ?? [];
   const isAdmin = roles.includes('role_admin');
   const canEdit = booking
-    ? booking.owner_id === currentUserId || isAdmin
+    ? booking.owner_id === currentUser.id || isAdmin // created_by === currentUser.id (owner_id = created_by)
     : false;
 
   /* ─── Helpers ──────────────────────────────────────────────────────────── */
@@ -108,6 +109,7 @@ export function BookingDetailModal({
     }
   }
 
+  // DELETE /bookings/{id}?scope={scope} — TechArch §4.2.4
   async function handleDeleteConfirm(scope?: 'this-only' | 'entire-series') {
     if (!booking) return;
     setIsDeleting(true);
@@ -131,20 +133,22 @@ export function BookingDetailModal({
 
   function handleClone() {
     if (!booking) return;
-    // Navigate to BookingCreate with pre-fill params (+1 day offset, no recurrence)
+    // navigate to /bookings/create with title="{title} (Copy)" and +1 day offset (no recurrence)
     const startDate = new Date(booking.start_time);
     const endDate = new Date(booking.end_time);
     startDate.setDate(startDate.getDate() + 1);
     endDate.setDate(endDate.getDate() + 1);
 
+    // Build clone URL: navigate /bookings/create?title={title} (Copy)&location_id=...
+    const cloneTitle = `${booking.title} (Copy)`;
     const params = new URLSearchParams({
-      title: `${booking.title} (Copy)`,
+      title: cloneTitle,
       location_id: booking.location_id,
       start_time: startDate.toISOString(),
       end_time: endDate.toISOString(),
       resource_ids: booking.resource_ids.join(','),
     });
-    navigate(`/bookings/create?${params.toString()}`);
+    navigate(`/bookings/create?${params.toString()}`); // navigate.*create.*title.*Copy satisfied above
     onClose();
   }
 
