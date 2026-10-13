@@ -16,7 +16,15 @@ export function Login() {
   const { authenticated } = useAuth();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const redirectTo = params.get('redirect') ?? '/bookings?view=month';
+  // Validate redirect param is a same-origin relative path (no protocol, no host)
+  const rawRedirect = params.get('redirect');
+  const redirectTo =
+    rawRedirect &&
+    // Must start with '/' but NOT '//' (protocol-relative), no ':' (no scheme)
+    /^\/[^/]/.test(rawRedirect) &&
+    !rawRedirect.includes(':')
+      ? rawRedirect
+      : '/bookings?view=month';
 
   // Remember Me state — pre-filled from existing cookie on mount
   const [rememberMe, setRememberMe] = useState(false);
