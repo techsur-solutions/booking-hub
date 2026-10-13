@@ -14,6 +14,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ToastProvider } from '../components/Toast';
 import { ListView } from './ListView';
 import type { Booking, Location, Resource } from '../api/types';
 
@@ -29,16 +30,21 @@ vi.mock('../auth/keycloak', () => ({
 // Mock hooks
 vi.mock('../hooks/useBookings', () => ({
   useBookings: vi.fn(),
+  useBookingById: vi.fn(() => ({ data: undefined, isLoading: false, isError: false })),
+  useCreateBooking: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+  useUpdateBooking: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+  useDeleteBooking: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }));
 vi.mock('../hooks/useLocations', () => ({
   useLocations: vi.fn(),
+  useLocationById: vi.fn(() => ({ data: undefined, isLoading: false, isError: false })),
 }));
 vi.mock('../hooks/useResources', () => ({
   useResources: vi.fn(),
 }));
 
 // Import after mocking so the mock is picked up
-import { useBookings } from '../hooks/useBookings';
+import { useBookings, useBookingById } from '../hooks/useBookings';
 import { useLocations } from '../hooks/useLocations';
 import { useResources } from '../hooks/useResources';
 
@@ -90,9 +96,11 @@ function renderListView() {
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/bookings?view=list']}>
-        <ListView />
-      </MemoryRouter>
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/bookings?view=list']}>
+          <ListView />
+        </MemoryRouter>
+      </ToastProvider>
     </QueryClientProvider>
   );
 }
@@ -211,11 +219,18 @@ describe('ListView', () => {
   });
 
   it('clicking a row opens the Booking Detail Modal with booking title', async () => {
+    const booking = makeBooking({ title: 'Design Review' });
     vi.mocked(useBookings).mockReturnValue({
-      data: [makeBooking({ title: 'Design Review' })],
+      data: [booking],
       isLoading: false,
       isError: false,
     } as unknown as ReturnType<typeof useBookings>);
+    // BookingDetailModal calls useBookingById — return the same booking
+    vi.mocked(useBookingById).mockReturnValue({
+      data: booking,
+      isLoading: false,
+      isError: false,
+    } as unknown as ReturnType<typeof useBookingById>);
 
     renderListView();
 
