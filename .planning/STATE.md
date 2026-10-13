@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 09-09-PLAN.md
-last_updated: "2026-10-13T18:33:43.738Z"
+stopped_at: Completed 09-10-PLAN.md
+last_updated: "2026-10-13T18:34:40.580Z"
 last_activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 15
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -104,6 +104,7 @@ Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 | Phase 09-core-user-interface P08 | 9min | 3 tasks | 8 files |
 | Phase 09-core-user-interface P11 | 14min | 3 tasks | 10 files |
 | Phase 09-core-user-interface P09 | 13min | 4 tasks | 8 files |
+| Phase 09-core-user-interface P10 | 15min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -227,6 +228,7 @@ Recent decisions affecting current work:
 - [Phase 09-core-user-interface]: BookingsView.switchView() merges view param into existing URL params — preserves date and filter state across view switches
 - [Phase 09-11]: keycloak.subject used for owner_id comparison; Conflict click opens nested modal; getById alias added to bookingsApi
 - [Phase 09-core-user-interface]: BookingForm fetches locations/resources internally via hooks (not passed as props) — simpler API; ConflictWarning embedded inside form with onBlockChange callback; E2E tests match concurrent 09-10/09-11 component testids
+- [Phase 09-core-user-interface]: Non-dismissible scope dialog pattern: no X/Escape/backdrop-close — user must select scope before editing recurring bookings (UI-BOOK-02 design principle)
 
 ### Pending Todos
 
@@ -299,6 +301,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-13T18:33:43.736Z
-Stopped at: Completed 09-09-PLAN.md
+Last session: 2026-10-13T18:34:40.578Z
+Stopped at: Completed 09-10-PLAN.md
 Resume file: None
