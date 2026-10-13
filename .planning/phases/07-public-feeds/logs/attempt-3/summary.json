@@ -1,0 +1,21 @@
+{
+  "duration_secs": 1598.0,
+  "token_usage": {
+    "input": 171,
+    "output": 15926,
+    "total": 2133898,
+    "cache_read": 1899952,
+    "cache_write": 217849,
+    "cost": 1.6263223499999997
+  },
+  "model": "claude-sonnet-4-5",
+  "files_changed": [
+    ".planning/phases/07-public-feeds/07-UAT.md",
+    ".planning/phases/07-public-feeds/07-UAT.summary.json"
+  ],
+  "verification_status": "passed",
+  "error_message": null,
+  "attempt_number": 3,
+  "created_at": "2026-10-13T03:25:04.137282+00:00",
+  "completed_at": "2026-10-13T03:51:42.536793274+00:00"
+}

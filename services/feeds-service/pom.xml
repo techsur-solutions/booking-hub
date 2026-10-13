@@ -47,6 +47,20 @@
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
+        <!-- Spring Retry: required by RabbitConfig's RetryInterceptorBuilder (Task 3).
+             NOTE: this service deliberately omits all authentication starters —
+             feeds-service is the intentionally-public service per F9.6. -->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+
+        <!-- Spring AOP (required by spring-retry) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
+        </dependency>
+
         <!-- Flyway Core -->
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -106,6 +120,25 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <!-- Spring Boot's parent surefire config excludes **/*IntegrationTest.java
+                 (reserving that suffix for the failsafe plugin). feeds-service runs its
+                 broker-backed consumer integration test under `mvn test` (the plan's verify
+                 command), so override the includes to pick up *IntegrationTest alongside
+                 the standard *Test / *Tests patterns. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude/>
                     </excludes>
                 </configuration>
             </plugin>

@@ -2,16 +2,16 @@
 pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 6
-status: planning
-last_updated: "2026-10-13T02:20:11.036Z"
+current_plan: 3
+status: unknown
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-10-13T03:00:33.379Z"
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 47
-  completed_plans: 39
-  percent: 63
-last_activity: "2026-10-13 — Phase 6 complete"
+  completed_plans: 42
+  percent: 89
 ---
 
 # Project State
@@ -21,16 +21,16 @@ last_activity: "2026-10-13 — Phase 6 complete"
 See: .planning/PROJECT.md (updated 2026-10-06)
 
 **Core value:** Every existing feature, business rule, validation, and workflow in the legacy RoomBooking system must exist and behave equivalently in the new system — verified by tests, not assumed.
-**Current focus:** Phase 01 — legacy-functional-audit
+**Current focus:** Phase 07 — public-feeds
 
 ## Current Position
 
-Phase: 01 (legacy-functional-audit) — COMPLETE
-Plan: 6 of 6 (complete) — phase done, ready for verification
-Current Plan: 6
-Total Plans in Phase: 6
+Phase: 07 (public-feeds) — IN PROGRESS
+Plan: 3 of 3 (complete) — four public feed endpoints (RSS2/iCal/JSON/display-board) done
+Current Plan: 3
+Total Plans in Phase: 3
 
-Progress: [█░░░░░░░░░] 13%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -88,6 +88,9 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 06-notifications-audit-logging P01 | 13min | 3 tasks | 13 files |
 | Phase 06-notifications-audit-logging P04 | 25 min | 3 tasks | 10 files |
 | Phase 06-notifications-audit-logging P05 | 1 min | 2 tasks | 2 files |
+| Phase 07-public-feeds P01 | 11 min | 3 tasks | 16 files |
+| Phase 07-public-feeds P03 | 8min | 3 tasks | 8 files |
+| Phase 07-public-feeds P02 | 24 min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -169,6 +172,16 @@ Recent decisions affecting current work:
 - [Phase 06-04]: Defensive fallback chains for entity_id/actor_id/occurred_at never throw, use nil-UUID and Instant.now() placeholders — Sparse payloads never cause audit loss; matches F11 principle 'never fail write because data absent'
 - [Phase 06-04]: Manual hasRole('role_audit_viewer') in controller produces FRD-specific AUDIT_LOG_FORBIDDEN (not generic AUTH_FORBIDDEN) — Mirrors Phase 3 PermissionController precedent; SecurityConfig gate + manual check provide defense-in-depth
 - [Phase 06-04]: GET-only API surface with no PUT/DELETE/POST — immutability enforced both at DB grant (06-03) and API layer — Defense-in-depth: even if future bug breaks grant, API surface ensures writes cannot occur
+- [Phase 07-public-feeds]: feeds-service uses a processed_events lookup table (not upsert-only) for idempotency: a booking's lifecycle emits multiple distinct events mutating the same projection row by booking_id, so only a key on the event's own idempotency_key distinguishes redelivery from a legitimate later event
+- [Phase 07-public-feeds]: feeds-service is the single intentionally-public service (F9.6): NO spring-security/oauth2 deps, no SecurityConfig, no CurrentUserProvider anywhere; gateway permitAll on /feeds/** owns the absence of authz
+- [Phase 07-public-feeds]: [07-01] FeedBookingRepository.updateLocationName @Modifying back-fill declared and proven in this owning plan so 07-02 (calls it) and 07-03 (read queries only) never edit the file
+- [Phase 07-public-feeds]: [07-03] Hand-built RSS2/iCal (no ical4j/rome): minimal dependency/attack surface on the one public internet-facing service, exact escaping control
+- [Phase 07-public-feeds]: [07-03] All four feed formats delegate to one FeedQueryService.getApprovedUpcoming — identical access/filter rules by construction, not by format-by-format re-verification
+- [Phase 07-public-feeds]: [07-03] Feed ETag = SHA-256 hex of rendered body (quoted strong validator): deterministic across load-balanced replicas for an unchanged projection
+- [Phase 07-public-feeds]: [07-02] booking.approved/denied/deleted payloads carry only id (+status/approval metadata); approved flips status on the already-projected row (created precedes approved via outbox ordering), denied/deleted deleteById — reconciled vs Phase 5 buildApprovalPayload/buildDeletePayload
+- [Phase 07-public-feeds]: [07-02] location_name denormalized via event-fed V3 location_names cache; cache miss -> 'Location <uuid>' placeholder (satisfies NOT NULL), back-filled by later location.updated; location.deleted keeps last-known name — zero cross-service DB reads
+- [Phase 07-public-feeds]: [07-02 Rule 1 fix] RabbitConfig retry policy classifies AmqpRejectAndDontRequeueException (not Exception blanket) as non-retryable with defaultValue=true + traverseCauses=true, so missing-key messages DLQ immediately instead of after the full 5s/30s/2min backoff (ListenerExecutionFailedException wrapper otherwise shadowed the specific non-retryable entry)
+- [Phase 07-public-feeds]: [07-02] projection transaction boundary lives on FeedProjectionService.apply*EventIdempotent (dedup+mutation+processed_events insert atomic), NOT the @RabbitListener method, so AmqpRejectAndDontRequeueException reaches the retry interceptor unwrapped — Phase 6 audit-log precedent
 
 ### Pending Todos
 
@@ -182,6 +195,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-12T20:07:04.158Z
-Stopped at: Completed 06-05-PLAN.md
+Last session: 2026-10-13T03:00:33.377Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
