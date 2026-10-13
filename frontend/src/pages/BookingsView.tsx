@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { DayView } from './DayView';
+import { ListView } from './ListView';
 
 type ViewMode = 'month' | 'day' | 'list';
 
@@ -43,12 +44,7 @@ export function BookingsView() {
           </div>
         )}
         {view === 'day' && <DayView />}
-        {view === 'list' && (
-          <div>
-            <h1>List View</h1>
-            <p>Booking list — built in Phase 9 (calendar views plan)</p>
-          </div>
-        )}
+        {view === 'list' && <ListView />}
       </div>
     </div>
   );
