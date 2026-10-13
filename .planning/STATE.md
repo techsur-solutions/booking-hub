@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 09-03-PLAN.md
-last_updated: "2026-10-13T17:34:12.628Z"
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-10-13T17:39:05.148Z"
 last_activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 15
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -95,6 +95,7 @@ Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 | Phase 09-core-user-interface P04 | 5min | 3 tasks | 13 files |
 | Phase 09-core-user-interface P02 | 6min | 3 tasks | 18 files |
 | Phase 09-core-user-interface P03 | 4min | 3 tasks | 11 files |
+| Phase 09-core-user-interface P01 | 9min | 3 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -200,6 +201,9 @@ Recent decisions affecting current work:
 - [Phase 09-core-user-interface]: useSettings staleTime=5min — settings change infrequently, cache aggressively to reduce gateway load
 - [Phase 09-core-user-interface]: Vitest chosen over Jest for frontend unit testing — native Vite integration, no transform config
 - [Phase 09-core-user-interface]: PermissionGate uses structural absence (returns null) not disabled state — deny-by-default UI-PATTERN-03
+- [Phase 09-core-user-interface]: Permission-gated sidebar: structural absence (not disabled) via keycloak.realmAccess.roles[] — Approvals needs role_booking_approver, Admin section needs any admin role
+- [Phase 09-core-user-interface]: E2E role injection: window.__E2E_ROLES__ set via page.addInitScript() enables per-test permission profiles without dev server restart
+- [Phase 09-core-user-interface]: Unified /bookings?view= routing: single route with useSearchParams() replaces separate /calendar, /list, /day routes; legacy routes redirect
 
 ### Pending Todos
 
@@ -272,6 +276,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-13T17:34:12.626Z
-Stopped at: Completed 09-03-PLAN.md
+Last session: 2026-10-13T17:39:05.147Z
+Stopped at: Completed 09-01-PLAN.md
 Resume file: None
