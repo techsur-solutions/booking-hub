@@ -565,3 +565,177 @@ test.describe('Booking Create — Status confirmation banner', () => {
     );
   });
 });
+
+// ── Create Booking Button Navigation (UAT Gap #6) ─────────────────────────────
+
+test.describe('Create Booking Button Navigation - UAT Gap #6', () => {
+  test.beforeEach(async ({ page }) => {
+    // Inject roles before page load
+    await page.addInitScript(() => {
+      (window as unknown as Record<string, unknown>).__E2E_ROLES__ = ['role_calendar_viewer', 'role_room_booking'];
+    });
+
+    // Mock API endpoints (consistent with existing test patterns)
+    const API_BASE = 'http://localhost:8080';
+    
+    await page.route(`${API_BASE}/bookings**`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([]),
+      });
+    });
+    
+    await page.route(`${API_BASE}/locations**`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          { id: 'loc-a', name: 'Conference Room A', colour: '#3498db', building: 'Main', layouts: null, deleted_at: null }
+        ]),
+      });
+    });
+    
+    await page.route(`${API_BASE}/resources**`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([]),
+      });
+    });
+    
+    await page.route(`${API_BASE}/custom-fields**`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([]),
+      });
+    });
+    
+    await page.route(`${API_BASE}/settings**`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: 1,
+          approve_booking: false,
+          calendar_slot_size: 30,
+          calendar_min_time: '08:00',
+          calendar_max_time: '18:00',
+        }),
+      });
+    });
+  });
+
+  test('Create Booking button appears on BookingsView', async ({ page }) => {
+    await page.goto('http://localhost:5173/bookings?view=month');
+    await expect(page.getByTestId('create-booking-button')).toBeVisible();
+    await expect(page.getByTestId('create-booking-button')).toHaveText(/Create Booking/);
+  });
+
+  test('Create Booking button navigates to /bookings/create', async ({ page }) => {
+    await page.goto('http://localhost:5173/bookings?view=month');
+    await page.getByTestId('create-booking-button').click();
+    await expect(page).toHaveURL(/\/bookings\/create/);
+    
+    // Verify booking form loaded (reuses existing page selectors)
+    await expect(page.locator('[data-testid="booking-form"]')).toBeVisible();
+  });
+
+  test('Create Booking button preserves date as start_time param', async ({ page }) => {
+    await page.goto('http://localhost:5173/bookings?view=month&date=2024-03-15');
+    await page.getByTestId('create-booking-button').click();
+    await expect(page).toHaveURL(/\/bookings\/create\?start_time=2024-03-15/);
+  });
+});
+
+// ── Location Dropdown Population (UAT Gap #6) ─────────────────────────────────
+
+test.describe('Location Dropdown Population - UAT Gap #6', () => {
+  test.beforeEach(async ({ page }) => {
+    // Set E2E roles
+    await page.addInitScript(() => {
+      window.__E2E_ROLES__ = ['role_calendar_viewer', 'role_room_booking'];
+    });
+  });
+
+  test('Location dropdown is populated with available locations', async ({ page }) => {
+    // This test explicitly addresses UAT Test #6 blocker: "no locations in dropdown"
+    
+    // Mock locations API to return seed data
+    await page.route('http://localhost:8080/locations**', async (route) => {
+      await route.fulfill({
+        json: [
+          { id: 'loc-a', name: 'Conference Room A', colour: '#3498db', building: 'Main', deleted_at: null },
+          { id: 'loc-b', name: 'Conference Room B', colour: '#e74c3c', building: 'Main', deleted_at: null },
+          { id: 'loc-c', name: 'Meeting Room 1', colour: '#2ecc71', building: 'Annex', deleted_at: null }
+        ]
+      });
+    });
+
+    await page.route('http://localhost:8080/resources**', async (route) => {
+      await route.fulfill({ json: [] });
+    });
+
+    await page.goto('http://localhost:5173/bookings/create');
+
+    // Wait for form to load
+    await page.waitForSelector('[data-testid="booking-form"]', { timeout: 5000 });
+
+    // Verify location dropdown exists
+    const locationSelect = page.locator('select[id="booking-location"]');
+    await expect(locationSelect).toBeVisible();
+
+    // Verify dropdown contains options (excluding placeholder)
+    const options = await locationSelect.locator('option').allTextContents();
+    expect(options.length).toBeGreaterThan(1); // At least placeholder + 1 location
+    expect(options).toContain('Conference Room A');
+    expect(options).toContain('Conference Room B');
+    expect(options).toContain('Meeting Room 1');
+
+    // Verify user can select a location
+    await locationSelect.selectOption({ label: 'Conference Room A' });
+    await expect(locationSelect).toHaveValue('loc-a');
+  });
+
+  test('Location dropdown shows loading state initially', async ({ page }) => {
+    // Delay the locations API response to verify loading state renders
+    await page.route('http://localhost:8080/locations**', async (route) => {
+      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+      await route.fulfill({
+        json: [
+          { id: 'loc-a', name: 'Conference Room A', colour: '#3498db', building: 'Main', deleted_at: null }
+        ]
+      });
+    });
+
+    await page.route('http://localhost:8080/resources**', async (route) => {
+      await route.fulfill({ json: [] });
+    });
+
+    await page.goto('http://localhost:5173/bookings/create');
+
+    // Loading state should appear briefly
+    await expect(page.locator('.loading-state')).toContainText(/Loading locations/i, { timeout: 1000 });
+
+    // Then dropdown should appear
+    const locationSelect = page.locator('select[id="booking-location"]');
+    await expect(locationSelect).toBeVisible({ timeout: 2000 });
+  });
+
+  test('Location dropdown shows error message if API fails', async ({ page }) => {
+    // Mock locations API to return error
+    await page.route('http://localhost:8080/locations**', async (route) => {
+      await route.fulfill({ status: 500, json: { error: 'Internal server error' } });
+    });
+
+    await page.route('http://localhost:8080/resources**', async (route) => {
+      await route.fulfill({ json: [] });
+    });
+
+    await page.goto('http://localhost:5173/bookings/create');
+
+    // Error message should appear
+    await expect(page.locator('.error, [role="alert"]')).toContainText(/Failed to load locations/i);
+  });
+});
