@@ -1,17 +1,23 @@
 ---
 phase: 08
 gate_status: passed
-build_command: "doc/stub file existence validation"
+build_command: "shell syntax + JSON validation (final regression)"
 test_command: "bash scripts/traceability/analyze-coverage.sh"
-last_updated: 2026-10-13T04:31:08Z
+last_updated: 2026-10-13T04:47:57Z
 tests_disabled_during_fixes: none
 shadowed_sources: 0
+review_blockers_open: 0
+boot_smoke: pass
 waves:
   - wave: 1
     build: pass
     tests: pass
     fix_attempts: 0
   - wave: 2
+    build: pass
+    tests: pass
+    fix_attempts: 0
+  - wave: 3
     build: pass
     tests: pass
     fix_attempts: 0
@@ -57,4 +63,10 @@ Build exit: 0
 Coverage gap report written to docs/testing/test-gap-report.md
 analyze-coverage.sh: pass
 ```
+
+## Wave 3
+
+- Build: `shell syntax + JSON validation (final regression)` → pass
+- Tests: `bash scripts/traceability/analyze-coverage.sh` → pass
+- Fix attempts: 0/3 — Final regression gate after code-review fixer pass: all 7 findings resolved, scripts clean
 
