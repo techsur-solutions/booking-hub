@@ -2,16 +2,16 @@
 pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 2
+current_plan: 3
 status: in_progress
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-10-13T02:33:00.000Z"
+stopped_at: Completed 07-03-PLAN.md
+last_updated: "2026-10-13T02:42:06.242Z"
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 47
-  completed_plans: 40
-  percent: 85
+  completed_plans: 42
+  percent: 89
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-10-06)
 ## Current Position
 
 Phase: 07 (public-feeds) — IN PROGRESS
-Plan: 1 of 3 (complete) — feeds-service public foundation done
-Current Plan: 2
+Plan: 3 of 3 (complete) — four public feed endpoints (RSS2/iCal/JSON/display-board) done
+Current Plan: 3
 Total Plans in Phase: 3
 
-Progress: [████████░░] 85%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -89,6 +89,7 @@ Progress: [████████░░] 85%
 | Phase 06-notifications-audit-logging P04 | 25 min | 3 tasks | 10 files |
 | Phase 06-notifications-audit-logging P05 | 1 min | 2 tasks | 2 files |
 | Phase 07-public-feeds P01 | 11 min | 3 tasks | 16 files |
+| Phase 07-public-feeds P03 | 8min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -173,6 +174,9 @@ Recent decisions affecting current work:
 - [Phase 07-public-feeds]: feeds-service uses a processed_events lookup table (not upsert-only) for idempotency: a booking's lifecycle emits multiple distinct events mutating the same projection row by booking_id, so only a key on the event's own idempotency_key distinguishes redelivery from a legitimate later event
 - [Phase 07-public-feeds]: feeds-service is the single intentionally-public service (F9.6): NO spring-security/oauth2 deps, no SecurityConfig, no CurrentUserProvider anywhere; gateway permitAll on /feeds/** owns the absence of authz
 - [Phase 07-public-feeds]: [07-01] FeedBookingRepository.updateLocationName @Modifying back-fill declared and proven in this owning plan so 07-02 (calls it) and 07-03 (read queries only) never edit the file
+- [Phase 07-public-feeds]: [07-03] Hand-built RSS2/iCal (no ical4j/rome): minimal dependency/attack surface on the one public internet-facing service, exact escaping control
+- [Phase 07-public-feeds]: [07-03] All four feed formats delegate to one FeedQueryService.getApprovedUpcoming — identical access/filter rules by construction, not by format-by-format re-verification
+- [Phase 07-public-feeds]: [07-03] Feed ETag = SHA-256 hex of rendered body (quoted strong validator): deterministic across load-balanced replicas for an unchanged projection
 
 ### Pending Todos
 
@@ -186,6 +190,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-13T02:30:34.002Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-10-13T02:41:57.522Z
+Stopped at: Completed 07-03-PLAN.md
 Resume file: None
