@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 09-08-PLAN.md
-last_updated: "2026-10-13T18:27:50.340Z"
+stopped_at: Completed 09-11-PLAN.md
+last_updated: "2026-10-13T18:32:45.056Z"
 last_activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 15
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -102,6 +102,7 @@ Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 | Phase 09-core-user-interface P14 | 24min | 3 tasks | 12 files |
 | Phase 09-core-user-interface P15 | 29min | 4 tasks | 8 files |
 | Phase 09-core-user-interface P08 | 9min | 3 tasks | 8 files |
+| Phase 09-core-user-interface P11 | 14min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -223,6 +224,7 @@ Recent decisions affecting current work:
 - [Phase 09-core-user-interface]: useViewState locationId validator accepts [\w-]+ (not UUID-only) — actual IDs use both UUIDs and short strings like loc-a
 - [Phase 09-core-user-interface]: TableFilters.syncFilters preserves ?date= and ?view= when syncing list filter state — avoids dropping cross-view date on List View mount
 - [Phase 09-core-user-interface]: BookingsView.switchView() merges view param into existing URL params — preserves date and filter state across view switches
+- [Phase 09-11]: keycloak.subject used for owner_id comparison; Conflict click opens nested modal; getById alias added to bookingsApi
 
 ### Pending Todos
 
@@ -295,6 +297,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-13T18:27:50.339Z
-Stopped at: Completed 09-08-PLAN.md
+Last session: 2026-10-13T18:32:45.054Z
+Stopped at: Completed 09-11-PLAN.md
 Resume file: None
