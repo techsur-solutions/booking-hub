@@ -3,73 +3,13 @@ import { useBookings } from '../hooks/useBookings';
 import { useLocations } from '../hooks/useLocations';
 import { useResources } from '../hooks/useResources';
 import { useViewState } from '../hooks/useViewState';
-import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { BookingTable } from '../components/list/BookingTable';
 import { TableFilters } from '../components/list/TableFilters';
+import { BookingDetailModal } from '../components/booking/BookingDetailModal';
 import type { TableFiltersState } from '../components/list/TableFilters';
 import type { Booking } from '../api/types';
 import { exportToCSV, exportToJSON } from '../utils/exportBookings';
-
-// ── Booking Detail Modal ──────────────────────────────────────────────────────
-
-interface BookingDetailModalProps {
-  booking: Booking | null;
-  onClose: () => void;
-}
-
-function BookingDetailModal({ booking, onClose }: BookingDetailModalProps) {
-  if (!booking) return null;
-
-  const startTime = booking.start_time.substring(11, 16);
-  const endTime = booking.end_time.substring(11, 16);
-  const startDate = booking.start_time.substring(0, 10);
-
-  return (
-    <Modal isOpen={!!booking} onClose={onClose} title={booking.title} size="default">
-      <dl className="booking-detail-list">
-        <div className="booking-detail-item">
-          <dt>Date</dt>
-          <dd>{startDate}</dd>
-        </div>
-        <div className="booking-detail-item">
-          <dt>Time</dt>
-          <dd>
-            {startTime} – {endTime}
-          </dd>
-        </div>
-        <div className="booking-detail-item">
-          <dt>Status</dt>
-          <dd>
-            <span
-              className={`badge badge--${
-                booking.status === 'approved'
-                  ? 'success'
-                  : booking.status === 'denied'
-                  ? 'danger'
-                  : 'warning'
-              }`}
-            >
-              {booking.status}
-            </span>
-          </dd>
-        </div>
-        {booking.description && (
-          <div className="booking-detail-item">
-            <dt>Description</dt>
-            <dd>{booking.description}</dd>
-          </div>
-        )}
-        {booking.conflict_flags.length > 0 && (
-          <div className="booking-detail-item">
-            <dt>Conflicts</dt>
-            <dd>{booking.conflict_flags.length} conflict(s) detected</dd>
-          </div>
-        )}
-      </dl>
-    </Modal>
-  );
-}
 
 // ── ListView Page ─────────────────────────────────────────────────────────────
 
@@ -89,7 +29,7 @@ export function ListView() {
   // when navigating to a bookmarked URL.
   const { startDate: urlStartDate, endDate: urlEndDate, locationId: urlLocationId, status: urlStatus, query: urlQuery } = useViewState();
 
-  const [detailBooking, setDetailBooking] = useState<Booking | null>(null);
+  const [detailBookingId, setDetailBookingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<TableFiltersState>({
     startDate: urlStartDate ?? '',
     endDate: urlEndDate ?? '',
@@ -132,7 +72,7 @@ export function ListView() {
   }, []);
 
   function handleRowClick(booking: Booking) {
-    setDetailBooking(booking);
+    setDetailBookingId(booking.id);
   }
 
   function handleExportCSV() {
@@ -203,8 +143,8 @@ export function ListView() {
 
       {/* ── Detail Modal ── */}
       <BookingDetailModal
-        booking={detailBooking}
-        onClose={() => setDetailBooking(null)}
+        bookingId={detailBookingId}
+        onClose={() => setDetailBookingId(null)}
       />
     </div>
   );

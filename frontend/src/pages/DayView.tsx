@@ -5,7 +5,7 @@ import { useSettings } from '../hooks/useSettings';
 import { useViewState } from '../hooks/useViewState';
 import { Modal } from '../components/Modal';
 import { HourlySlotGrid } from '../components/calendar/HourlySlotGrid';
-import type { Booking } from '../api/types';
+import { BookingDetailModal } from '../components/booking/BookingDetailModal';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -22,63 +22,6 @@ function isValidDate(s: string): boolean {
 /** Build an ISO datetime string from a date string 'YYYY-MM-DD' and time 'HH:mm' */
 function buildDateTime(date: string, time: string): string {
   return `${date}T${time}:00`;
-}
-
-// ── Booking Detail Modal ──────────────────────────────────────────────────────
-
-interface BookingDetailModalProps {
-  booking: Booking | null;
-  onClose: () => void;
-}
-
-function BookingDetailModal({ booking, onClose }: BookingDetailModalProps) {
-  if (!booking) return null;
-
-  const startTime = booking.start_time.substring(11, 16);
-  const endTime = booking.end_time.substring(11, 16);
-  const startDate = booking.start_time.substring(0, 10);
-
-  return (
-    <Modal
-      isOpen={!!booking}
-      onClose={onClose}
-      title={booking.title}
-      size="default"
-    >
-      <dl className="booking-detail-list">
-        <div className="booking-detail-item">
-          <dt>Date</dt>
-          <dd>{startDate}</dd>
-        </div>
-        <div className="booking-detail-item">
-          <dt>Time</dt>
-          <dd>
-            {startTime} – {endTime}
-          </dd>
-        </div>
-        <div className="booking-detail-item">
-          <dt>Status</dt>
-          <dd>
-            <span className={`badge badge--${booking.status === 'approved' ? 'success' : booking.status === 'denied' ? 'danger' : 'warning'}`}>
-              {booking.status}
-            </span>
-          </dd>
-        </div>
-        {booking.description && (
-          <div className="booking-detail-item">
-            <dt>Description</dt>
-            <dd>{booking.description}</dd>
-          </div>
-        )}
-        {booking.conflict_flags.length > 0 && (
-          <div className="booking-detail-item">
-            <dt>Conflicts</dt>
-            <dd>{booking.conflict_flags.length} conflict(s) detected</dd>
-          </div>
-        )}
-      </dl>
-    </Modal>
-  );
 }
 
 // ── Booking Create Modal ──────────────────────────────────────────────────────
@@ -141,8 +84,8 @@ export function DayView() {
   // URL locationId is a validated UUID (or undefined); represent 'all' as empty string
   const selectedLocationId = urlLocationId ?? 'all';
 
-  // Modal state
-  const [detailBooking, setDetailBooking] = useState<Booking | null>(null);
+  // Modal state — store booking ID for the full BookingDetailModal
+  const [detailBookingId, setDetailBookingId] = useState<string | null>(null);
   const [createSlot, setCreateSlot] = useState<{
     locationId: string | null;
     time: string;
@@ -174,8 +117,7 @@ export function DayView() {
   }
 
   function handleEventClick(bookingId: string) {
-    const booking = allBookings.find((b) => b.id === bookingId) ?? null;
-    setDetailBooking(booking);
+    setDetailBookingId(bookingId);
   }
 
   // ── Render ──
@@ -245,12 +187,10 @@ export function DayView() {
       )}
 
       {/* ── Modals ── */}
-      {detailBooking && (
-        <BookingDetailModal
-          booking={detailBooking}
-          onClose={() => setDetailBooking(null)}
-        />
-      )}
+      <BookingDetailModal
+        bookingId={detailBookingId}
+        onClose={() => setDetailBookingId(null)}
+      />
       {createSlot && (
         <CreateFormModal
           locationId={createSlot.locationId}
