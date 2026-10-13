@@ -908,3 +908,11 @@ Hibernate: select fb1_0.booking_id,fb1_0.end_time,fb1_0.location_id,fb1_0.locati
 [INFO] ------------------------------------------------------------------------
 ```
 
+
+## Backend pre-push gate
+
+- Status: skipped
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=6e8030b957fc614abe4ffe06613a41abcbdb11e7 test_files=80 skip_marks=2 shadow_files=0
+```
