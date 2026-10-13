@@ -119,7 +119,7 @@ describe('ListView', () => {
       data: [],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     expect(screen.getByRole('heading', { name: /List View/i })).toBeInTheDocument();
@@ -130,7 +130,7 @@ describe('ListView', () => {
       data: [makeBooking()],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
 
@@ -148,7 +148,7 @@ describe('ListView', () => {
       data: [makeBooking()],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
 
@@ -161,7 +161,7 @@ describe('ListView', () => {
       data: [],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
 
@@ -175,7 +175,7 @@ describe('ListView', () => {
       data: [makeBooking({ title: 'Sprint Planning' })],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     expect(screen.getByText('Sprint Planning')).toBeInTheDocument();
@@ -193,7 +193,7 @@ describe('ListView', () => {
       ],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     expect(screen.getByTestId('conflict-badge')).toBeInTheDocument();
@@ -204,7 +204,7 @@ describe('ListView', () => {
       data: [makeBooking({ conflict_flags: [] })],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     expect(screen.queryByTestId('conflict-badge')).not.toBeInTheDocument();
@@ -215,7 +215,7 @@ describe('ListView', () => {
       data: [makeBooking({ title: 'Design Review' })],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
 
@@ -234,7 +234,7 @@ describe('ListView', () => {
       data: undefined,
       isLoading: true,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     // LoadingSpinner has role="status" — exactly one should be present
@@ -249,7 +249,7 @@ describe('ListView', () => {
       data: undefined,
       isLoading: false,
       isError: true,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -261,7 +261,7 @@ describe('ListView', () => {
       data: [],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     expect(screen.getByTestId('booking-table-empty')).toBeInTheDocument();
@@ -272,7 +272,7 @@ describe('ListView', () => {
       data: [makeBooking({ status: 'pending' })],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     expect(screen.getByTestId('status-badge-b-1')).toHaveTextContent('Pending');
@@ -283,7 +283,7 @@ describe('ListView', () => {
       data: [makeBooking()],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     // Location name appears in the table row's location cell
@@ -296,7 +296,7 @@ describe('ListView', () => {
       data: [makeBooking({ resource_ids: ['res-1'] })],
       isLoading: false,
       isError: false,
-    } as ReturnType<typeof useBookings>);
+    } as unknown as ReturnType<typeof useBookings>);
 
     renderListView();
     expect(screen.getByText('Projector')).toBeInTheDocument();

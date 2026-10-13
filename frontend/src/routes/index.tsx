@@ -1,5 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
+import { Login } from '../pages/Login';
+import { PasswordReset } from '../pages/PasswordReset';
+import { PasswordResetComplete } from '../pages/PasswordResetComplete';
 import { BookingsView } from '../pages/BookingsView';
 import { ApprovalsQueue } from '../pages/ApprovalsQueue';
 import { MyAccount } from '../pages/MyAccount';
@@ -10,7 +13,7 @@ import { UsersAdmin } from '../pages/admin/UsersAdmin';
 import { RolesAdmin } from '../pages/admin/RolesAdmin';
 import { SettingsAdmin } from '../pages/admin/SettingsAdmin';
 import { AuditLogViewer } from '../pages/AuditLogViewer';
-import { FeedsLanding } from '../pages/FeedsLanding';
+import { FeedSubscription } from '../pages/FeedSubscription';
 import { DisplayBoard } from '../pages/DisplayBoard';
 import { AppShell } from '../components/AppShell';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
@@ -20,6 +23,20 @@ export const routes: RouteObject[] = [
   {
     path: '/',
     element: <Navigate to="/bookings?view=month" replace />,
+  },
+
+  // Auth routes (public — no ProtectedRoute wrapper)
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    path: '/password-reset',
+    element: <PasswordReset />,
+  },
+  {
+    path: '/password-reset/complete',
+    element: <PasswordResetComplete />,
   },
 
   // Unified bookings workspace: /bookings?view=month|day|list
@@ -155,7 +172,7 @@ export const routes: RouteObject[] = [
     path: '/feeds',
     element: (
       <AppShell>
-        <FeedsLanding />
+        <FeedSubscription />
       </AppShell>
     ),
   },
