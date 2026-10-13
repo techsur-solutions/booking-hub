@@ -92,11 +92,17 @@ jobs:
         working-directory: ./frontend
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests
+      - name: Run auth E2E tests (Keycloak redirect flow — no E2E bypass)
+        working-directory: ./frontend
+        env:
+          PW_TEST_TYPE: 'auth'
+        run: npx playwright test e2e/auth-redirect.spec.ts --workers=1 --reporter=list
+
+      - name: Run non-auth E2E tests (E2E bypass enabled for navigation/UI tests)
         working-directory: ./frontend
         env:
           VITE_E2E_MODE: 'true'
-        run: npx playwright test --workers=1 --reporter=list
+        run: npx playwright test --ignore=e2e/auth-redirect.spec.ts --workers=1 --reporter=list
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
