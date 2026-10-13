@@ -266,7 +266,7 @@ export function BookingTable({
                   className="booking-table__actions"
                   onClick={(e) => e.stopPropagation()} // prevent row click when actions clicked
                 >
-                  <PermissionGate requireAnyRole={['role_booking_manager', 'role_booking_approver']}>
+                  <PermissionGate requireAnyRole={['role_booking_approver']}>
                     {onEdit && (
                       <button
                         type="button"
