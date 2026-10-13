@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 
 export interface ModalProps {
@@ -51,9 +51,13 @@ export function Modal({
     };
   }, [isOpen, handleKeyDown]);
 
+  // Generate a stable per-instance ID so concurrent titled modals each have
+  // a unique aria-labelledby target (W5 — fixes duplicate id="modal-title")
+  const instanceId = useId();
+
   if (!isOpen) return null;
 
-  const titleId = title ? 'modal-title' : undefined;
+  const titleId = title ? `modal-title-${instanceId}` : undefined;
 
   const sizeClass = size !== 'default' ? ` modal--${size}` : '';
 
