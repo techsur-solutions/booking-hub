@@ -10,9 +10,23 @@ Booking-Hub re-platforms this functionality — with **zero feature loss** — o
 
 Every existing feature, business rule, validation, and workflow in the legacy RoomBooking system must exist and behave equivalently in the new system — verified by tests, not assumed. Where legacy behavior is ambiguous or undocumented, it is raised as an explicit open question rather than guessed at and silently reinterpreted.
 
+## Current Milestone: v2.0 UI Implementation
+
+**Goal:** Implement the complete React + TypeScript frontend UI as specified in UX-Mockup-BookingHub.md, connecting to the v1.0 backend APIs to deliver a fully functional user-facing application with complete feature parity to the legacy OxAlto RoomBooking system.
+
+**Target features:**
+- Calendar/Day/List booking views with FullCalendar integration
+- Booking Create/Edit forms with conflict detection UI
+- Approval Queue for pending bookings
+- Admin screens (Locations, Resources, Custom Fields, Users, Roles, Settings)
+- Display Board (public digital signage view)
+- Audit Log Viewer
+- Feed Subscription UI
+- Complete responsive layout with navigation
+
 ## Requirements
 
-### Validated
+### Validated (v1.0)
 
 - ✓ **Legacy functional audit (F0)** — v1.0: Documented all 12 legacy controllers, 7 model groups, permissions, workflows, and environment-specific behaviors; produced 204-finding baseline inventory, Open Questions list with 25 items, legacy-audit-findings.md
 - ✓ **Microservice architecture (F12)** — v1.0: 9 Spring Boot 3 services (booking, locations-resources, custom-field, users-permissions, notifications, feeds, settings, audit-log, api-gateway), React+TypeScript SPA, per-service PostgreSQL databases, RabbitMQ domain events, Keycloak authentication, Spring Cloud Gateway with JWT validation
@@ -29,9 +43,9 @@ Every existing feature, business rule, validation, and workflow in the legacy Ro
 - ✓ **Public feeds (F9)** — v1.0: RSS2, iCal, JSON, and display-board feeds of approved upcoming bookings, optional per-location filtering, zero authentication required, strong ETag caching, hand-built renderers for minimal attack surface
 - ✓ **Regression verification (F13)** — v1.0: Traceability matrix linking 204 F0 audit findings to requirements and tests, test coverage gap analysis, CI regression pipeline (GitHub Actions), branch protection, Open Question resolution protocol with test-before-merge enforcement
 
-### Active
+### Active (v2.0)
 
-(None — all v1.0 requirements validated)
+(To be defined in requirements phase)
 
 ### Out of Scope
 
@@ -72,4 +86,4 @@ Every existing feature, business rule, validation, and workflow in the legacy Ro
 | Hand-built RSS2/iCal renderers (not ical4j/rome libraries) for feeds-service | Feeds-service is the only public internet-facing service with zero authentication; minimal dependency/attack surface desired | ✓ Good — Phase 7 implemented format-correct RSS2 and iCal renderers with proper XML/RFC-5545 escaping, proven by unit tests; zero third-party feed library dependencies; smaller attack surface |
 
 ---
-*Last updated: 2026-10-13 after v1.0 milestone completion*
+*Last updated: 2026-10-13 — v2.0 milestone started*
