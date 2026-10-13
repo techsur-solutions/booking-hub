@@ -3,9 +3,9 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 3
-status: in_progress
-stopped_at: Completed 07-03-PLAN.md
-last_updated: "2026-10-13T02:42:06.242Z"
+status: unknown
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-10-13T03:00:33.379Z"
 progress:
   total_phases: 8
   completed_phases: 6
@@ -90,6 +90,7 @@ Progress: [█████████░] 89%
 | Phase 06-notifications-audit-logging P05 | 1 min | 2 tasks | 2 files |
 | Phase 07-public-feeds P01 | 11 min | 3 tasks | 16 files |
 | Phase 07-public-feeds P03 | 8min | 3 tasks | 8 files |
+| Phase 07-public-feeds P02 | 24 min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -177,6 +178,10 @@ Recent decisions affecting current work:
 - [Phase 07-public-feeds]: [07-03] Hand-built RSS2/iCal (no ical4j/rome): minimal dependency/attack surface on the one public internet-facing service, exact escaping control
 - [Phase 07-public-feeds]: [07-03] All four feed formats delegate to one FeedQueryService.getApprovedUpcoming — identical access/filter rules by construction, not by format-by-format re-verification
 - [Phase 07-public-feeds]: [07-03] Feed ETag = SHA-256 hex of rendered body (quoted strong validator): deterministic across load-balanced replicas for an unchanged projection
+- [Phase 07-public-feeds]: [07-02] booking.approved/denied/deleted payloads carry only id (+status/approval metadata); approved flips status on the already-projected row (created precedes approved via outbox ordering), denied/deleted deleteById — reconciled vs Phase 5 buildApprovalPayload/buildDeletePayload
+- [Phase 07-public-feeds]: [07-02] location_name denormalized via event-fed V3 location_names cache; cache miss -> 'Location <uuid>' placeholder (satisfies NOT NULL), back-filled by later location.updated; location.deleted keeps last-known name — zero cross-service DB reads
+- [Phase 07-public-feeds]: [07-02 Rule 1 fix] RabbitConfig retry policy classifies AmqpRejectAndDontRequeueException (not Exception blanket) as non-retryable with defaultValue=true + traverseCauses=true, so missing-key messages DLQ immediately instead of after the full 5s/30s/2min backoff (ListenerExecutionFailedException wrapper otherwise shadowed the specific non-retryable entry)
+- [Phase 07-public-feeds]: [07-02] projection transaction boundary lives on FeedProjectionService.apply*EventIdempotent (dedup+mutation+processed_events insert atomic), NOT the @RabbitListener method, so AmqpRejectAndDontRequeueException reaches the retry interceptor unwrapped — Phase 6 audit-log precedent
 
 ### Pending Todos
 
@@ -190,6 +195,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-13T02:41:57.522Z
-Stopped at: Completed 07-03-PLAN.md
+Last session: 2026-10-13T03:00:33.377Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
