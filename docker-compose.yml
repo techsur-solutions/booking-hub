@@ -77,6 +77,9 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: bookinghub
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: booking_db
@@ -100,6 +103,9 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: bookinghub
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: locres_db
@@ -123,6 +129,9 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: bookinghub
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: customfld_db
@@ -146,6 +155,9 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: bookinghub
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: userperm_db
@@ -169,6 +181,9 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: bookinghub
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: notif_db
@@ -215,6 +230,9 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: bookinghub
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: settings_db
@@ -238,6 +256,9 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: bookinghub
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: audit_db

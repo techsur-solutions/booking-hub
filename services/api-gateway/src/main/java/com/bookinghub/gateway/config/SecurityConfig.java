@@ -10,10 +10,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoders;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.web.server.ServerWebExchange;
@@ -21,7 +27,10 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -76,13 +85,45 @@ public class SecurityConfig {
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtDecoder(failClosedJwtDecoder()))
+                        .jwt(jwt -> jwt
+                                .jwtDecoder(failClosedJwtDecoder())
+                                .jwtAuthenticationConverter(keycloakRoleConverter()))
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint((exchange, ex) -> handleAuthenticationError(exchange, ex))
                         .accessDeniedHandler((exchange, ex) -> handleAccessDenied(exchange, ex))
                 )
                 .build();
+    }
+
+    /**
+     * Keycloak puts realm roles in the {@code realm_access.roles} claim, not in {@code scope}.
+     * The rules above check {@code SCOPE_role_*} authorities, which Spring derives only from
+     * {@code scope} — so a real Keycloak token carried none of them and every role-gated route
+     * answered 403 for every user (the tests passed because they inject the authorities directly).
+     * Each realm role is granted as {@code SCOPE_<role>} alongside the standard scope authorities,
+     * so the rules keep their names. The downstream services read {@code realm_access.roles} too.
+     */
+    static ReactiveJwtAuthenticationConverterAdapter keycloakRoleConverter() {
+        JwtGrantedAuthoritiesConverter scopes = new JwtGrantedAuthoritiesConverter();
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            List<GrantedAuthority> authorities = new ArrayList<>(scopes.convert(jwt));
+            for (String role : realmRoles(jwt)) {
+                authorities.add(new SimpleGrantedAuthority("SCOPE_" + role));
+            }
+            return authorities;
+        });
+        return new ReactiveJwtAuthenticationConverterAdapter(converter);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Collection<String> realmRoles(Jwt jwt) {
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+        if (realmAccess == null || !(realmAccess.get("roles") instanceof Collection<?> roles)) {
+            return List.of();
+        }
+        return (Collection<String>) roles;
     }
 
     /**
