@@ -1,5 +1,45 @@
 # Milestones
 
+## v2.0 UI Implementation (In Progress: Started 2026-10-13)
+
+**Phases planned:** 8 phases (9-16), 29 plans
+
+**Timeline:** Started 2026-10-13
+
+**Tech stack:** React + TypeScript SPA, connecting to v1.0 backend APIs (Java 21 + Spring Boot 3 microservices)
+
+**Scope:** Complete frontend UI implementation with feature parity to legacy OxAlto RoomBooking system
+
+**Target features:**
+- Calendar/Day/List booking views with FullCalendar integration and conflict detection UI
+- Booking Create/Edit forms with recurring series scope handling
+- Approval Queue for pending bookings with one-way approve/deny actions
+- Admin screens: Locations, Resources, Custom Fields, Users, Roles, Settings, Audit Log
+- Display Board (public digital signage view) and Feed Subscription UI
+- Complete responsive layout (desktop/tablet/mobile) with accessibility compliance
+- Authentication flows (Login, My Account, Password Reset) with Keycloak integration
+
+**Design principles:**
+- Explicit state confirmation over implicit success
+- Boundary/scope decisions surfaced before action completes
+- Identical conflict visibility across all views
+- Deny-by-default permission visibility
+- Single-pass admin forms (not multi-step wizards)
+
+**Requirements:** 42 UI requirements organized across 10 functional areas (Navigation, Booking Views, Creation/Editing, Admin screens, Approval, Public surfaces, Auth, Responsive, Accessibility, Patterns)
+
+**Phase structure:**
+- Phase 9: UI Foundation & Shared Patterns (5 plans)
+- Phase 10: Core Booking Views (4 plans)
+- Phase 11: Booking Creation & Editing (4 plans)
+- Phase 12: Admin Screens: Reference Data (3 plans)
+- Phase 13: Admin Screens: Users, Permissions & Settings (4 plans)
+- Phase 14: Approval Workflow UI (2 plans)
+- Phase 15: Public Surfaces & Authentication (3 plans)
+- Phase 16: Polish, Testing & Documentation (4 plans)
+
+---
+
 ## v1.0 Complete Backend API Implementation (Shipped: 2026-10-13)
 
 **Phases completed:** 8 phases, 47 plans
