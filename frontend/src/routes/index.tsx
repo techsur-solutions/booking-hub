@@ -5,6 +5,7 @@ import { PasswordReset } from '../pages/PasswordReset';
 import { PasswordResetComplete } from '../pages/PasswordResetComplete';
 import { BookingsView } from '../pages/BookingsView';
 import { BookingEdit } from '../pages/BookingEdit';
+import { BookingCreate } from '../pages/BookingCreate';
 import { ApprovalsQueue } from '../pages/ApprovalsQueue';
 import { MyAccount } from '../pages/MyAccount';
 import { LocationsAdmin } from '../pages/admin/LocationsAdmin';

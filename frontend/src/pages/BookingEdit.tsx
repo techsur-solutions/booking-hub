@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useBookingById } from '../hooks/useBookings';
-import { useAuth } from '../auth/AuthProvider';
 import { bookingsApi } from '../api/bookings';
 import { RecurringScopeDialog } from '../components/booking/RecurringScopeDialog';
 import type { RecurringScope } from '../components/booking/RecurringScopeDialog';
@@ -28,7 +27,6 @@ import { Badge } from '../components/Badge';
 export function BookingEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { keycloak } = useAuth();
   const { showToast } = useToast();
 
   // Scope state — null means not yet selected (dialog visible for recurring)
@@ -56,9 +54,6 @@ export function BookingEdit() {
       setIsSaving(true);
       try {
         // Build PATCH URL with scope query param for recurring bookings
-        const scopeParam = booking.series_id !== null && scope ? `?scope=${scope}` : '';
-        const url = `/bookings/${id}${scopeParam}`;
-
         const patchData: Record<string, unknown> = {
           title: values.title,
           location_id: values.location_id,
@@ -73,7 +68,7 @@ export function BookingEdit() {
 
         // Direct API call with scope query param
         const response = await bookingsApi.patchBooking(id, patchData, scope ?? undefined);
-        const savedBooking = response.data;
+        const savedBooking: { recurrence_updated_count?: number } = response.data;
 
         // Determine confirmation message based on scope and response
         let actionMessage: string;

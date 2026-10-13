@@ -1,11 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { BookingForm } from '../components/booking/BookingForm';
-import type { BookingFormValues, BookingFormErrors } from '../components/booking/BookingForm';
-import { ConflictWarning } from '../components/booking/ConflictWarning';
+import type { BookingFormValues } from '../components/booking/BookingForm';
 import { StateConfirmationBanner } from '../components/StateConfirmationBanner';
-import { useLocations } from '../hooks/useLocations';
-import { useResources } from '../hooks/useResources';
 import { bookingsApi } from '../api/bookings';
 import { useToast } from '../components/Toast';
 
@@ -13,10 +10,10 @@ import { useToast } from '../components/Toast';
  * Booking Create Page
  *
  * Reads pre-fill params from URL:
- *   ?location_id=<uuid>&start_time=YYYY-MM-DDTHH:mm&end_time=YYYY-MM-DDTHH:mm
+ *   ?title=...&location_id=<uuid>&start_time=ISO&end_time=ISO&resource_ids=id1,id2
  *
- * Renders BookingForm with all fields plus ConflictWarning, handles save flow
- * including StateConfirmationBanner with status (approved/pending) and redirect
+ * Renders BookingForm with all fields, handles save flow including
+ * StateConfirmationBanner with status (approved/pending) and redirect
  * to Calendar View with date=start_time date.
  */
 export function BookingCreate() {
@@ -25,6 +22,7 @@ export function BookingCreate() {
   const { showToast } = useToast();
 
   // ── Pre-fill from URL params ──────────────────────────────────────────────────
+  const prefillTitle = searchParams.get('title') ?? '';
   const prefillLocationId = searchParams.get('location_id') ?? '';
   const prefillStartTime = searchParams.get('start_time') ?? '';
   const prefillEndTime = (() => {
@@ -38,62 +36,54 @@ export function BookingCreate() {
     }
     return '';
   })();
+  const prefillResourceIds = (searchParams.get('resource_ids') ?? '')
+    .split(',')
+    .filter(Boolean);
 
   const initialValues = useMemo<Partial<BookingFormValues>>(
     () => ({
+      title: prefillTitle,
       location_id: prefillLocationId,
       start_time: prefillStartTime,
       end_time: prefillEndTime,
+      resource_ids: prefillResourceIds,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
-  // ── Data ──────────────────────────────────────────────────────────────────────
-  const { data: locations = [] } = useLocations();
-  const { data: resources = [] } = useResources();
-
   // ── State ─────────────────────────────────────────────────────────────────────
-  const [formValues, setFormValues] = useState<BookingFormValues>({
-    title: '',
-    location_id: prefillLocationId,
-    start_time: prefillStartTime,
-    end_time: prefillEndTime,
-    resource_ids: [],
-    description: '',
-    custom_field_values: {},
-    recurrence_pattern: null,
-  });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [saveDisabled, setSaveDisabled] = useState(false);
   const [confirmationBanner, setConfirmationBanner] = useState<{
     action: string;
     variant: 'success' | 'warning';
     timestamp: Date;
   } | null>(null);
-  const [externalErrors, setExternalErrors] = useState<BookingFormErrors>({});
 
   // ── Save handler ──────────────────────────────────────────────────────────────
   async function handleSubmit(values: BookingFormValues) {
     setIsSubmitting(true);
-    setExternalErrors({});
     try {
-      // Build the POST /bookings payload from TechArch §4.2
+      // Build the POST /bookings payload
       const payload = {
         title: values.title,
         location_id: values.location_id,
         start_time: toIso(values.start_time),
         end_time: toIso(values.end_time),
         resource_ids: values.resource_ids,
-        description: values.description || undefined,
+        description: values.description || null,
         custom_field_values: Object.entries(values.custom_field_values)
           .filter(([, v]) => v !== '')
-          .map(([field_definition_id, value]) => ({ field_definition_id, value })),
+          .map(([field_id, value]) => ({ field_id, value })),
         recurrence_pattern: values.recurrence_pattern ?? undefined,
+        // Required fields for the Booking type — backend sets these
+        status: 'pending' as const,
+        series_id: null,
+        owner_id: '',
+        conflict_flags: [],
       };
 
-      const response = await bookingsApi.createBooking(payload as Parameters<typeof bookingsApi.createBooking>[0]);
+      const response = await bookingsApi.createBooking(payload);
       const booking = response.data;
 
       // Show status confirmation banner
@@ -112,16 +102,8 @@ export function BookingCreate() {
         navigate(`/bookings?view=month&date=${date}`);
       }, 2000);
     } catch (err: unknown) {
-      const error = err as { response?: { status?: number; data?: unknown } };
-      if (error.response?.status === 400) {
-        // Show inline validation errors
-        const data = error.response?.data as Record<string, string> | undefined;
-        if (data && typeof data === 'object') {
-          setExternalErrors(data);
-        } else {
-          showToast('Validation error. Please check the form.', { variant: 'danger' });
-        }
-      } else if (error.response?.status === 409) {
+      const error = err as { response?: { status?: number } };
+      if (error.response?.status === 409) {
         showToast('Conflict detected. Please refresh and try again.', { variant: 'danger' });
       } else {
         showToast('Failed to create booking. Please try again.', { variant: 'danger' });
@@ -129,6 +111,10 @@ export function BookingCreate() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function handleCancel() {
+    navigate('/bookings');
   }
 
   // ── Render ────────────────────────────────────────────────────────────────────
@@ -147,23 +133,10 @@ export function BookingCreate() {
 
       <BookingForm
         initialValues={initialValues}
-        locations={locations}
-        resources={resources}
         onSubmit={handleSubmit}
-        onFormChange={setFormValues}
+        onCancel={handleCancel}
         mode="create"
-        isSubmitting={isSubmitting}
-        submitDisabled={saveDisabled}
-        externalErrors={externalErrors}
-        belowFields={
-          <ConflictWarning
-            locationId={formValues.location_id}
-            startTime={formValues.start_time}
-            endTime={formValues.end_time}
-            resourceIds={formValues.resource_ids}
-            onBlockChange={setSaveDisabled}
-          />
-        }
+        isLoading={isSubmitting}
       />
     </div>
   );
