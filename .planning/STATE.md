@@ -1,17 +1,16 @@
 ---
 pivota_spec_state_version: 1.0
 milestone: v2.0
-milestone_name: UI Implementation
-current_plan: 0
-status: ready_to_plan
-stopped_at: Roadmap created
-last_updated: "2026-10-13"
+milestone_name: milestone
+status: completed
+stopped_at: Completed 09-04-PLAN.md
+last_updated: "2026-10-13T17:33:25.201Z"
+last_activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 progress:
   total_phases: 2
   completed_phases: 0
-  total_plans: 29
-  completed_plans: 0
-  percent: 0
+  total_plans: 15
+  completed_plans: 2
 ---
 
 # Project State
@@ -93,6 +92,7 @@ Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 | Phase 08-regression-verification-test-traceability P01 | 5min | 3 tasks | 4 files |
 | Phase 08-regression-verification-test-traceability P02 | 7min | 2 tasks | 3 files |
 | Phase 08-regression-verification-test-traceability P04 | 6min | 3 tasks | 7 files |
+| Phase 09-core-user-interface P04 | 5min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -190,6 +190,9 @@ Recent decisions affecting current work:
 - [Phase 08-regression-verification-test-traceability]: Gap report is regenerable (not static): run analyze-coverage.sh after each test addition
 - [Phase 08-regression-verification-test-traceability]: Test stubs for all 13 OQ provide 2-3 option skeletons; product owner selects option and fills decision-specific logic when resolving
 - [Phase 08-regression-verification-test-traceability]: OQ-07 feed-access stub notes Phase 7 already chose fully-public — formal product sign-off still required to confirm or override the implementation
+- [Phase 09-core-user-interface]: All component styles use CSS custom properties from tokens.css — no raw values in component files
+- [Phase 09-core-user-interface]: BadgeLocation with --location-color CSS custom property implements UI-CAL-04 location colour-coding
+- [Phase 09-core-user-interface]: Modal uses React portal to document.body; Toast uses ToastProvider + useToast hook pattern
 
 ### Pending Todos
 
@@ -262,6 +265,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-13T04:30:21.250Z
-Stopped at: Completed 08-04-PLAN.md
+Last session: 2026-10-13T17:33:25.200Z
+Stopped at: Completed 09-04-PLAN.md
 Resume file: None
