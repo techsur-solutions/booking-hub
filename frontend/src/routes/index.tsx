@@ -19,6 +19,7 @@ import { FeedSubscription } from '../pages/FeedSubscription';
 import { DisplayBoard } from '../pages/DisplayBoard';
 import { AppShell } from '../components/AppShell';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
+import { PermissionGate } from '../components/PermissionGate';
 
 export const routes: RouteObject[] = [
   // Root redirect → default booking view
@@ -91,14 +92,20 @@ export const routes: RouteObject[] = [
     element: <Navigate to="/bookings?view=day" replace />,
   },
 
-  // Approvals (permission-gated in sidebar; route itself accessible)
+  // Approvals — gated to role_booking_approver at the route level to prevent
+  // render-then-redirect race and premature API calls by non-approvers (B3)
   {
     path: '/approvals',
     element: (
       <ProtectedRoute>
-        <AppShell>
-          <ApprovalQueue />
-        </AppShell>
+        <PermissionGate
+          requireRole="role_booking_approver"
+          fallback={<Navigate to="/bookings?view=month" replace />}
+        >
+          <AppShell>
+            <ApprovalQueue />
+          </AppShell>
+        </PermissionGate>
       </ProtectedRoute>
     ),
   },
