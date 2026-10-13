@@ -126,6 +126,7 @@ iteration: 1
   ```
   `redirectTo` is taken verbatim from the `?redirect=` query parameter. An attacker can craft the link `/login?redirect=https://evil.com`; any already-authenticated user who visits it is immediately redirected to the attacker-controlled site via `window.location.replace`. This is a classic open-redirect. The `keycloak.login()` call on line 49 is **not** affected because it prepends `window.location.origin`, producing an invalid URL that Keycloak would reject, but the `window.location.replace(redirectTo)` on line 35 (the auto-redirect for authenticated users) is fully exploitable.
 - **Fix direction:** Validate that `redirectTo` is a same-origin path before using it: reject any value that starts with `//`, `http://`, or `https://`, or that contains `:`. Fall back to the default path if the value is invalid.
+- **Resolution:** fixed (c4961a0) — regex `/^\/[^/]/` + no-colon guard rejects protocol-relative and absolute URLs; falls back to `/bookings?view=month`.
 
 ---
 
@@ -142,6 +143,7 @@ iteration: 1
   ```
   A search across the entire frontend source (`grep -rn "rememberMe_pending"`) finds exactly one write (this line) and zero reads. After Keycloak redirects back and `AuthProvider` initialises successfully, nothing reads `'rememberMe_pending'` from sessionStorage, so the email is never written to the cookie. For any user who checks "Remember Me" before their first Keycloak login, the feature does nothing. On subsequent visits the `storedEmail` remains `null` and the reminder UI is never shown.
 - **Fix direction:** After successful Keycloak initialisation in `AuthProvider` (or in a post-auth hook), check `sessionStorage.getItem('rememberMe_pending')`; if truthy, call `saveRememberMe(keycloak.tokenParsed?.email)` and then remove the flag.
+- **Resolution:** fixed (da94f4b) — AuthProvider.tsx now reads and clears `rememberMe_pending` after successful Keycloak init, saving the email from `keycloak.tokenParsed?.email` via `saveRememberMe()`.
 
 ---
 
@@ -174,6 +176,7 @@ iteration: 1
   ```
   Between the initial render and the `useEffect` fire, `ApprovalQueue` fetches all pending bookings via `GET /bookings?status=pending`. A non-approver authenticated user navigating to `/approvals` directly will trigger that API call and momentarily see the table render before being redirected. If the backend does not enforce the approver role on that endpoint, pending booking data is exposed. Even if the backend is hardened, the `ApprovalQueue` itself renders `null` only after checking `allowed`, but the data fetch is unconditionally initiated on mount when `allowed` is truthy at first render (and `hasApprovePermission()` reads `keycloak.realmAccess?.roles` which might not have loaded yet in some race conditions). The root issue is UI-only access control with no route-wrapper permission gate.
 - **Fix direction:** Create a `PermissionProtectedRoute` (or extend `ProtectedRoute`) that accepts a role predicate and calls `keycloak.login()` / redirects before rendering children, eliminating the render-then-redirect race. Alternatively, wrap `<ApprovalQueue />` in `<PermissionGate requireRole="role_booking_approver" fallback={<Navigate to="/bookings" replace />}>` at the route level.
+- **Resolution:** fixed (1d4fdff) — `/approvals` route now wraps `<AppShell><ApprovalQueue/></AppShell>` in `<PermissionGate requireRole="role_booking_approver" fallback={<Navigate to="/bookings?view=month" replace />}>` before any render occurs.
 
 ---
 
@@ -183,6 +186,7 @@ iteration: 1
 - **File:** `frontend/src/pages/DayView.tsx:29-82`, `frontend/src/pages/ListView.tsx:16-72`
 - **Evidence:** Both `DayView.tsx` and `ListView.tsx` define a *local* `function BookingDetailModal({ booking, onClose })` that accepts a `Booking` object and shows only Date, Time, Status, Description, and conflict count. The full component in `frontend/src/components/booking/BookingDetailModal.tsx` (used by `CalendarView`) provides Edit, Delete, Clone, conflict drill-down, audit trail link, and status badges. Users clicking a booking row in the List View or an event in Day View get a stripped-down view with no action buttons. The `CreateFormModal` in `DayView` is explicitly marked as a placeholder, but the `BookingDetailModal` is not. The CalendarView integration shows the full modal is available and working.
 - **Fix direction:** Replace the local inline `BookingDetailModal` in both pages with the imported full component from `../../components/booking/BookingDetailModal` (passing `bookingId={booking.id}` instead of the booking object); remove the local interface definitions.
+- **Resolution:** fixed (c28b2e5) — DayView and ListView now import and use `BookingDetailModal` from `components/booking/`. Local inline definitions removed; state changed from `Booking|null` to `string|null` (bookingId).
 
 ### W2: Orphaned stub file `ApprovalsQueue.tsx` shadows the real `ApprovalQueue.tsx`
 - **File:** `frontend/src/pages/ApprovalsQueue.tsx`
@@ -195,6 +199,7 @@ iteration: 1
   ```
   `routes/index.tsx` correctly imports from `ApprovalQueue` (singular), so the stub is not actively rendered. However, the stub's exported name `ApprovalsQueue` (with trailing 's') is close enough to cause a misimport. Any developer who accidentally imports `ApprovalsQueue` instead of `ApprovalQueue` will silently get the placeholder. The file should be removed.
 - **Fix direction:** Delete `frontend/src/pages/ApprovalsQueue.tsx`. It is not imported anywhere and creates confusion.
+- **Resolution:** fixed (98e1655) — file deleted via `git rm`.
 
 ### W3: `role_booking_manager` used in `BookingTable` does not exist in any backend role definition
 - **File:** `frontend/src/components/list/BookingTable.tsx:269`
@@ -204,6 +209,7 @@ iteration: 1
   ```
   `role_booking_manager` appears nowhere else in the codebase—not in `permissions.ts`, not in `types.ts`, not in any backend source file found. The `Permission` type in `api/types.ts` defines `allow_approve_booking`, `allow_manage_locations`, etc., with no `role_booking_manager` counterpart. As currently written, only users with `role_booking_approver` will see the Edit/Delete action buttons in the table (the phantom role never matches). This is likely a typo or leftover from an earlier naming draft.
 - **Fix direction:** Remove `'role_booking_manager'` from the `requireAnyRole` array, or replace it with the correct role name if one is defined in the backend Keycloak realm configuration.
+- **Resolution:** fixed (b2f4324) — `role_booking_manager` removed from `requireAnyRole`; only `role_booking_approver` remains.
 
 ### W4: `StateConfirmationBanner` variant type mismatch — callers pass `'warning'` but type only allows `'success' | 'warning' | 'error'`
 - **File:** `frontend/src/pages/BookingCreate.tsx:59,95,129`
@@ -220,6 +226,7 @@ iteration: 1
   ```
   `'warning'` is technically valid for `StateConfirmationBanner`. However, the banner renders `variant === 'warning'` with the `⚠` icon and `confirmation-banner--warning` CSS class. There is no `confirmation-banner--warning` CSS class defined anywhere in the component stylesheets (only `--success` and `--error` variants are typically defined). If the CSS rule is absent the banner will render without styling, appearing visually identical to the unstyled default state—misleading for a "submitted for approval" condition. This warrants a CSS check.
 - **Fix direction:** Verify that `confirmation-banner--warning` has a CSS rule defined in `styles/components.css`. If not, add it (amber/yellow background), or map the pending-submission state to a different visual treatment.
+- **Resolution:** fixed (3db0c18) — root cause was worse than reported: ALL `confirmation-banner` CSS classes were missing. Added complete ruleset to `styles/components.css` including `--success` (green), `--warning` (amber), `--error` (red), and all supporting element classes.
 
 ### W5: `Modal` uses a hard-coded `id="modal-title"` — multiple open modals sharing the same ID
 - **File:** `frontend/src/components/Modal.tsx:56`
@@ -229,6 +236,7 @@ iteration: 1
   ```
   When `BookingDetailModal` renders while `showDeleteConfirm=true`, two `<Modal>` instances are simultaneously in the DOM: the main detail modal (title=undefined → no id) and the delete-confirm modal (title="Confirm Delete" → id="modal-title"). While this specific combination avoids collision because the main modal's title is `undefined` for loaded bookings, the `ApproveButton` renders TWO `<Modal>` elements simultaneously (simple-confirm AND conflict-confirm, both with non-null titles) whenever both `showSimpleConfirm` and `showConflictConfirm` could ever be true—though in practice only one fires at a time. More broadly, if any two titled modals are ever simultaneously in the DOM the duplicate `id` attribute violates the HTML spec and breaks `aria-labelledby` pointing.
 - **Fix direction:** Replace the static string with a `useId()` hook or a unique identifier per `Modal` instance (e.g. `id={title ? \`modal-title-${React.useId()}\` : undefined}`) so each modal gets a unique label ID.
+- **Resolution:** fixed (2b23447) — `useId()` (React 18) called unconditionally before the early `return null`; `titleId` is now `modal-title-${instanceId}`, unique per Modal instance.
 
 ---
 
