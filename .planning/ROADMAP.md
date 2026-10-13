@@ -1,203 +1,193 @@
-# Roadmap: Booking-Hub
+# Roadmap: Booking-Hub v2.0 UI Implementation
 
 ## Overview
 
-Booking-Hub re-platforms the legacy OxAlto RoomBooking ColdFusion application onto a microservice stack with zero functional regression. The journey starts with a hard-blocking audit of the legacy system (Phase 1) and the foundational platform substrate (Phase 2) that every other service builds on. Identity/permissions (Phase 3) and reference/configuration data (Phase 4) land before the core transactional booking workflow (Phase 5), since bookings are permission-gated and reference locations, resources, custom fields, and the approval-requirement setting. Event-driven consumers — notifications and audit logging (Phase 6) — trail the domain events F1/F3 publish. Public feeds (Phase 7) are a standalone, low-dependency read surface. The roadmap closes with a dedicated regression-verification phase (Phase 8) that converts the F0 audit into a CI-enforced, continuously verifiable parity guarantee rather than a one-time assertion.
+Milestone v2.0 implements the complete React + TypeScript frontend UI connecting to v1.0's backend APIs. This milestone transforms the Phase 2 SPA shell (routing + Keycloak PKCE wiring + placeholder routes) into a fully functional user-facing application with complete feature parity to the legacy OxAlto RoomBooking UI. The journey builds UI components layer by layer: foundational layout/patterns first (Phase 9), then core booking views (Phase 10), booking creation/editing (Phase 11), admin screens for reference data (Phase 12), user/permission/settings admin (Phase 13), approval workflow UI (Phase 14), public surfaces (Phase 15), and polish/testing/documentation (Phase 16).
+
+Phase numbering continues from v1.0 (ended at Phase 8), so v2.0 runs Phases 9–16.
 
 ## Phases
 
 **Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+- Phases 9-16: v2.0 UI Implementation
+- Continues from v1.0 (Phases 1-8: backend APIs)
 
-Decimal phases appear between their surrounding integers in numeric order.
-
-- [x] **Phase 1: Legacy Functional Audit** - Document every legacy controller/model/route/workflow and produce the authoritative Open Questions list before any build work begins (completed 2026-10-07)
-- [x] **Phase 2: Platform Foundation & Infrastructure** - Stand up the nine bounded-context service scaffolds, per-service Postgres, RabbitMQ topology, Keycloak realm, Gateway, and the frontend SPA shell (completed 2026-10-07)
-- [x] **Phase 3: Identity & Access Control** - Users authenticate via Keycloak and every legacy permission flag has a confirmed, enforced Keycloak-role mapping (completed 2026-10-08)
-- [x] **Phase 4: Reference Data, Extensibility & Configuration** - Admins manage locations, resources, custom fields, and system-wide settings that booking depends on (completed 2026-10-09)
-- [x] **Phase 5: Core Booking & Approval Workflow** - Users create/edit/delete/clone bookings with full conflict detection and an approval workflow (completed 2026-10-10)
-- [x] **Phase 6: Notifications & Audit Logging** - Booking/account lifecycle events reliably trigger emails and produce an immutable, queryable audit trail (completed 2026-10-13)
-- [x] **Phase 7: Public Feeds** - Approved upcoming bookings are exposed via RSS2/iCal/JSON/display-board feeds with zero login required (completed 2026-10-13)
-- [x] **Phase 8: Regression Verification & Test Traceability** - A CI-enforced regression suite and traceability matrix make "no functionality lost" continuously verifiable (completed 2026-10-13)
+- [ ] **Phase 9: UI Foundation & Shared Patterns** - App shell layout, navigation, reusable UI components, API client layer, permission-gated UI patterns
+- [ ] **Phase 10: Core Booking Views** - Calendar/Day/List views with FullCalendar integration, conflict badge component, view state persistence
+- [ ] **Phase 11: Booking Creation & Editing** - Create/edit forms, recurring series scope handling, booking detail modal, conflict detection UI
+- [ ] **Phase 12: Admin Screens: Reference Data** - Locations/Resources/Custom Fields admin CRUD interfaces
+- [ ] **Phase 13: Admin Screens: Users, Permissions & Settings** - Users admin, role/permission matrix viewer, system settings configuration
+- [ ] **Phase 14: Approval Workflow UI** - Approval queue, approve/deny actions, auto-approve status indicators
+- [ ] **Phase 15: Public Surfaces & Authentication** - Display Board, Feed Subscription UI, Login/My Account/Password Reset flows
+- [ ] **Phase 16: Polish, Testing & Documentation** - Responsive layout refinement, accessibility audit, E2E tests, user documentation
 
 ## Phase Details
 
-### Phase 1: Legacy Functional Audit
-**Goal**: A documented, end-to-end functional audit of the legacy RoomBooking repository exists before any service implementation begins, so every subsequent phase builds against confirmed behavior rather than assumption.
-**Status**: Complete (2026-10-07)
-**Depends on**: Nothing (first phase)
-**Requirements**: F0 (F0.1, F0.2, F0.3, F0.4, F0.5)
+### Phase 9: UI Foundation & Shared Patterns
+**Goal**: Establish the foundational UI architecture, navigation structure, reusable component library, and API client layer that every subsequent phase builds on, ensuring consistent patterns for permission-gated visibility, state confirmation, and conflict rendering across all screens.
+**Status**: Not started
+**Depends on**: v1.0 Phase 2 (SPA shell with routing + Keycloak exists)
+**Requirements**: UI-NAV-01, UI-NAV-02, UI-PATTERN-01, UI-PATTERN-02, UI-PATTERN-03
 **Success Criteria** (what must be TRUE):
-  1. A legacy-audit-findings document exists with a dedicated, cited section for every one of the 12 legacy controllers and every one of the 7 legacy model groups.
-  2. Every legacy behavior that is ambiguous, undocumented, or unconfirmable appears in an Open Questions list with a clear "unknown because..." statement — none are silently resolved or guessed at.
-  3. Per-environment settings behavior (development/production/testing/design/maintenance) has its own audited section.
-  4. The audit's baseline inventory (one row per finding) is formally handed off as the seed input to the F13 traceability matrix, and F0 sign-off is recorded as a gate — no F1–F13 implementation work proceeds without it.
-**Plans**: 6 plans
-
-Plans:
-- [ ] 01-01-PLAN.md — Audit booking core: Bookings/Eventdata controllers, Event/Eventresource models; confirm/correct conflict-enforcement policy (PRD OQ#2)
-- [ ] 01-02-PLAN.md — Audit reference data: Locations/Resources controllers, Location/Resource models
-- [ ] 01-03-PLAN.md — Audit custom fields: Customfields controller, Customfield/Customfieldjoin/Customfieldvalue models
-- [ ] 01-04-PLAN.md — Audit identity & access: Users/Sessions/PasswordResets/Permissions controllers, User model, full cross-controller permission-flag inventory
-- [ ] 01-05-PLAN.md — Audit platform: Settings/Api/Logfiles controllers, routes.cfm, CF lifecycle events, per-environment settings (dev/prod/test/design/maintenance)
-- [ ] 01-06-PLAN.md — Consolidate into legacy-audit-findings.md, open-questions.md, baseline-inventory.md; record F0 sign-off gate
-
-### Phase 2: Platform Foundation & Infrastructure
-**Goal**: The microservice platform substrate exists so that every other feature can be built, deployed, and scaled independently on top of it.
-**Status**: Complete (2026-10-07)
-**Depends on**: Phase 1 (bounded-context decomposition must be confirmed by the audit)
-**Requirements**: F12 (F12.1, F12.2, F12.3, F12.4, F12.5, F12.6, F12.7)
-**Success Criteria** (what must be TRUE):
-  1. Nine bounded-context services (per the F0-confirmed decomposition) are scaffolded as independent Spring Boot 3 applications, each with its own Docker image and Kubernetes manifest set.
-  2. Each service has exactly one dedicated PostgreSQL database with no shared schema and no cross-service database connection string.
-  3. A RabbitMQ topology (exchanges/queues/routing keys) exists for every domain event named across F1–F11, ready for services to publish/consume as they are built.
-  4. A Keycloak realm is provisioned with roles/clients, and Spring Cloud Gateway is the sole externally-reachable ingress, validating every request's JWT against the realm — no backend service is directly externally addressable and no service stores its own passwords.
-  5. A React + TypeScript SPA shell exists with routing, Keycloak PKCE login wiring, and placeholder routes for every planned screen (calendar/list views, admin CRUD, feeds, display board), ready for feature-specific screens to be built into it in later phases.
-**Plans**: 12 plans
-
-Plans:
-- [ ] 02-01-PLAN.md — Scaffold booking-service (Maven, Flyway DDL, Docker, K8s, context-boot test)
-- [ ] 02-02-PLAN.md — Scaffold locations-resources-service
-- [ ] 02-03-PLAN.md — Scaffold custom-field-service
-- [ ] 02-04-PLAN.md — Scaffold users-permissions-service (no credential storage)
-- [ ] 02-05-PLAN.md — Scaffold notifications-service
-- [ ] 02-06-PLAN.md — Scaffold feeds-service
-- [ ] 02-07-PLAN.md — Scaffold settings-service (singleton + seed row)
-- [ ] 02-08-PLAN.md — Scaffold audit-log-service (immutability REVOKE)
-- [ ] 02-09-PLAN.md — Keycloak realm export + RabbitMQ topology definitions
-- [ ] 02-10-PLAN.md — Spring Cloud Gateway (routing, JWT validation, fail-closed, rate limiting)
-- [ ] 02-11-PLAN.md — React+TypeScript SPA shell (routing, nav, Keycloak PKCE wiring)
-- [ ] 02-12-PLAN.md — docker-compose integration: full-stack boot + network/DB isolation audit
-
-### Phase 3: Identity & Access Control
-**Goal**: Users can authenticate and self-manage their accounts, and every protected action is gated by a confirmed permission, so access control behaves equivalently to the legacy system without anyone silently gaining or losing access during the re-platform.
-**Status**: Complete (2026-10-08)
-**Depends on**: Phase 2 (Keycloak realm, Gateway, users-permissions-service scaffold)
-**Requirements**: F6 (F6.1–F6.6), F7 (F7.1–F7.4)
-**Success Criteria** (what must be TRUE):
-  1. Admin can create a user account (provisioned in Keycloak, no local password storage) and assign an initial role.
-  2. User can log in/out, use "remember me" extended session behavior, edit their own profile, and change their own password via Keycloak-backed flows, with access-denied handled equivalently to legacy `Sessions` behavior.
-  3. User can request and complete a password reset via an emailed token/link; expired, invalid, or already-used tokens are rejected.
-  4. Every legacy permission flag (`accessCalendar`, `allowRoomBooking`, `viewRoomBooking`, `allowApproveBooking`, `accessPermissions`, `allowAPI`, plus any F0-confirmed additions) has a documented, administrable Keycloak-role mapping; any flag whose gating scope is unconfirmed is treated as deny-by-default, never approximated.
-  5. A request to a Gateway-protected route without the required role is rejected at the edge, and a service-level fine-grained check independently rejects actions the Gateway would have allowed through by mistake — the two enforcement layers never disagree.
+  1. App shell with sidebar navigation, header with user menu, and logout functionality is implemented and renders correctly with placeholder content for each route from the Navigation Map.
+  2. Permission-gated navigation works: users without allowApproveBooking see no "Approvals" link, users without any admin permission see no "Admin" section — elements are structurally absent, not disabled.
+  3. A reusable StateConfirmationBanner component exists and can be triggered from any screen to show timestamped action confirmations that auto-dismiss after 5 seconds.
+  4. A reusable ConflictBadge component exists that accepts conflict_flags[] and renders conflict icons with clickable detail, ready for use in Calendar/Day/List/Approval Queue views (Phase 10/11/14).
+  5. An API client layer (hooks or service classes) wraps all v1.0 backend endpoints with proper error handling, JWT token inclusion from Keycloak context, and loading/error state management.
 **Plans**: 5 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Domain/migration layer: V2 migration (outbox, password-reset tokens, case-insensitive email, 17-row permission seed), JPA entities/repositories, shared ApiError contract
-- [ ] 03-02-PLAN.md — Keycloak integration layer: Tier-2 JWT validation with fail-closed JWKS-outage handling, Keycloak Admin API client, direct-grant token client, CurrentUserProvider
-- [ ] 03-03-PLAN.md — Auth flows: login/logout/password-reset/password-change against Keycloak, additive realm config (session timeouts, password policy, direct-grant clients)
-- [ ] 03-04-PLAN.md — User management: account CRUD, admin-vs-self authorization, role assignment, outbox event emission
-- [ ] 03-05-PLAN.md — Permission system CRUD, outbox-to-RabbitMQ relay, Tier1/Tier2 consistency contract test
+- [ ] 09-01-PLAN.md — App shell layout: sidebar navigation (conditional sections based on permissions), header with user avatar menu, logout action, responsive shell structure
+- [ ] 09-02-PLAN.md — API client layer: axios instance with JWT interceptor, React Query or SWR setup for data fetching, error boundary components, loading states
+- [ ] 09-03-PLAN.md — Shared UI patterns: StateConfirmationBanner component, ConflictBadge component, permission-gated wrapper utilities (PermissionGate HOC/hook)
+- [ ] 09-04-PLAN.md — Design system: color palette (location colour handling), typography, spacing, button/input/form components matching UX mockup design principles
+- [ ] 09-05-PLAN.md — Integration: wire navigation to routes, test permission-gated visibility with mock user contexts (viewer-only, approver, admin)
 
-### Phase 4: Reference Data, Extensibility & Configuration
-**Goal**: Admins can manage the reference data and configuration that booking depends on — locations, resources, custom fields, and system-wide settings — so the Core Booking phase has real data and rules to build against.
-**Status**: Complete (2026-10-09)
-**Depends on**: Phase 3 (admin-only actions are permission-gated)
-**Requirements**: F4 (F4.1–F4.4), F5 (F5.1–F5.4), F10 (F10.1–F10.4)
+### Phase 10: Core Booking Views
+**Goal**: Users can view bookings in Calendar, Day, and List formats with identical conflict visibility, location colour-coding, and filter state persistence across view switches, so every user can discover bookings in their preferred mode without inconsistent data or missing conflict warnings.
+**Status**: Not started
+**Depends on**: Phase 9 (API client, ConflictBadge component, app shell)
+**Requirements**: UI-CAL-01, UI-CAL-02, UI-CAL-03, UI-CAL-04
 **Success Criteria** (what must be TRUE):
-  1. Admin can create/edit/delete bookable Locations (name, CSS class/colour, building, layout) and Resources, both gated by admin permission.
-  2. Deleting a Location/Resource referenced by existing bookings follows the soft-delete policy — the entity is marked deleted but existing booking references remain intact and display using last-known values.
-  3. Admin can define custom field definitions and field templates (select-type fields require a non-empty `options[]`) and associate a template with a booking context.
-  4. Custom field values attach to bookings via a join model distinct from field definitions, ready for the booking form to render applicable fields dynamically once Phase 5 builds it.
-  5. Admin can toggle the `approveBooking` flag and configure calendar display parameters (slot size, min/max time); settings exist as a single enforced singleton, are admin-only to modify, and are readable by the Booking Service for creation-time status logic.
-**Plans**: 7 plans
-
-Plans:
-- [ ] 04-01-PLAN.md — locations-resources-service: F0 schema-completion migration, entities/repos, ApiError contract, Tier-2 security
-- [ ] 04-02-PLAN.md — locations-resources-service: Location/Resource CRUD controllers (soft-delete policy), outbox publisher
-- [ ] 04-03-PLAN.md — custom-field-service: outbox + required-flag migration, entities/repos, ApiError contract, Tier-2 security
-- [ ] 04-04-PLAN.md — custom-field-service: CustomField/FieldTemplate CRUD controllers, applicability-query endpoint, outbox publisher
-- [ ] 04-05-PLAN.md — settings-service: outbox migration, singleton entity, ApiError contract, Tier-2 security
-- [ ] 04-06-PLAN.md — settings-service: GET/PUT controller (validation + immediate propagation), outbox publisher
-- [ ] 04-07-PLAN.md — Gap closure: Fix frontend Keycloak URL configuration (UAT Test 1 blocker)
-
-### Phase 5: Core Booking & Approval Workflow
-**Goal**: Users can create, edit, delete, and clone bookings with full conflict detection and an approval workflow, so no two conflicting bookings for the same room or resource ever go unnoticed regardless of how they were entered, and every approval/denial decision is final and reaches the right outcome.
-**Status**: Complete (2026-10-10)
-**Depends on**: Phase 4 (locations, resources, custom fields, approveBooking setting must exist)
-**Requirements**: F1 (F1.1–F1.7), F2 (F2.1–F2.5), F3 (F3.1–F3.4)
-**Success Criteria** (what must be TRUE):
-  1. User can create/edit/delete/clone a booking with the full legacy field set, correct date/time validation (zero-duration rejected; end time defaults to start + 1 hour when omitted), and multiple attached resources.
-  2. Calendar, day, and list views return bookings within a date range with `conflict_flags` attached, and an AJAX-style detail endpoint returns the full field set for a single booking.
-  3. Overlap-checking is evaluated per location AND per resource, on every create AND edit (not just at creation), using half-open interval semantics, and excludes the booking's own prior state plus deleted/denied bookings from comparison.
-  4. A detected conflict is a hard block for callers without `allowApproveBooking` and a soft, informational warning for callers who hold it — enforced by exactly one conflict-evaluation code path regardless of UI calendar, UI list, or direct API entry point.
-  5. New bookings receive `pending` or `approved` status per the global auto-approve setting; a user holding `allowApproveBooking` can approve or deny a pending booking, each decision is a one-way transition (no re-toggling), and each publishes a domain event.
+  1. Calendar View renders bookings in month/week grid using FullCalendar (or equivalent React scheduling library), with location colour-coding applied from locations.colour backend data, and conflict badges overlaid on events with conflicts.
+  2. Day View renders a single-day hourly schedule using the same underlying booking data source as Calendar View, with identical conflict badge rendering and colour-coding.
+  3. List View renders bookings in a filterable table with columns (Title, Location, Resources, Start/End, Status, Conflict Flags), and clicking a row opens a placeholder Booking Detail Modal (full implementation in Phase 11).
+  4. Switching between Calendar/Day/List views preserves selected date/range and filter state via URL query params, and users can bookmark a specific view+date+filters URL.
+  5. Clicking an empty slot in Calendar/Day opens a placeholder Booking Create Form (full implementation in Phase 11), and clicking an existing booking opens a placeholder Booking Detail Modal.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Domain/migration layer: V2 migration (6 missing Event fields, local custom-field-values table, outbox), entities/repositories, ApiError contract, Tier-2 security
-- [ ] 05-02-PLAN.md — Conflict detection engine (TechArch's exact query shapes, is_unique-aware) + outbound clients (locations-resources/custom-field/settings services) + standalone check-conflicts endpoint
-- [ ] 05-03-PLAN.md — Booking CRUD: create/edit/delete/clone, THE conflict-enforcement-policy decision, ownership restriction, recurring bulk-create
-- [ ] 05-04-PLAN.md — Approval workflow (one-way approve/deny) + calendar/day/list/detail read views with bulk conflict-flagging
+- [ ] 10-01-PLAN.md — Calendar View: FullCalendar React integration, fetch bookings with conflict_flags[], apply location colour-coding, render ConflictBadge on events, view switcher (Month/Week)
+- [ ] 10-02-PLAN.md — Day View: hourly slot layout, same data source as Calendar, same conflict rendering, slot click → create form placeholder, event click → detail modal placeholder
+- [ ] 10-03-PLAN.md — List View: table with filters (date range, location, status, search query), export to CSV/JSON, row click → detail modal placeholder, same ConflictBadge rendering
+- [ ] 10-04-PLAN.md — View state persistence: URL query params for view/date/filters, restore state on load, bookmarkable URLs, smooth view switching with preserved context
 
-### Phase 6: Notifications & Audit Logging
-**Goal**: Every booking lifecycle event and password reset reliably triggers an email notification, and every state-changing action across the system is captured in an audit trail, so no event is silently lost and every change is accountable after the fact.
-**Status**: Complete (2026-10-13)
-**Depends on**: Phase 5 (booking.created/approved/denied events must exist to consume)
-**Requirements**: F8 (F8.1–F8.4), F11 (F11.1–F11.4)
+### Phase 11: Booking Creation & Editing
+**Goal**: Users can create, edit, clone, and view detailed bookings with full validation, conflict detection UI, recurring series scope handling, and explicit state confirmation, so every booking action is unambiguous and every conflict is actionable before the save completes.
+**Status**: Not started
+**Depends on**: Phase 10 (Calendar/Day/List views, placeholder modals)
+**Requirements**: UI-BOOK-01, UI-BOOK-02, UI-BOOK-03, UI-BOOK-04
 **Success Criteria** (what must be TRUE):
-  1. `booking.created`, `booking.approved`, `booking.denied`, and `password.reset.requested` events each trigger an equivalent email notification to the confirmed recipient(s), delivered via durable RabbitMQ consumption rather than synchronous in-request sending.
-  2. A redelivered event with an already-`sent` idempotency key never results in a duplicate email; a notification that fails transiently is retried with backoff, and retry exhaustion routes to a dead-letter queue rather than silently dropping the message.
-  3. Change events are captured across booking lifecycle, location/resource management, user/role changes, settings changes, and permission changes — not just booking actions.
-  4. Admins can view and filter the audit log by entity type, actor, and date range; audit log entries are immutable once written (no API can edit or delete a prior entry).
-  5. A missed or failed domain event consumption is retried via the durable queue/DLQ mechanism rather than silently leaving a gap in the audit trail.
+  1. Booking Create Form supports all fields (title, location, resources, start/end date-time, recurring pattern), dynamically renders custom fields based on selected location context, runs real-time conflict detection on field changes, and shows inline conflict warnings distinguishing location vs. resource conflicts.
+  2. Booking Edit Form detects recurring series bookings and requires explicit scope selection ("This occurrence only" vs. "Entire series") before allowing save, with no silent default, and shows a post-save summary banner confirming the scope of changes.
+  3. Booking Detail Modal displays all booking fields, status badge (Pending/Approved/Denied with timestamp), conflict information (IDs, types), and permission-gated Edit/Delete/Clone actions, plus a "View history" link (routes to Audit Log filtered to this booking, Phase 13).
+  4. Conflict detection UI hard-blocks non-approvers from saving conflicted bookings (save button disabled until conflict resolved) and soft-warns approvers (save enabled with confirmation dialog: "Approve despite conflict?").
+  5. Successful save triggers StateConfirmationBanner showing action taken, status result (Pending/Approved per settings), and timestamp.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — notifications-service: Tier-2 security, RabbitMQ retry/DLQ container factory, notification_deliveries JPA layer
-- [ ] 06-02-PLAN.md — notifications-service: template rendering, SMTP sending, consumer (idempotency/recipient resolution), admin delivery-status/dead-letter endpoints
-- [ ] 06-03-PLAN.md — audit-log-service: Tier-2 security, V2 idempotency-key migration, RabbitMQ retry/DLQ container factory
-- [ ] 06-04-PLAN.md — audit-log-service: 7-queue domain event consumer, routing-key-derived entity/action parsing, admin filterable GET /audit-log
+- [ ] 11-01-PLAN.md — Booking Create Form: all fields, location/resource selectors, date-time pickers, recurring pattern options, custom field dynamic rendering based on context, real-time conflict detection API calls
+- [ ] 11-02-PLAN.md — Booking Edit Form: detect recurring series (show "Recurring" badge), scope confirmation dialog (required before save), post-save summary banner, re-validation on every edit
+- [ ] 11-03-PLAN.md — Booking Detail Modal: full field display, status badge, conflict section with IDs/types, Edit/Delete/Clone actions (permission-gated, owner-restricted), "View history" link (Phase 13 audit log integration)
+- [ ] 11-04-PLAN.md — Conflict detection UI: inline conflict banner with specific conflicting booking IDs, distinguish location vs resource conflicts, hard-block for non-approvers, soft-warn for approvers (confirmation dialog)
 
-### Phase 7: Public Feeds
-**Goal**: Approved upcoming bookings are exposed via public, read-only feeds, so external viewers like reception staff and visitors can see room availability at a glance without ever logging in or being shown an unconfirmed booking.
-**Status**: Complete (2026-10-13)
-**Depends on**: Phase 5 (approved bookings must exist to project), Phase 4 (location filtering)
-**Requirements**: F9 (F9.1–F9.6)
+### Phase 12: Admin Screens: Reference Data
+**Goal**: Admins can manage locations, resources, and custom fields through single-page CRUD forms with inline validation and soft-delete confirmations, so onboarding a new bookable room or resource is a sub-5-minute single-form task rather than a multi-screen process.
+**Status**: Not started
+**Depends on**: Phase 9 (API client, permission-gated UI, app shell with admin nav)
+**Requirements**: UI-ADMIN-01, UI-ADMIN-02, UI-ADMIN-03
 **Success Criteria** (what must be TRUE):
-  1. RSS2, iCal, JSON feeds and a digital-signage display-board view are all available, each showing only `status=approved` upcoming bookings — pending and denied bookings never appear in any format.
-  2. All feed formats support optional per-location filtering, applied consistently; an unknown `location_id` filter returns an empty feed rather than an error.
-  3. Every feed format is accessible with zero login, account, or token required, and access rules are identical across RSS2/iCal/JSON/display board — no format is gated while another isn't.
+  1. Locations Admin shows a table of all locations (name, colour, building, layout) with Create/Edit/Delete actions, and the Create/Edit form is a single page (not a wizard) with inline validation (name required, colour hex format).
+  2. Resources Admin shows a table of all resources (name, type, description, is_unique, restrict_locations) with Create/Edit/Delete actions, and the form is a single page with inline validation.
+  3. Custom Field Builder has two tabs (Field Definitions, Field Templates), and the Field Definition form validates options[] is required for select/radio/checkbox types and shows a preview of how the field renders in a booking form.
+  4. Delete actions show confirmation dialogs with context-specific messaging (e.g., "Existing bookings will keep reference to this location" for soft-delete policy).
+  5. All CRUD actions trigger StateConfirmationBanner showing success/failure with timestamp.
 **Plans**: 3 plans
-- [ ] 07-01-PLAN.md — Public (security-free) foundation: V2 idempotency-dedup migration, FeedBooking/ProcessedEvent entities + repositories, shared error contract, RabbitMQ retry/DLQ container factory (wave 1)
-- [ ] 07-02-PLAN.md — Projection consumers: feeds.booking.q + feeds.location.q listeners, idempotent lifecycle state machine (approved→visible, denied/deleted→removed), event-fed location_name denormalization (wave 2)
-- [ ] 07-03-PLAN.md — Four public GET endpoints (RSS2/iCal/JSON/display-board) over one shared approved-upcoming query with consistent optional location filtering and cache headers (wave 2)
 
-### Phase 8: Regression Verification & Test Traceability
-**Goal**: Automated tests verify every legacy feature and business rule identified by F0, with a maintained traceability matrix, so "no functionality lost" is continuously and objectively verifiable — and a CI-enforced regression suite blocks any release that would silently regress parity.
-**Status**: Complete (2026-10-13)
-**Depends on**: Phases 1–7 (every feature and the F0 findings must exist to be traced and tested)
-**Requirements**: F13 (F13.1–F13.5)
+Plans:
+- [ ] 12-01-PLAN.md — Locations Admin: table view with colour swatches, Create/Edit single-page form (name, colour picker, building, layout), soft-delete confirmation dialog, inline validation
+- [ ] 12-02-PLAN.md — Resources Admin: table view, Create/Edit single-page form (name, type, description, is_unique checkbox, restrict_locations multi-select), soft-delete confirmation
+- [ ] 12-03-PLAN.md — Custom Field Builder: tabbed UI (Field Definitions, Field Templates), definition form with field_type selector and options[] validation, template form with context_id selector, preview rendering
+
+### Phase 13: Admin Screens: Users, Permissions & Settings
+**Goal**: Admins can manage user accounts, view the permission matrix, and configure system-wide settings through single-page forms with immediate propagation indicators, so every settings change and permission assignment is verifiable at the moment it is made.
+**Status**: Not started
+**Depends on**: Phase 9 (API client, permission-gated UI, app shell with admin nav)
+**Requirements**: UI-ADMIN-04, UI-ADMIN-05, UI-ADMIN-06, UI-ADMIN-07
 **Success Criteria** (what must be TRUE):
-  1. A traceability matrix links every F0 audit finding to the requirement(s) it generated and the test(s) that verify it — no orphaned findings.
-  2. Automated test coverage exists for every validation rule, workflow transition, and permission check identified in F0, including explicit edge-case coverage for conflict-detection, approval/auto-approve interactions, recurring-booking edit/delete scoping, and permission-matrix boundaries.
-  3. A CI-enforced regression suite runs on every change and blocks merge/release if a previously passing parity test now fails.
-  4. Every F0 Open Question that gets resolved has its decision recorded and a new corresponding test added — a resolution without a new test is rejected.
+  1. Users Admin shows a table of all users (name, email, roles, active status) with Create/Edit actions, and admins can assign roles while self-editing is restricted to name/email only (no self-role-change or self-password-change from here).
+  2. Role & Permission Matrix displays a read-only grid of 17 permission flags (rows) × roles (columns) with current Keycloak mappings, and includes a "View in Keycloak Admin" link for actual editing.
+  3. Settings Admin shows a single-page form (Approval Workflow, Calendar Display, Display & Feeds sections), and saving triggers StateConfirmationBanner with timestamp and an immediate propagation indicator (e.g., "approveBooking change affects new bookings immediately").
+  4. Audit Log Viewer shows a filterable table (timestamp, actor, entity type/id, action, before/after) with filters (entity type, actor, date range), export to CSV, and is read-only (no edit/delete actions, immutable record indicator shown).
+  5. All admin screens are absent from navigation for users without the corresponding admin permission (deny-by-default pattern from Phase 9).
 **Plans**: 4 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Traceability matrix foundation: seed from baseline-inventory.md, map findings to FRD requirements
-- [ ] 08-02-PLAN.md — Test coverage analysis: gap report, test-writing guide with patterns from Phase 3 tests
-- [ ] 08-03-PLAN.md — CI regression pipeline: GitHub Actions workflow, branch protection setup, local pre-push runner
-- [ ] 08-04-PLAN.md — Open Question resolution protocol: 6-step workflow, test stubs for 13 open questions, F13 completion criteria
+- [ ] 13-01-PLAN.md — Users Admin: table view, Create form (name, email, temporary password, role assignment), Edit form (admin vs self restrictions), Keycloak role display
+- [ ] 13-02-PLAN.md — Role & Permission Matrix: read-only grid rendering 17 flags × roles, highlight deny-by-default permissions, "View in Keycloak Admin" external link
+- [ ] 13-03-PLAN.md — Settings Admin: single-page form with sections (Approval, Calendar, Display), approveBooking toggle with propagation indicator, slot size/min/max time fields, "Preview Display Board" and "Copy feed links" buttons
+- [ ] 13-04-PLAN.md — Audit Log Viewer: filterable table with entity type/actor/date range filters, export to CSV, immutable record indicator, deep-link integration from Booking Detail Modal (Phase 11)
+
+### Phase 14: Approval Workflow UI
+**Goal**: Users with allowApproveBooking can approve or deny pending bookings with one-way explicit confirmations and conflicted-booking override capability, so the approval queue is a zero-ambiguity decision surface and every approval/denial is recorded and confirmed.
+**Status**: Not started
+**Depends on**: Phase 9 (ConflictBadge, permission-gated UI), Phase 10 (booking data fetching), Phase 11 (Booking Detail Modal)
+**Requirements**: UI-APPR-01, UI-APPR-02
+**Success Criteria** (what must be TRUE):
+  1. Approval Queue page is visible only to users with allowApproveBooking (absent from sidebar for others), and lists all status=pending bookings with inline ConflictBadge rendering (no separate click needed to see conflicts).
+  2. Approve/Deny actions are one-way (no undo), trigger StateConfirmationBanner on success, and optimistically remove the row from the queue immediately.
+  3. Conflicted bookings show Approve button enabled for approvers, but clicking it triggers a confirmation dialog ("Approve despite conflict with Booking #482?") before the action completes.
+  4. Deny action opens an inline optional reason field before confirming the denial.
+  5. Auto-approved bookings (created when approveBooking setting was off) show an "Auto-approved" chip with a tooltip linking to Settings Admin for verification.
+**Plans**: 2 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — Approval Queue: table view with inline ConflictBadge, Approve/Deny row actions, permission-gated visibility (sidebar + route), optimistic UI removal on action
+- [ ] 14-02-PLAN.md — Approval actions: one-way transition enforcement, conflict confirmation dialog for approvers, deny reason field, auto-approved chip with Settings link, StateConfirmationBanner integration
+
+### Phase 15: Public Surfaces & Authentication
+**Goal**: Users can authenticate via Keycloak, manage their own account/password, and external viewers can access the Display Board and feed subscription URLs with zero login required, so the public surfaces have a hard-enforced approved-only guarantee visible in the UI.
+**Status**: Not started
+**Depends on**: Phase 9 (API client, app shell), Phase 10 (booking data rendering patterns)
+**Requirements**: UI-PUB-01, UI-PUB-02, UI-AUTH-01, UI-AUTH-02, UI-AUTH-03
+**Success Criteria** (what must be TRUE):
+  1. Display Board renders in full-screen kiosk mode showing only status=approved bookings for today + next 7 days, auto-refreshes every 60 seconds, supports optional location filter via URL param, and shows a visible "Approved-Only" guarantee badge/watermark.
+  2. Feed Subscription UI lists RSS2, iCal, JSON feed URLs with copy-to-clipboard buttons, optional location filter that updates URLs, usage instructions for each format, and a visible "No authentication required" guarantee.
+  3. Login page redirects to Keycloak PKCE flow, supports "Remember me" (360-day email pre-fill cookie), and post-login redirects to intended route or default Calendar View.
+  4. My Account page lets users edit their own name, view their roles (read-only), and trigger a "Change Password" action that redirects to Keycloak password change flow.
+  5. Password Reset Request/Complete flows work end-to-end with identical responses for valid/invalid emails (security), expired/used token handling, and success redirect to Login with confirmation.
+**Plans**: 3 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — Display Board: full-screen kiosk layout, approved-only filter, today + 7 days timeline, 60-second auto-refresh, location filter URL param, "Approved-Only" watermark, footer link to Feed Subscription
+- [ ] 15-02-PLAN.md — Feed Subscription UI: list RSS2/iCal/JSON URLs, copy-to-clipboard, location filter selector (updates URLs), usage instructions, preview buttons, "No auth required" guarantee
+- [ ] 15-03-PLAN.md — Authentication flows: Login (Keycloak redirect, "Remember me", post-login redirect), My Account (edit name, view roles, Change Password link), Password Reset Request/Complete (token validation, success/error states)
+
+### Phase 16: Polish, Testing & Documentation
+**Goal**: The v2.0 UI is responsive across desktop/tablet/mobile, accessible to keyboard/screen-reader users, covered by E2E tests for critical flows, and documented for end users, so the application is production-ready with verified cross-device compatibility and testable functional parity.
+**Status**: Not started
+**Depends on**: Phases 9-15 (all UI features implemented)
+**Requirements**: UI-RESP-01, UI-RESP-02, UI-RESP-03, UI-A11Y-01
+**Success Criteria** (what must be TRUE):
+  1. Desktop layout (>1024px) renders with always-visible sidebar, full calendar grid showing 4-5 weeks, and all admin table columns visible without horizontal scroll.
+  2. Tablet layout (768px–1024px) renders with collapsible sidebar (hamburger menu), calendar showing 2-3 weeks, and admin tables scrolling horizontally if needed.
+  3. Mobile layout (<768px) renders with bottom nav bar, Calendar defaulting to Day View, List View as primary booking discovery, and forms stacked vertically with full-width inputs.
+  4. Accessibility audit passes: ARIA labels on all interactive elements, keyboard navigation works for all forms/actions, focus indicators visible, color contrast meets WCAG AA, and screen reader tested for login, booking creation, and approval flows.
+  5. E2E tests (Playwright or Cypress) cover critical flows: login, create booking (conflict-free), create booking (conflicted, non-approver blocked), approve booking, deny booking, edit recurring booking with scope selection, and view audit log.
+**Plans**: 4 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Responsive refinement: desktop layout verification, tablet collapsible sidebar + grid adjustments, mobile bottom nav + Day View default + stacked forms
+- [ ] 16-02-PLAN.md — Accessibility audit: ARIA labels, keyboard nav testing, focus indicators, WCAG AA contrast check, screen reader testing (NVDA/VoiceOver)
+- [ ] 16-03-PLAN.md — E2E test suite: Playwright/Cypress setup, critical flow coverage (login, booking CRUD, approval, conflict handling, recurring scope), CI integration
+- [ ] 16-04-PLAN.md — User documentation: end-user guide (how to book, approve, manage locations/resources/settings), admin guide (permission setup, custom fields, audit log usage), inline help tooltips
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Legacy Functional Audit | 0/TBD | Complete | 2026-10-07 |
-| 2. Platform Foundation & Infrastructure | 12/12 | Complete | 2026-10-07 |
-| 3. Identity & Access Control | 5/5 | Complete | 2026-10-08 |
-| 4. Reference Data, Extensibility & Configuration | 6/6 | Complete | 2026-10-09 |
-| 5. Core Booking & Approval Workflow | 0/TBD | Complete | 2026-10-10 |
-| 6. Notifications & Audit Logging | 0/TBD | Complete | 2026-10-13 |
-| 7. Public Feeds | 3/3 | Complete | 2026-10-13 |
-| 8. Regression Verification & Test Traceability | 4/4 | Complete | 2026-10-13 |
+| 9. UI Foundation & Shared Patterns | 0/5 | Not started | — |
+| 10. Core Booking Views | 0/4 | Not started | — |
+| 11. Booking Creation & Editing | 0/4 | Not started | — |
+| 12. Admin Screens: Reference Data | 0/3 | Not started | — |
+| 13. Admin Screens: Users, Permissions & Settings | 0/4 | Not started | — |
+| 14. Approval Workflow UI | 0/2 | Not started | — |
+| 15. Public Surfaces & Authentication | 0/3 | Not started | — |
+| 16. Polish, Testing & Documentation | 0/4 | Not started | — |
 
 ---
-*Roadmap created: 2026-10-06*
-*Granularity: standard (8 phases)*
+*Roadmap created: 2026-10-13*
+*Granularity: standard (8 phases, 29 plans)*
