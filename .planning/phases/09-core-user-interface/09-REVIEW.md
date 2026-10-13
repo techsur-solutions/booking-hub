@@ -1,8 +1,8 @@
 ---
 phase: 9
-status: issues_found
-blockers: 3
-warnings: 5
+status: clean
+blockers: 0
+warnings: 0
 files_reviewed: 100
 files_reviewed_list:
   - frontend/src/api/bookings.ts
@@ -63,7 +63,6 @@ files_reviewed_list:
   - frontend/src/hooks/useSettings.ts
   - frontend/src/hooks/useViewState.ts
   - frontend/src/pages/ApprovalQueue.tsx
-  - frontend/src/pages/ApprovalsQueue.tsx
   - frontend/src/pages/BookingCreate.tsx
   - frontend/src/pages/BookingEdit.tsx
   - frontend/src/pages/BookingsView.tsx
@@ -76,6 +75,7 @@ files_reviewed_list:
   - frontend/src/pages/MyAccount.tsx
   - frontend/src/pages/PasswordReset.tsx
   - frontend/src/pages/PasswordResetComplete.tsx
+  - frontend/src/routes/index.tsx
   - frontend/src/utils/exportBookings.ts
   - frontend/src/utils/permissions.ts
   - frontend/src/utils/rememberMe.ts
@@ -107,158 +107,69 @@ files_reviewed_list:
   - frontend/src/components/StateConfirmationBanner.test.tsx
   - frontend/src/utils/exportBookings.test.ts
   - frontend/src/pages/ListView.test.tsx
-reviewed_at: 2026-10-13T00:00:00Z
-iteration: 1
+reviewed_at: 2026-10-13T09:00:00Z
+iteration: 2
 ---
 
-# Phase 9 Code Review
+# Phase 9 Code Review — Iteration 2
+
+## Re-review: Verification of Iteration 1 Fixes
+
+All 3 BLOCKERs and all 5 WARNINGs from iteration 1 have been fixed and verified. No regressions introduced by the fixes.
+
+### B1 — Open redirect via unvalidated `?redirect=` (FIXED ✓)
+- `Login.tsx:20-27`: `rawRedirect` is now validated by `/^\/[^/]/` regex (blocks `//`, `https://`, etc.) plus a `!raw.includes(':')` guard (blocks scheme separators).
+- Confirmed via `URLSearchParams` decoding test: `%2F%2Fevil.com` decodes to `//evil.com` which correctly fails the regex. No bypass path found.
+
+### B2 — `rememberMe_pending` set but never consumed (FIXED ✓)
+- `AuthProvider.tsx:107-112`: After successful Keycloak init, `sessionStorage.getItem('rememberMe_pending') === 'true'` is checked; if set, the flag is removed and `saveRememberMe(keycloak.tokenParsed?.email)` is called. The `if (email)` guard prevents writing an undefined email to the cookie.
+
+### B3 — `/approvals` route has no route-level permission enforcement (FIXED ✓)
+- `routes/index.tsx:98-111`: The `/approvals` route now wraps `<AppShell><ApprovalQueue /></AppShell>` in `<PermissionGate requireRole="role_booking_approver" fallback={<Navigate to="/bookings?view=month" replace />}>`, which sits inside `<ProtectedRoute>`. `ProtectedRoute` returns `null` until `authenticated=true` (i.e., after Keycloak's `loading=false`), so `PermissionGate` only evaluates after `keycloak.realmAccess` is populated — no loading-state race.
+- The redundant `useEffect` redirect inside `ApprovalQueue` remains but is now harmless (the component will never mount for non-approvers).
+
+### W1 — Inline `BookingDetailModal` in DayView/ListView (FIXED ✓)
+- `DayView.tsx`: Local inline `BookingDetailModal` removed; now imports and uses `BookingDetailModal` from `../../components/booking/BookingDetailModal`. State changed from `Booking | null` to `string | null` (bookingId); `handleEventClick(bookingId: string)` correctly feeds the canonical component.
+- `ListView.tsx`: Same fix applied — uses imported `BookingDetailModal` with `bookingId={detailBookingId}`.
+
+### W2 — Orphaned stub `ApprovalsQueue.tsx` (FIXED ✓)
+- `frontend/src/pages/ApprovalsQueue.tsx` deleted (confirmed: `ls` returns "No such file or directory").
+
+### W3 — Phantom `role_booking_manager` in `BookingTable` (FIXED ✓)
+- `BookingTable.tsx:269`: `requireAnyRole` now contains only `['role_booking_approver']`.
+
+### W4 — Missing `confirmation-banner--warning` CSS class (FIXED ✓)
+- `styles/components.css:826-896`: Complete `.confirmation-banner` ruleset added, including `.confirmation-banner--success`, `.confirmation-banner--warning`, `.confirmation-banner--error`, and all element sub-classes (`__icon`, `__content`, `__timestamp`, `__dismiss`).
+
+### W5 — Duplicate `id="modal-title"` with concurrent modals (FIXED ✓)
+- `Modal.tsx:56`: `useId()` (React 18) is now called unconditionally at the top of the component (before the `if (!isOpen) return null` guard) and produces `titleId = \`modal-title-${instanceId}\`` — unique per Modal instance.
+
+---
 
 ## BLOCKERs
 
-### B1: Open redirect via unvalidated `?redirect=` URL parameter in Login page
-- **File:** `frontend/src/pages/Login.tsx:19,35`
-- **Category:** security
-- **Evidence:**
-  ```ts
-  const redirectTo = params.get('redirect') ?? '/bookings?view=month';
-  // …
-  window.location.replace(redirectTo);
-  ```
-  `redirectTo` is taken verbatim from the `?redirect=` query parameter. An attacker can craft the link `/login?redirect=https://evil.com`; any already-authenticated user who visits it is immediately redirected to the attacker-controlled site via `window.location.replace`. This is a classic open-redirect. The `keycloak.login()` call on line 49 is **not** affected because it prepends `window.location.origin`, producing an invalid URL that Keycloak would reject, but the `window.location.replace(redirectTo)` on line 35 (the auto-redirect for authenticated users) is fully exploitable.
-- **Fix direction:** Validate that `redirectTo` is a same-origin path before using it: reject any value that starts with `//`, `http://`, or `https://`, or that contains `:`. Fall back to the default path if the value is invalid.
-- **Resolution:** fixed (c4961a0) — regex `/^\/[^/]/` + no-colon guard rejects protocol-relative and absolute URLs; falls back to `/bookings?view=month`.
-
----
-
-### B2: `rememberMe_pending` sessionStorage flag set but never consumed — "Remember Me" silently broken for first-time users
-- **File:** `frontend/src/pages/Login.tsx:43-47`
-- **Category:** bug
-- **Evidence:**
-  ```ts
-  } else if (rememberMe) {
-    // No stored email yet — we'll save it after Keycloak returns the token
-    // For now, mark the intent so the callback knows to save
-    sessionStorage.setItem('rememberMe_pending', 'true');
-  }
-  ```
-  A search across the entire frontend source (`grep -rn "rememberMe_pending"`) finds exactly one write (this line) and zero reads. After Keycloak redirects back and `AuthProvider` initialises successfully, nothing reads `'rememberMe_pending'` from sessionStorage, so the email is never written to the cookie. For any user who checks "Remember Me" before their first Keycloak login, the feature does nothing. On subsequent visits the `storedEmail` remains `null` and the reminder UI is never shown.
-- **Fix direction:** After successful Keycloak initialisation in `AuthProvider` (or in a post-auth hook), check `sessionStorage.getItem('rememberMe_pending')`; if truthy, call `saveRememberMe(keycloak.tokenParsed?.email)` and then remove the flag.
-- **Resolution:** fixed (da94f4b) — AuthProvider.tsx now reads and clears `rememberMe_pending` after successful Keycloak init, saving the email from `keycloak.tokenParsed?.email` via `saveRememberMe()`.
-
----
-
-### B3: Approvals route (`/approvals`) has no route-level permission enforcement — any authenticated user can access it
-- **File:** `frontend/src/routes/index.tsx:96-104`, `frontend/src/pages/ApprovalQueue.tsx:25-32`
-- **Category:** security
-- **Evidence:**
-  ```tsx
-  // routes/index.tsx — only authentication is checked, NOT the approver role:
-  {
-    path: '/approvals',
-    element: (
-      <ProtectedRoute>       // ← checks only: keycloak.authenticated
-        <AppShell>
-          <ApprovalQueue />  // ← role check is inside, runs after render
-        </AppShell>
-      </ProtectedRoute>
-    ),
-  },
-  ```
-  ```ts
-  // ApprovalQueue.tsx — gate is a useEffect, so it fires AFTER the component mounts:
-  const allowed = hasApprovePermission();
-  useEffect(() => {
-    if (!allowed) {
-      showToast('Access denied', { variant: 'danger' });
-      navigate('/bookings?view=month', { replace: true });
-    }
-  }, [allowed, navigate, showToast]);
-  ```
-  Between the initial render and the `useEffect` fire, `ApprovalQueue` fetches all pending bookings via `GET /bookings?status=pending`. A non-approver authenticated user navigating to `/approvals` directly will trigger that API call and momentarily see the table render before being redirected. If the backend does not enforce the approver role on that endpoint, pending booking data is exposed. Even if the backend is hardened, the `ApprovalQueue` itself renders `null` only after checking `allowed`, but the data fetch is unconditionally initiated on mount when `allowed` is truthy at first render (and `hasApprovePermission()` reads `keycloak.realmAccess?.roles` which might not have loaded yet in some race conditions). The root issue is UI-only access control with no route-wrapper permission gate.
-- **Fix direction:** Create a `PermissionProtectedRoute` (or extend `ProtectedRoute`) that accepts a role predicate and calls `keycloak.login()` / redirects before rendering children, eliminating the render-then-redirect race. Alternatively, wrap `<ApprovalQueue />` in `<PermissionGate requireRole="role_booking_approver" fallback={<Navigate to="/bookings" replace />}>` at the route level.
-- **Resolution:** fixed (1d4fdff) — `/approvals` route now wraps `<AppShell><ApprovalQueue/></AppShell>` in `<PermissionGate requireRole="role_booking_approver" fallback={<Navigate to="/bookings?view=month" replace />}>` before any render occurs.
-
----
+_None._
 
 ## WARNINGs
 
-### W1: DayView and ListView use lightweight inline `BookingDetailModal` instead of the full `UI-BOOK-03` component
-- **File:** `frontend/src/pages/DayView.tsx:29-82`, `frontend/src/pages/ListView.tsx:16-72`
-- **Evidence:** Both `DayView.tsx` and `ListView.tsx` define a *local* `function BookingDetailModal({ booking, onClose })` that accepts a `Booking` object and shows only Date, Time, Status, Description, and conflict count. The full component in `frontend/src/components/booking/BookingDetailModal.tsx` (used by `CalendarView`) provides Edit, Delete, Clone, conflict drill-down, audit trail link, and status badges. Users clicking a booking row in the List View or an event in Day View get a stripped-down view with no action buttons. The `CreateFormModal` in `DayView` is explicitly marked as a placeholder, but the `BookingDetailModal` is not. The CalendarView integration shows the full modal is available and working.
-- **Fix direction:** Replace the local inline `BookingDetailModal` in both pages with the imported full component from `../../components/booking/BookingDetailModal` (passing `bookingId={booking.id}` instead of the booking object); remove the local interface definitions.
-- **Resolution:** fixed (c28b2e5) — DayView and ListView now import and use `BookingDetailModal` from `components/booking/`. Local inline definitions removed; state changed from `Booking|null` to `string|null` (bookingId).
-
-### W2: Orphaned stub file `ApprovalsQueue.tsx` shadows the real `ApprovalQueue.tsx`
-- **File:** `frontend/src/pages/ApprovalsQueue.tsx`
-- **Evidence:**
-  ```tsx
-  // ApprovalsQueue.tsx (whole file):
-  export function ApprovalsQueue() {
-    return <div><h1>Approval Queue</h1><p>Pending booking approvals — built in Phase 9</p></div>;
-  }
-  ```
-  `routes/index.tsx` correctly imports from `ApprovalQueue` (singular), so the stub is not actively rendered. However, the stub's exported name `ApprovalsQueue` (with trailing 's') is close enough to cause a misimport. Any developer who accidentally imports `ApprovalsQueue` instead of `ApprovalQueue` will silently get the placeholder. The file should be removed.
-- **Fix direction:** Delete `frontend/src/pages/ApprovalsQueue.tsx`. It is not imported anywhere and creates confusion.
-- **Resolution:** fixed (98e1655) — file deleted via `git rm`.
-
-### W3: `role_booking_manager` used in `BookingTable` does not exist in any backend role definition
-- **File:** `frontend/src/components/list/BookingTable.tsx:269`
-- **Evidence:**
-  ```tsx
-  <PermissionGate requireAnyRole={['role_booking_manager', 'role_booking_approver']}>
-  ```
-  `role_booking_manager` appears nowhere else in the codebase—not in `permissions.ts`, not in `types.ts`, not in any backend source file found. The `Permission` type in `api/types.ts` defines `allow_approve_booking`, `allow_manage_locations`, etc., with no `role_booking_manager` counterpart. As currently written, only users with `role_booking_approver` will see the Edit/Delete action buttons in the table (the phantom role never matches). This is likely a typo or leftover from an earlier naming draft.
-- **Fix direction:** Remove `'role_booking_manager'` from the `requireAnyRole` array, or replace it with the correct role name if one is defined in the backend Keycloak realm configuration.
-- **Resolution:** fixed (b2f4324) — `role_booking_manager` removed from `requireAnyRole`; only `role_booking_approver` remains.
-
-### W4: `StateConfirmationBanner` variant type mismatch — callers pass `'warning'` but type only allows `'success' | 'warning' | 'error'`
-- **File:** `frontend/src/pages/BookingCreate.tsx:59,95,129`
-- **Evidence:**
-  ```ts
-  // In BookingCreate.tsx state definition:
-  variant: 'success' | 'warning';  // local state type
-
-  // Passed to StateConfirmationBanner:
-  variant={confirmationBanner.variant}   // can be 'warning'
-
-  // StateConfirmationBanner prop type:
-  variant?: 'success' | 'warning' | 'error';  // 'warning' IS accepted
-  ```
-  `'warning'` is technically valid for `StateConfirmationBanner`. However, the banner renders `variant === 'warning'` with the `⚠` icon and `confirmation-banner--warning` CSS class. There is no `confirmation-banner--warning` CSS class defined anywhere in the component stylesheets (only `--success` and `--error` variants are typically defined). If the CSS rule is absent the banner will render without styling, appearing visually identical to the unstyled default state—misleading for a "submitted for approval" condition. This warrants a CSS check.
-- **Fix direction:** Verify that `confirmation-banner--warning` has a CSS rule defined in `styles/components.css`. If not, add it (amber/yellow background), or map the pending-submission state to a different visual treatment.
-- **Resolution:** fixed (3db0c18) — root cause was worse than reported: ALL `confirmation-banner` CSS classes were missing. Added complete ruleset to `styles/components.css` including `--success` (green), `--warning` (amber), `--error` (red), and all supporting element classes.
-
-### W5: `Modal` uses a hard-coded `id="modal-title"` — multiple open modals sharing the same ID
-- **File:** `frontend/src/components/Modal.tsx:56`
-- **Evidence:**
-  ```ts
-  const titleId = title ? 'modal-title' : undefined;
-  ```
-  When `BookingDetailModal` renders while `showDeleteConfirm=true`, two `<Modal>` instances are simultaneously in the DOM: the main detail modal (title=undefined → no id) and the delete-confirm modal (title="Confirm Delete" → id="modal-title"). While this specific combination avoids collision because the main modal's title is `undefined` for loaded bookings, the `ApproveButton` renders TWO `<Modal>` elements simultaneously (simple-confirm AND conflict-confirm, both with non-null titles) whenever both `showSimpleConfirm` and `showConflictConfirm` could ever be true—though in practice only one fires at a time. More broadly, if any two titled modals are ever simultaneously in the DOM the duplicate `id` attribute violates the HTML spec and breaks `aria-labelledby` pointing.
-- **Fix direction:** Replace the static string with a `useId()` hook or a unique identifier per `Modal` instance (e.g. `id={title ? \`modal-title-${React.useId()}\` : undefined}`) so each modal gets a unique label ID.
-- **Resolution:** fixed (2b23447) — `useId()` (React 18) called unconditionally before the early `return null`; `titleId` is now `modal-title-${instanceId}`, unique per Modal instance.
+_None._
 
 ---
 
-## Cross-file seams checked
+## Cross-file seams checked (iteration 2)
 
 | Seam | Result |
 |------|--------|
-| `routes/index.tsx` imports `ApprovalQueue` from `pages/ApprovalQueue` (not stub `ApprovalsQueue`) | OK — correct import |
-| `routes/index.tsx` imports `LocationsAdmin`, `ResourcesAdmin`, `CustomFieldsAdmin`, `UsersAdmin`, `RolesAdmin`, `SettingsAdmin`, `AuditLogViewer` from `pages/admin/` | OK — all files exist as stubs |
-| `AuthProvider` → `keycloak.ts` singleton — same instance used by `client.ts` interceptor | OK |
-| `feedsApi.getDisplayBoard()` uses `apiClient` (JWT interceptor) for a public endpoint | OK — `client.ts` only injects token if `keycloak.token` is non-null; unauthenticated calls go through without Authorization header |
-| `/feeds` route wraps `AppShell` (→ `Sidebar` → `useAuth()`) without `ProtectedRoute` — would crash if `AuthProvider` not in tree | OK — `AuthProvider` is an ancestor of `RouteRenderer` in `App.tsx` |
-| `BookingForm.onSubmit` signature `(values: BookingFormValues) => Promise<void>` matches callers `BookingCreate.handleSubmit` and `BookingEdit.handleSubmit` | OK |
-| `patchBooking(id, data, scope?: RecurringScope)` in `bookings.ts` matches caller in `BookingEdit` | OK |
-| `BookingDetailModal` from `components/booking/` takes `bookingId: string | null`; `CalendarView`, `ApprovalTable`, `ConflictBanner` all pass `string | null` | OK |
-| `DayView` local `BookingDetailModal` takes `booking: Booking | null` — this is a *different* component, not the canonical one | WARNING W1 |
-| `ListView` local `BookingDetailModal` takes `booking: Booking | null` — same issue | WARNING W1 |
-| `StateConfirmationBanner` variant `'success' | 'warning' | 'error'` vs callers passing `'success'` and `'warning'` | OK (types match; CSS coverage is W4) |
-| `Login.tsx` → `window.location.replace(redirectTo)` — open redirect | BLOCKER B1 |
-| `rememberMe_pending` set in `Login.tsx` but never read in `AuthProvider` or anywhere else | BLOCKER B2 |
-| `PermissionGate` / `hasRole` reads from `keycloak.realmAccess.roles` (same singleton as `Sidebar`) | OK |
-| `BookingTable` `requireAnyRole=['role_booking_manager', 'role_booking_approver']` — `role_booking_manager` undefined in codebase | WARNING W3 |
-| `useBookingById` query key `['bookings', id]` — can collide with list query key `['bookings', {}]` when id happens to be an empty string (guarded by `enabled: !!id`) | OK — `enabled: false` prevents execution |
-| `ApprovalsQueue.tsx` stub exists alongside canonical `ApprovalQueue.tsx` | WARNING W2 |
-| `Modal` hard-coded `id="modal-title"` — concurrent titled modals | WARNING W5 |
+| `routes/index.tsx` `/approvals` → `ProtectedRoute` → `PermissionGate(role_booking_approver)` → `AppShell` → `ApprovalQueue` | OK — B3 fix applied correctly; no loading race |
+| `DayView` now uses canonical `BookingDetailModal` from `components/booking/` with `bookingId: string \| null` | OK — W1 fixed |
+| `ListView` now uses canonical `BookingDetailModal` from `components/booking/` with `bookingId: string \| null` | OK — W1 fixed |
+| `frontend/src/pages/ApprovalsQueue.tsx` (stub) | OK — deleted (W2 fixed) |
+| `BookingTable.tsx:269` `requireAnyRole` | OK — only `['role_booking_approver']` remains (W3 fixed) |
+| `styles/components.css` `.confirmation-banner--warning` | OK — class present at line 844 (W4 fixed) |
+| `Modal.tsx` `useId()` called before `if (!isOpen) return null` | OK — unique IDs per instance (W5 fixed) |
+| `AuthProvider.tsx` consumes `rememberMe_pending` after Keycloak init | OK — reads, removes, saves email via `saveRememberMe` (B2 fixed) |
+| `Login.tsx` redirect validation | OK — regex + colon guard, percent-encoding bypass confirmed blocked (B1 fixed) |
+| `UserMenu` → `useAuth()` called from `/feeds` route (public, no `ProtectedRoute`) | OK — `AuthProvider` is always an ancestor in `App.tsx`; `keycloak.tokenParsed` optional-chained gracefully shows "User" for unauthenticated state |
+| `PermissionGate` `requireRole` vs `requireAnyRole` semantics in fix for B3 | OK — `requireRole` single string dispatches to `hasRole()`, `requireAnyRole` array dispatches to `hasAnyRole()`; correct variant used |
+| `BookingDetailModal` state-resets on re-open (conflict/delete/scope states) | OK — all state is per-mount; `bookingId` prop change triggers re-render, stale state from prior open is isolated |
+| `ConflictWarning` "Save Anyway" unblock flow | OK — `onBlockChange(false)` correctly unblocks parent form; subsequent field changes re-run the debounced check effect and can re-block if conflicts persist |
