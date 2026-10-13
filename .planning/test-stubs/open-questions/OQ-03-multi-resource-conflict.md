@@ -4,7 +4,7 @@
 
 **open-questions.md item:** #3
 
-**Traceability findings:** BF-029, BF-030
+**Traceability findings:** BF-113
 
 **Decision Required:** Choose ONE:
 - **Option A:** ANY resource conflict blocks the whole booking (strict integrity)
@@ -119,5 +119,5 @@ class MultiResourceConflictTest {
 3. **Copy skeleton above** to the test file path shown
 4. **Keep only the test(s) matching the chosen option**
 5. **Run tests** — should FAIL until implementation matches
-6. **Update traceability matrix** for BF-029, BF-030
+6. **Update traceability matrix** for BF-113
 7. **Delete this stub file** (it is fulfilled)
