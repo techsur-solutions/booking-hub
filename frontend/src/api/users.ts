@@ -10,14 +10,13 @@ export const usersApi = {
 
   createUser: (data: {
     email: string;
-    first_name: string;
-    last_name: string;
+    display_name: string;
     password: string;
   }) => apiClient.post<User>('/users', data),
 
   updateUser: (
     id: string,
-    data: Partial<Pick<User, 'email' | 'first_name' | 'last_name'>>
+    data: Partial<Pick<User, 'email' | 'display_name'>>
   ) => apiClient.put<User>(`/users/${id}`, data),
 
   deleteUser: (id: string) => apiClient.delete(`/users/${id}`),
@@ -33,8 +32,8 @@ export const usersApi = {
   // Aliases used by auth flow pages (UI-AUTH-02)
   getMe: () => apiClient.get<User>('/users/me'),
 
-  updateMe: (data: Partial<Pick<User, 'first_name' | 'last_name'>>) =>
-    apiClient.patch<User>('/users/me', data),
+  updateMe: (data: Partial<Pick<User, 'display_name'>>) =>
+    apiClient.put<User>('/users/me', data),
 
   // Password reset endpoints (UI-AUTH-03, implemented in Phase 3)
   requestPasswordReset: (email: string) =>

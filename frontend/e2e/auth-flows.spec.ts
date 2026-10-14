@@ -298,8 +298,7 @@ test.describe('My Account page (UI-AUTH-02)', () => {
         body: JSON.stringify({
           id: '00000000-0000-0000-0000-000000000001',
           email: 'testuser@example.com',
-          first_name: 'Test',
-          last_name: 'User',
+          display_name: 'Test User',
           deleted_at: null,
         }),
       });

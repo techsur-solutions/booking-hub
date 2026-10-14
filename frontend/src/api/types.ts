@@ -65,8 +65,7 @@ export interface CustomField {
 export interface User {
   id: string; // Keycloak sub (UUID)
   email: string;
-  first_name: string;
-  last_name: string;
+  display_name: string;
   deleted_at: string | null;
 }
 

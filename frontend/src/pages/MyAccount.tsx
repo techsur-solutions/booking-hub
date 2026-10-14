@@ -51,11 +51,7 @@ export function MyAccount() {
   // Save name mutation
   const saveMutation = useMutation({
     mutationFn: (name: string) => {
-      // Split name into first/last (simple split on first space)
-      const parts = name.trim().split(/\s+/);
-      const first_name = parts[0] ?? '';
-      const last_name = parts.slice(1).join(' ');
-      return usersApi.updateMe({ first_name, last_name });
+      return usersApi.updateMe({ display_name: name.trim() });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'me'] });
@@ -65,7 +61,7 @@ export function MyAccount() {
   });
 
   function startEditing() {
-    setEditName(user ? `${user.first_name} ${user.last_name}`.trim() : '');
+    setEditName(user?.display_name ?? '');
     setEditing(true);
   }
 
@@ -82,7 +78,7 @@ export function MyAccount() {
 
   // Roles from Keycloak token
   const roles: string[] = keycloak.realmAccess?.roles ?? [];
-  const displayName = user ? `${user.first_name} ${user.last_name}`.trim() : '—';
+  const displayName = user?.display_name ?? '—';
 
   // Check authentication before rendering
   if (!keycloak.authenticated) {
