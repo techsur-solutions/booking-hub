@@ -1,128 +1,193 @@
 ---
 phase: 9
-status: approved
-blockers: 0
+status: issues_found
+blockers: 2
 warnings: 0
-files_reviewed: 11
+files_reviewed: 8
 files_reviewed_list:
-  - frontend/src/pages/BookingsView.tsx
-  - frontend/src/api/client.ts
-  - frontend/src/hooks/useLocations.ts
-  - frontend/src/components/booking/BookingForm.tsx
-  - frontend/src/pages/MyAccount.tsx
   - frontend/src/api/types.ts
   - frontend/src/api/users.ts
-  - services/users-permissions-service/src/main/resources/db/migration/V3__seed_test_user.sql
-  - docker-compose.yml
-  - frontend/e2e/booking-create.spec.ts
+  - frontend/src/pages/MyAccount.tsx
   - frontend/e2e/auth-flows.spec.ts
-reviewed_at: 2026-10-14T19:45:00Z
-iteration: 2
-fix_iteration: 1
-all_blockers_fixed_at: 2026-10-14T20:15:00Z
+  - services/users-permissions-service/src/main/resources/db/migration/V3__seed_test_user.sql
+  - services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/dto/UserResponse.java
+  - services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/dto/UserSelfUpdateRequest.java
+  - docker-compose.yml
+reviewed_at: 2026-10-14T20:45:00Z
+iteration: 3
+previous_blockers_fixed: 4
+previous_warnings_fixed: 2
 ---
 
-# Phase 9 Code Review — Iteration 2 (Re-review)
+# Phase 9 Code Review — Iteration 3 (FINAL)
 
-## Previous Iteration Summary
+## Previous Iterations Summary
 
-Iteration 1 found 3 blockers and 2 warnings. Fixes were applied in commits:
-- `3a76411` — B1: V3 migration schema mismatch
-- `d2fc069` — B2, B3: Frontend/backend type mismatch and HTTP method mismatch
-- `23d892e` — W1: Fragile 404 error detection
-- `73fde83` — W2: Keycloak port documentation mismatch
+**Iteration 1** found 3 blockers + 2 warnings:
+- B1: V3 migration schema mismatch (display_name column) → FIXED (3a76411)
+- B2: Frontend/backend type mismatch (first_name/last_name vs display_name) → FIXED (d2fc069)
+- B3: HTTP method mismatch (PATCH vs PUT) → FIXED (d2fc069)
+- W1: Fragile 404 error detection using string matching → FIXED (23d892e)
+- W2: Keycloak port documentation mismatch → FIXED (73fde83)
+
+**Iteration 2** found 1 blocker:
+- B4: E2E test mocks incompatible with fixed User type → FIXED (e509fc3)
+  - All 5 test mocks updated to use display_name instead of first_name/last_name
+  - HTTP method check changed from PATCH to PUT
+  - Test assertions updated to verify display_name field
+
+**Iteration 3** (this review) verifies all fixes and checks for regressions.
+
+---
 
 ## Fix Verification
 
-### B1: Schema mismatch — FIXED ✓
-**File:** services/users-permissions-service/src/main/resources/db/migration/V3__seed_test_user.sql:13-20, 24-31
+### All Previous Findings — VERIFIED FIXED ✓
 
-V3 migration now correctly inserts into `display_name` column (lines 17, 28) matching V1 schema definition (V1__init_schema.sql:7). Values concatenated as "Test User" and "Booking Approver". No schema errors will occur at Flyway migration runtime.
+**B1, B2, B3, B4, W1, W2** — All source code changes correctly applied:
+- ✓ V3 migration uses `display_name` column (V3__seed_test_user.sql:13,24)
+- ✓ Frontend User type uses `display_name: string` (types.ts:68)
+- ✓ MyAccount component reads `user?.display_name` (MyAccount.tsx:81)
+- ✓ updateMe uses PUT method (users.ts:36, UserController.java:132)
+- ✓ All 6 E2E test mocks use `display_name` (auth-flows.spec.ts lines 141, 177, 189, 229, 258, 295)
+- ✓ E2E mock checks `method() === 'PUT'` (auth-flows.spec.ts:181)
+- ✓ Test assertions verify `display_name` field (auth-flows.spec.ts:218)
+- ✓ Error handling uses `?.response?.status === 404` (MyAccount.tsx:122, 130)
+- ✓ Keycloak port 8180 documented correctly (docker-compose.yml:59, V3 migration:5)
 
-### B2: Frontend/backend type mismatch — PARTIALLY FIXED ⚠️
-**Files:**
-- frontend/src/api/types.ts:68 — FIXED: User interface now declares `display_name: string`
-- frontend/src/api/users.ts:35-36 — FIXED: updateMe uses `display_name`
-- frontend/src/pages/MyAccount.tsx:54, 64, 81 — FIXED: uses `display_name` correctly
-- **frontend/e2e/auth-flows.spec.ts:132-290 — INCOMPLETE FIX** (see BLOCKER B4 below)
-
-Source code alignment verified:
-- Backend UserResponse.java:14 → `String displayName`
-- Backend UserSelfUpdateRequest.java:10 → `String displayName`
-- Frontend User interface → `display_name: string`
-- MyAccount component reads `user?.display_name` (line 81), sends `{ display_name: ... }` (line 54)
-
-### B3: HTTP method mismatch — FIXED ✓
-**File:** frontend/src/api/users.ts:36
-
-usersApi.updateMe now uses `apiClient.put<User>('/users/me', data)` matching backend UserController.java:132 `@PutMapping("/me")`. No 405 Method Not Allowed errors will occur.
-
-### W1: Fragile 404 error detection — FIXED ✓
-**File:** frontend/src/pages/MyAccount.tsx:122, 130
-
-Lines 122 and 130 now check `(error as any)?.response?.status === 404` instead of `error.message.includes('404')`. Direct HTTP status inspection is stable and won't break if Axios changes error message format.
-
-### W2: Keycloak admin console URL mismatch — FIXED ✓
-**Files:**
-- docker-compose.yml:59 — FIXED: comment now shows `http://localhost:8180/admin`
-- V3__seed_test_user.sql:5 — FIXED: comment updated to port 8180
-
-Port matches actual mapping at docker-compose.yml:75 (`8180:8080`). No developer confusion.
+TypeScript compilation passes without errors. No `first_name` or `last_name` references remain in frontend code.
 
 ---
 
 ## BLOCKERs
 
-### B4: E2E test mocks incompatible with fixed User type — fix-introduced regression
-- **File:** frontend/e2e/auth-flows.spec.ts:132-290
+### B5: Missing @JsonProperty annotation on UserResponse.displayName — frontend/backend integration will fail
+- **File:** services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/dto/UserResponse.java:14
 - **Category:** integration
 - **Evidence:**
   
-  **Lines 132-165** — Test "renders name (editable), email (read-only), and roles (chips)":
-  - Mock at lines 138-144 returns `{ id, email, first_name: 'Alice', last_name: 'Smith', deleted_at }` 
-  - But frontend User type (types.ts:65-70) declares only `display_name: string`, NOT `first_name` or `last_name`
-  - MyAccount.tsx:81 reads `user?.display_name ?? '—'` — since mock has no `display_name` field, component displays fallback "—"
-  - Test line 153 expects `toContainText('Alice Smith')` → will FAIL, displays "—" instead
+  **Backend serialization:**
+  ```java
+  public record UserResponse(
+          String id,
+          String email,
+          String displayName,  // ← NO @JsonProperty annotation
+          List<String> roles,
+          Instant createdAt,
+          Instant updatedAt
+  ) {}
+  ```
   
-  **Lines 167-223** — Test "Edit/Save/Cancel name editing flow":
-  - Mock at lines 170-199 checks `route.request().method() === 'PATCH'` (line 183) but usersApi.updateMe uses PUT (users.ts:36)
-  - Mock route will never match → actual PUT request goes unmocked → test may timeout or hit real backend
-  - Mock returns `{ first_name: 'Alice', last_name: 'Smith' }` and `{ first_name: 'Alice', last_name: 'Updated' }` (lines 178-179, 191-192)
-  - MyAccount.tsx:54 sends `{ display_name: name.trim() }` but test lines 221-222 expect `patchBody.first_name` and `patchBody.last_name` → assertions will FAIL
+  Spring Boot's default Jackson configuration serializes Java field names as-is → backend returns JSON:
+  ```json
+  { "id": "...", "email": "...", "displayName": "John Doe", ... }
+  ```
   
-  **Lines 225-253** — Test "Cancel editing restores previous name":
-  - Mock at lines 226-237 returns `{ first_name, last_name }` instead of `{ display_name }` → same issue
+  **Frontend expects snake_case:**
+  ```typescript
+  export interface User {
+    id: string;
+    email: string;
+    display_name: string;  // ← expects display_name, not displayName
+    deleted_at: string | null;
+  }
+  ```
   
-  **Lines 255-290** — Test "Change Password button" and similar:
-  - Mocks at lines 256-267, 262-266 still use `first_name`/`last_name` → same issue
+  **Result:** MyAccount.tsx:81 reads `user?.display_name` → `undefined` → displays fallback "—" instead of actual name.
   
-  **Only lines 292-318 were fixed** (test "loads successfully when user record exists" correctly mocks `display_name: 'Test User'` at line 301).
+  **Evidence from other services:** Booking service DTOs use `@JsonProperty` for snake_case (BookingReadDtos.java:33,68-70, BookingDtos.java:88-90):
+  ```java
+  @JsonProperty("location_id") UUID locationId,
+  @JsonProperty("start_time") Instant startTime,
+  ```
   
-  The d2fc069 fix commit only updated ONE test mock (lines 298-304) but left FIVE other test mocks (lines 138-144, 174-195, 228-236, 258-266) with the old `first_name`/`last_name` schema. These tests will fail at runtime because:
-  1. Mocks provide fields that don't exist in the User interface (TypeScript may not catch this since route mocks are untyped JSON)
-  2. Component expects `display_name` field which mocks don't provide → displays fallback "—"
-  3. Test expects PATCH method but code uses PUT → route never matches
-  4. Test asserts on `patchBody.first_name` but actual body contains `display_name`
-
+  This is the project-wide naming convention for API contracts (snake_case JSON ↔ camelCase Java).
+  
+  **Why tests didn't catch this:**
+  - All E2E tests use mocked responses with frontend-expected format (`display_name`)
+  - Backend gate was skipped (09-GATE.md:99) — no integration tests ran
+  - Frontend unit tests don't call real backend
+  
+  **Runtime failure scenario:**
+  1. User opens /account page
+  2. Frontend calls GET /users/me
+  3. Backend returns `{ "displayName": "John Doe" }`
+  4. Frontend TypeScript interface expects `display_name`
+  5. `user.display_name` is `undefined` at runtime (TypeScript can't prevent this — response is untyped JSON)
+  6. MyAccount.tsx:81 displays "—" instead of "John Doe"
+  7. User tries to edit name → same issue
+  
 - **Fix direction:**
   
-  Update ALL test mocks in auth-flows.spec.ts lines 132-290:
-  1. Replace ALL occurrences of `first_name: 'X', last_name: 'Y'` with `display_name: 'X Y'` (lines 138-144, 174-195, 228-236, 258-266)
-  2. Change line 183 from `method() === 'PATCH'` to `method() === 'PUT'`
-  3. Replace lines 221-222 assertions:
-     ```typescript
-     // OLD (wrong):
-     expect(patchBody.first_name).toBe('Alice');
-     expect(patchBody.last_name).toBe('Updated');
-     
-     // NEW (correct):
-     expect(patchBody.display_name).toBe('Alice Updated');
-     ```
-   4. Run `npm test -- auth-flows.spec.ts` to verify all tests pass
+  Add `@JsonProperty("display_name")` annotation to UserResponse.displayName field. Also add for createdAt/updatedAt if they're exposed in API (check if frontend uses them):
+  ```java
+  import com.fasterxml.jackson.annotation.JsonProperty;
+  
+  public record UserResponse(
+          String id,
+          String email,
+          @JsonProperty("display_name") String displayName,
+          List<String> roles,
+          @JsonProperty("created_at") Instant createdAt,
+          @JsonProperty("updated_at") Instant updatedAt
+  ) {}
+  ```
+  
+  Verify: check frontend types.ts User interface fields and ensure all backend fields have matching @JsonProperty annotations.
 
-**Resolution:** fixed (e509fc3)
-
-All 5 test mocks updated to use `display_name` instead of `first_name`/`last_name`. HTTP method check changed from PATCH to PUT at line 181. Test assertions updated to verify `display_name: 'Alice Updated'` at line 218. TypeScript compilation passes. E2E tests cannot run in this environment (backend services not running), but code changes are syntactically correct and align with User interface schema (types.ts:68) and API implementation (users.ts:36 uses PUT method).
+### B6: Missing @JsonProperty annotation on UserSelfUpdateRequest.displayName — frontend PUT requests will fail
+- **File:** services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/dto/UserSelfUpdateRequest.java:10
+- **Category:** integration
+- **Evidence:**
+  
+  **Backend request DTO:**
+  ```java
+  public record UserSelfUpdateRequest(String displayName) {}
+  ```
+  
+  Spring Boot's default Jackson deserialization expects camelCase field names → backend expects:
+  ```json
+  { "displayName": "Updated Name" }
+  ```
+  
+  **Frontend sends snake_case:**
+  ```typescript
+  // MyAccount.tsx:54
+  usersApi.updateMe({ display_name: name.trim() });
+  
+  // users.ts:36
+  apiClient.put<User>('/users/me', data)
+  ```
+  
+  Frontend sends:
+  ```json
+  { "display_name": "Updated Name" }
+  ```
+  
+  **Result:** Backend receives request body where `displayName` field is `null` → UserService will either:
+  1. Silently ignore the null field (no update occurs, but returns 200) → user sees success banner but name doesn't change
+  2. Throw validation error if field has @NotNull constraint → user sees "Failed to save name" error
+  
+  **Runtime failure scenario:**
+  1. User edits name on /account page
+  2. Frontend sends PUT /users/me with `{ "display_name": "New Name" }`
+  3. Backend UserSelfUpdateRequest deserializes → `displayName` field is `null` (JSON field `display_name` is ignored)
+  4. UserService.updateOwnProfile receives request with null displayName → no update occurs OR validation error
+  5. User sees error banner or success banner with no actual change
+  6. E2E test auth-flows.spec.ts:218 would FAIL if it called real backend (currently mocked, so passes)
+  
+- **Fix direction:**
+  
+  Add `@JsonProperty("display_name")` annotation to UserSelfUpdateRequest.displayName field:
+  ```java
+  import com.fasterxml.jackson.annotation.JsonProperty;
+  
+  public record UserSelfUpdateRequest(
+      @JsonProperty("display_name") String displayName
+  ) {}
+  ```
+  
+  Verify: send test PUT request with `{ "display_name": "Test" }` and confirm backend correctly receives the value.
 
 ---
 
@@ -134,54 +199,83 @@ All 5 test mocks updated to use `display_name` instead of `first_name`/`last_nam
 
 ## Cross-file seams checked
 
-- **Plan 09-16 - BookingsView → BookingCreate navigation:**
-  - BookingsView.tsx:47 builds URL `/bookings/create?start_time=${currentDate}T09:00` → OK
-  - Routes define `/bookings/create` → OK (verified in previous iteration)
-  - BookingCreate reads `start_time` param → OK
-  - E2E test booking-create.spec.ts:645-649 verifies param preservation → OK
+All seams from iteration 2 remain valid. Additional integration checks:
 
-- **Plan 09-17 - JWT token refresh interceptor:**
-  - client.ts:16 calls `keycloak.updateToken(30)` before each request → OK
-  - MyAccount.tsx:29 comment confirms centralized pattern → OK
-  - useLocations.ts, BookingForm.tsx all use apiClient → OK, inherit refresh
-  - No duplicate updateToken() calls found → OK
+- **Frontend User type ↔ Backend UserResponse:**
+  - types.ts:68: `display_name: string` → UserResponse.java:14: `String displayName` → **BLOCKER B5** (missing @JsonProperty)
+  - types.ts:66: `id: string` → UserResponse.java:12: `String id` → OK
+  - types.ts:67: `email: string` → UserResponse.java:13: `String email` → OK
+  - types.ts:69: `deleted_at: string | null` → UserResponse.java:17: not exposed (only createdAt/updatedAt) → OK (backend filters this field)
 
-- **Plan 09-17 - BookingForm location dropdown:**
-  - BookingForm.tsx:91 calls `useLocations()` → OK
-  - Lines 174-201 render loading/error/empty/populated states → OK
-  - useLocations.ts:5-15 returns React Query result → OK
-  - E2E test booking-create.spec.ts:662-699 verifies dropdown population → OK
+- **Frontend PUT /users/me request ↔ Backend UserSelfUpdateRequest:**
+  - MyAccount.tsx:54: sends `{ display_name: name.trim() }` → UserSelfUpdateRequest.java:10: expects `displayName` → **BLOCKER B6** (missing @JsonProperty)
+  - users.ts:36: uses PUT method → UserController.java:132: `@PutMapping("/me")` → OK
 
-- **Plan 09-18 - My Account user record seed:**
-  - V3 migration inserts display_name → OK (B1 fixed)
-  - docker-compose.yml:48-59 documents UUIDs → matches V3 UUIDs → OK
-  - **E2E test auth-flows.spec.ts mocks → BLOCKER B4** (5 of 6 test mocks still use wrong schema)
+- **Database schema ↔ Java entity:**
+  - V1 schema: `display_name VARCHAR(255)` → User.java:26: `@Column(name = "display_name")` → OK
+  - V3 seed: `display_name` values → matches schema → OK
 
-- **Type safety (frontend ↔ backend):**
-  - Frontend User.display_name vs Backend UserResponse.displayName → OK (camelCase/snake_case conversion handled by serialization)
-  - V1 schema display_name column vs V3 seed values → OK (B1 fixed)
-  - PUT /users/me contract → OK (B3 fixed, frontend uses PUT)
-  - **E2E test mocks vs User interface → BLOCKER B4** (mocks incompatible with fixed User type)
+- **Java entity ↔ DTO mapping:**
+  - User.java:27: `private String displayName` with getter/setter → UserResponse.java:14: `String displayName` → OK (field name matches)
+  - But DTO → JSON serialization is broken (B5)
 
-- **Method routing:**
-  - usersApi.updateMe PUT → UserController @PutMapping("/me") → OK (B2/B3 fixed)
-  - usersApi.createUser POST → UserController @PostMapping → OK
-  - usersApi.updateUser PUT → UserController @PutMapping("/{id}") → OK
+- **E2E test mocks ↔ actual API contract:**
+  - All 6 test mocks use snake_case `display_name` → matches frontend expectation → OK
+  - But mocks don't match actual backend response (backend will use camelCase without @JsonProperty) → B5
+  - Test would pass with mocks but fail with real backend
 
 ---
 
-## Re-review scope
+## Regression Analysis
 
-Per instructions, iteration 2 reviewed:
-1. All files from iteration 1's `files_reviewed_list` (11 files)
-2. All files modified by fix commits (same 6 files as listed in git diff output)
-3. Verified each previous finding was actually fixed (read the code, not just commit messages)
-4. Checked for regressions introduced by fixes → **found B4**
+**No fix-introduced regressions detected** in source code. All iteration 1 and iteration 2 fixes are correctly applied and functioning as intended.
+
+**New findings (B5, B6)** are NOT regressions — they are pre-existing integration defects that were hidden by:
+1. Mock-based E2E tests (auth-flows.spec.ts) that use frontend-expected format
+2. No integration tests calling real backend
+3. Backend gate skipped (09-GATE.md:99)
+
+The phase 9 fixes correctly aligned:
+- ✓ Frontend internal consistency (User type, API calls, component usage)
+- ✓ Backend internal consistency (User entity, DTOs, controller method)
+- ✓ Database schema (V1 column, V3 seed data)
+- ✓ E2E test mocks (all use display_name, PUT method)
+
+But missed:
+- ✗ Frontend ↔ Backend JSON contract (B5: response deserialization, B6: request deserialization)
 
 ---
 
-## Regression analysis
+## Review Scope
 
-The d2fc069 fix commit message states "E2E test mock: corrected to match backend response shape" but the git diff shows only ONE test mock was updated (lines 298-304 in the "loads successfully" test). The commit did NOT update the other FIVE test mocks in the same file that still reference first_name/last_name. This is a partial fix that will cause test failures.
+Per iteration 3 instructions (final review after all fixes):
+1. ✓ Reviewed all 6 files from iteration 2's `files_reviewed_list`
+2. ✓ Added 2 backend DTO files to review scope (UserResponse.java, UserSelfUpdateRequest.java) — these were not changed by phase 9 but are part of the integration contract
+3. ✓ Verified each previous finding (B1-B4, W1-W2) is actually fixed by reading the code
+4. ✓ Checked for regressions introduced by fixes → none found
+5. ✓ Traced cross-file integration between frontend and backend → found B5, B6
 
-The source code (MyAccount.tsx, users.ts, types.ts) was fixed correctly. Only the E2E test mocks are incorrect.
+**Integration gap root cause:**
+- Phase 9 plans focused on frontend implementation and E2E test alignment
+- Backend DTOs (UserResponse, UserSelfUpdateRequest) were implemented in Phase 3 (before naming convention was established)
+- Booking service DTOs (Phase 2-4) use @JsonProperty for snake_case — established pattern
+- Users service DTOs never updated to match this pattern
+- Gap was not caught because backend gate was skipped and E2E tests are mocked
+
+---
+
+## Unresolved Blockers
+
+**B5 and B6 remain open.** These are integration defects that will cause runtime failures when frontend calls real backend. They MUST be fixed before My Account page can work in production or even local integration testing.
+
+**Impact:**
+- My Account page will display "—" instead of user's name (B5)
+- Name editing will fail silently or with error (B6)
+- E2E tests pass with mocks but would fail with real backend
+
+**Recommended fix order:**
+1. Fix B5 and B6 by adding @JsonProperty annotations to both DTOs
+2. Add integration test that calls real backend (not mocked) to verify JSON contract
+3. Run E2E tests against real backend stack (docker compose up) to catch future contract mismatches
+
+This is iteration 3 (FINAL) — per instructions, unresolved blockers are recorded as-is.
