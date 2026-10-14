@@ -59,7 +59,7 @@ Plans:
 - [ ] 09-15-PLAN.md — Authentication flows: Login (Keycloak redirect), My Account (self-edit), Password Reset (request/complete)
 - [ ] 09-16-PLAN.md — [GAP] Add Create Booking button to BookingsView for navigation (UAT #6 - major)
 - [ ] 09-17-PLAN.md — [GAP] Fix location dropdown data loading in BookingCreate (UAT #6 - blocker)
-- [ ] 09-18-PLAN.md — [GAP] Fix My Account page user info loading error (UAT #14 - blocker)
+- [ ] 09-18-PLAN.md — [GAP] Add test user seed data and enhance error handling for My Account (UAT #14 - blocker)
 
 ### Phase 10: Admin Interface & Polish
 **Goal**: Implement all administrative screens for managing locations, resources, custom fields, users, roles, and settings, plus audit log viewer, responsive design for all screen sizes, accessibility compliance, E2E tests for critical flows, and user documentation, so the application is production-ready with full admin capabilities and verified quality.
