@@ -119,7 +119,7 @@ export function MyAccount() {
             Failed to load account information.
           </p>
           <p style={{ marginBottom: 'var(--spacing-md)' }}>
-            {error instanceof Error && error.message.includes('404') ? (
+            {(error as any)?.response?.status === 404 ? (
               <>
                 <strong>User record not found.</strong> Your Keycloak account exists, but no matching user record was found in the database.
               </>
@@ -127,7 +127,7 @@ export function MyAccount() {
               'This may be due to a network issue, expired authentication token, or the server being temporarily unavailable.'
             )}
           </p>
-          {error instanceof Error && error.message.includes('404') && (
+          {(error as any)?.response?.status === 404 && (
             <div style={{
               padding: 'var(--spacing-md)',
               backgroundColor: 'var(--color-info-light)',
