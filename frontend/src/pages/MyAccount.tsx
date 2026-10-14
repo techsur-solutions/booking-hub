@@ -119,16 +119,38 @@ export function MyAccount() {
             marginBottom: 'var(--spacing-md)',
           }}
         >
-          <p style={{ marginBottom: 'var(--spacing-md)' }}>
-            Failed to load account information. This may be due to:
+          <p style={{ marginBottom: 'var(--spacing-md)', fontWeight: 'bold' }}>
+            Failed to load account information.
           </p>
-          <ul style={{ marginLeft: 'var(--spacing-lg)', marginBottom: 'var(--spacing-md)' }}>
-            <li>Network connectivity issue</li>
-            <li>Authentication token expired</li>
-            <li>Server temporarily unavailable</li>
-          </ul>
+          <p style={{ marginBottom: 'var(--spacing-md)' }}>
+            {error instanceof Error && error.message.includes('404') ? (
+              <>
+                <strong>User record not found.</strong> Your Keycloak account exists, but no matching user record was found in the database.
+              </>
+            ) : (
+              'This may be due to a network issue, expired authentication token, or the server being temporarily unavailable.'
+            )}
+          </p>
+          {error instanceof Error && error.message.includes('404') && (
+            <div style={{
+              padding: 'var(--spacing-md)',
+              backgroundColor: 'var(--color-info-light)',
+              borderRadius: 'var(--radius-md)',
+              marginBottom: 'var(--spacing-md)',
+              fontSize: 'var(--font-size-sm)',
+            }}>
+              <p style={{ marginBottom: 'var(--spacing-sm)', fontWeight: 'bold' }}>
+                For developers:
+              </p>
+              <ol style={{ marginLeft: 'var(--spacing-lg)', marginBottom: 0 }}>
+                <li>Ensure your Keycloak user UUID matches the seed data in V3 migration</li>
+                <li>Restart users-permissions-service to apply migrations: <code>docker compose restart users-permissions-service</code></li>
+                <li>Or manually create your user record in users_db.users table</li>
+              </ol>
+            </div>
+          )}
           <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>
-            Error: {error instanceof Error ? error.message : 'Unknown error'}
+            Technical error: {error instanceof Error ? error.message : 'Unknown error'}
           </p>
         </div>
 
