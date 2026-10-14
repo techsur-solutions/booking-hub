@@ -4,11 +4,11 @@
   "phase": "09",
   "status": "complete",
   "counts": {
-    "total": 15,
-    "passed": 3,
-    "issues": 2,
-    "pending": 0,
-    "skipped": 10
+    "total": 18,
+    "passed": 1,
+    "issues": 1,
+    "pending": 15,
+    "skipped": 1
   },
-  "generated_at": "2026-10-13T19:44:27.124Z"
+  "generated_at": "2026-10-14T18:42:08.619Z"
 }

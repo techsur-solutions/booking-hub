@@ -1,130 +1,128 @@
 ---
 status: complete
 phase: 09-core-user-interface
-source: 09-01-SUMMARY.md, 09-02-SUMMARY.md, 09-03-SUMMARY.md, 09-04-SUMMARY.md, 09-05-SUMMARY.md, 09-06-SUMMARY.md, 09-07-SUMMARY.md, 09-08-SUMMARY.md, 09-09-SUMMARY.md, 09-10-SUMMARY.md, 09-11-SUMMARY.md, 09-12-SUMMARY.md, 09-13-SUMMARY.md, 09-14-SUMMARY.md, 09-15-SUMMARY.md
-started: 2026-10-13T19:14:46+00:00
-updated: 2026-10-13T19:36:26+00:00
+source: 09-01-SUMMARY.md, 09-02-SUMMARY.md, 09-03-SUMMARY.md, 09-04-SUMMARY.md, 09-05-SUMMARY.md, 09-06-SUMMARY.md, 09-07-SUMMARY.md, 09-08-SUMMARY.md, 09-09-SUMMARY.md, 09-10-SUMMARY.md, 09-11-SUMMARY.md, 09-12-SUMMARY.md, 09-13-SUMMARY.md, 09-14-SUMMARY.md, 09-15-SUMMARY.md, 09-16-SUMMARY.md, 09-17-SUMMARY.md, 09-18-SUMMARY.md
+started: 2026-10-14T15:00:00Z
+updated: 2026-10-14T18:45:00Z
 ---
 
 ## Current Test
 
-[testing complete]
+[testing paused - investigating data visibility issue]
 
 ## Tests
 
-### 1. Navigation and App Shell
-expected: Sidebar navigation appears with sections: Bookings, Approvals (if role_booking_approver), Admin (if admin role). Clicking each nav item navigates to the correct page. User menu in header shows username, My Account link, and Logout action.
+### 1. Navigate the App with Permission-Gated Sidebar
+expected: Opening /bookings shows responsive sidebar with permission-gated sections (Approvals absent without role_booking_approver, Admin absent without admin roles), header with UserMenu (name + logout), bottom nav on mobile, collapsible sidebar on tablet
 result: pass
 
-### 2. Calendar View Rendering
-expected: Calendar month view displays with booking events color-coded by location. Conflict badges (⚠ icon with count) appear on bookings with conflicts. Month/week toggle and prev/next/today navigation buttons work.
-result: skipped
-reason: "No bookings exist yet to test event display. Calendar UI renders properly. Will re-test after creating bookings."
-
-### 3. Day View Hourly Slots
-expected: Day view shows hourly time slots (based on calendar_min_time and calendar_max_time settings). Bookings appear as colored blocks overlaid on time slots. Location filter dropdown filters displayed bookings. Clicking an empty slot opens create form pre-filled with that time.
-result: skipped
-reason: "No bookings exist yet. Will test after creating bookings."
-
-### 4. List View and Filtering
-expected: List view shows sortable table with Title, Location, Resources, Start/End Time, Status, Conflict Flags, Actions columns. Date range picker, location multi-select, status checkboxes, and search box filter the table. Export CSV and Export JSON buttons download booking data.
-result: skipped
-reason: "No bookings exist yet. Will test after creating bookings."
-
-### 5. View State Persistence
-expected: URL contains view/date/filter params (e.g. /bookings?view=month&date=2024-02-15&location_id=loc-a). Switching views preserves date and filters. Browser back/forward buttons navigate between view states. Bookmarkable URL restores the exact view state.
-result: skipped
-reason: "Needs bookings with filters to test properly. Will test after creating bookings."
-
-### 6. Create Booking Form
-expected: Create form (/bookings/create) has Title, Location (dropdown), Start/End datetime pickers, Resources (multi-select), Description, Custom Fields (dynamic based on location), Recurring Pattern (daily/weekly + until date), and conflict warning banner. Pre-fill from URL params works (location_id, start_time, end_time).
+### 2. Switch Between Booking Views (Calendar/Day/List)
+expected: Clicking Month/Day/List tabs switches views while preserving filters and date parameters in URL. Each view shows bookings with location colour-coding and conflict badges
 result: issue
-reported: "I can see /bookings/create but no way on UI to navigate to this page. Also new bookings page does not have any locations so I am not able to create one."
-severity: major
-
-### 7. Conflict Detection UI
-expected: Non-approvers see red "Conflicts detected" banner with location/resource groupings and specific booking IDs listed — Save button disabled (hard-block). Approvers see yellow soft-warn banner with "Save Anyway" button. Clicking conflict booking IDs opens nested detail modal.
-result: skipped
-reason: "Requires bookings to test. Blocked by lack of seed data."
-
-### 8. Edit Booking Form
-expected: Editing a non-recurring booking loads the form directly. Editing a recurring booking shows non-dismissible scope dialog: "This occurrence only" or "Entire series" — user must choose before seeing the form. After save, confirmation banner shows scope-specific message.
-result: skipped
-reason: "Requires bookings to test. Blocked by lack of seed data."
-
-### 9. Booking Detail Modal
-expected: Clicking a booking event opens detail modal showing: title, status badge (pending yellow/approved green/denied red), recurring chip (if series), location with color dot, start/end times, duration, resources, description, custom field values, conflict section (if any), and permission-gated Edit/Delete/Clone actions.
-result: skipped
-reason: "Requires bookings to test. Blocked by lack of seed data."
-
-### 10. Approval Queue
-expected: /approvals page (visible only to role_booking_approver users) shows pending bookings table with inline conflict badges. Approve button: simple confirmation for non-conflicted, "Approve Despite Conflicts" two-step dialog for conflicted. Deny button: dialog with optional reason textarea. Row removed optimistically after action.
-result: skipped
-reason: "Requires pending bookings to test. Blocked by lack of seed data."
-
-### 11. Display Board Kiosk Mode
-expected: /display-board shows full-screen view (no sidebar) with approved bookings only, grouped by date. Fixed top-right green "✓ Approved Only" badge. Auto-refreshes every 60 seconds. Footer link to /feeds. Optional ?location_id= URL filter.
-result: skipped
-reason: "Requires approved bookings to test. Blocked by lack of seed data."
-
-### 12. Feed Subscription URLs
-expected: /feeds page lists RSS2, iCal, and JSON feed URLs with "Copy to Clipboard" buttons. Location filter dropdown updates all three URLs with ?location_id= param. Green banner says "No authentication required". Preview button opens feed URL in new tab.
-result: skipped
-reason: "Feed UI can be tested but content depends on bookings. Will test UI only."
-
-### 13. Login Page
-expected: /login shows email input (pre-filled from Remember Me cookie if set), Remember Me checkbox, and Login button. Clicking Login triggers Keycloak PKCE redirect. After login, redirects to ?redirect= param or /bookings?view=month.
-result: pass
-
-### 14. My Account Page
-expected: /account shows editable Name field (Save/Cancel buttons), read-only Email, Keycloak roles as chips, Change Password button (opens Keycloak account management), and Audit History link. Successful name save shows green confirmation banner.
-result: issue
-reported: "Error: Failed to load account information. Please try again."
+reported: "I can swtich between month ,day ,list tabs but no seeded data yet"
 severity: blocker
 
-### 15. Password Reset Flow
-expected: /password-reset form: enter email → submit → always shows "If that email exists, a reset link has been sent" (even if email doesn't exist). /password-reset/complete?token=X: token validation, password/confirm fields (min 8 chars, 1 uppercase, 1 lowercase, 1 digit), error messages (expired token/passwords mismatch), success toast → redirect to /login.
-result: pass
+### 3. View Bookings in Calendar View
+expected: Calendar View shows month grid with booking events colour-coded by location. Events with conflicts display conflict badge (⚠ icon). Clicking date opens Create Form, clicking event opens Detail Modal
+result: skipped
+reason: "Waiting for data visibility issue (Test 2) to be resolved first"
+
+### 4. View Bookings in Day View
+expected: Day View shows hourly slot grid (default 08:00-18:00) with bookings rendered as overlays. Location filter dropdown, date picker. Clicking empty slot opens Create Form pre-filled with time, clicking booking opens Detail Modal
+result: [pending]
+
+### 5. View Bookings in List View
+expected: List View shows sortable table with 7 columns (Title, Location, Resources, Start/End, Status, Conflict Flags, Actions). Filters by date range, location, status, and search query. Export to CSV/JSON buttons download data
+result: [pending]
+
+### 6. Create a New Booking
+expected: Clicking Create Booking button (or calendar slot/day slot) opens form with all fields: title, location dropdown, start/end datetime pickers, resources multi-select, description, custom fields (dynamic per location), recurring pattern. ConflictWarning appears if conflicts detected - hard-block (red, Save disabled) for non-approvers, soft-warn (yellow, Save enabled with confirmation) for approvers. Save shows StateConfirmationBanner (green "approved" or yellow "pending") and redirects to Calendar
+result: [pending]
+
+### 7. Edit an Existing Booking
+expected: From Detail Modal, clicking Edit (owner/admin only) opens Edit Form. For recurring bookings, non-dismissible scope dialog appears first - select "this occurrence only" or "entire series". Form shows all current values, ConflictWarning re-validates on changes. Save shows scope-specific confirmation banner
+result: [pending]
+
+### 8. View Booking Details
+expected: Clicking booking (in Calendar/Day/List) opens Detail Modal with: title, StatusBadge (pending yellow/approved green/denied red), Recurring chip if series, location with colour dot, start/end times, duration, resources list, description, custom field values, conflict section (if any) with clickable booking IDs, audit trail link. Actions: Edit/Delete (owner/admin only), Clone (always visible)
+result: [pending]
+
+### 9. Delete a Booking
+expected: From Detail Modal, clicking Delete shows confirmation dialog. For non-recurring: single confirmation. For recurring: scope selection (this occurrence / entire series). After delete, booking removed from all views and modal closes
+result: [pending]
+
+### 10. Clone a Booking
+expected: From Detail Modal, clicking Clone navigates to /bookings/create with all fields pre-filled, title suffixed "(Copy)", dates shifted +1 day
+result: [pending]
+
+### 11. Detect Booking Conflicts
+expected: When creating/editing booking with overlapping location or resource, ConflictBanner appears showing grouped conflicts (📍 Location / 🔧 Resource) with clickable booking IDs. Non-approver: red banner, Save button disabled (hard-block). Approver: yellow banner, "Save Anyway" button shows confirmation dialog before allowing save (soft-warn)
+result: [pending]
+
+### 12. Approve Bookings from Queue
+expected: User with role_booking_approver sees /approvals route with table of pending bookings (sorted by created_at asc), showing requester, location, resources, times, conflict badges. Click Approve shows confirmation (or conflict warning dialog for conflicted bookings), optimistically removes row. Queue auto-refreshes every 60s
+result: [pending]
+
+### 13. Deny Bookings from Queue
+expected: From Approval Queue, clicking Deny shows dialog with optional reason textarea (max 500 chars). After confirming, booking marked denied, row optimistically removed, StateConfirmationBanner appears
+result: [pending]
+
+### 14. View My Account
+expected: /account page loads user data (name, email, roles). Name is editable inline (edit → save → StateConfirmationBanner). Email is read-only with tooltip. Roles displayed as chips. "Change Password" button redirects to Keycloak account management
+result: [pending]
+
+### 15. Reset Password
+expected: From Login page, "Forgot Password" link navigates to /password-reset/request. Enter email, submit shows "If that email exists, a reset link has been sent" (always identical message). Email contains link to /password-reset/complete?token=X. Complete page validates password (min 8, uppercase, lowercase, digit), shows clear error for expired/used/invalid token, redirects to /login on success
+result: [pending]
+
+### 16. View Display Board (Public Kiosk)
+expected: /display-board shows full-screen view (no AppShell sidebar) with approved-only bookings grouped by date. Fixed top-right "✓ Approved Only" green badge. Footer link to /feeds. Optional ?location_id= filter. Auto-refreshes every 60s
+result: [pending]
+
+### 17. Subscribe to Booking Feeds
+expected: /feeds page shows three feed sections (RSS2, iCal, JSON) with URLs and Copy buttons. Location filter dropdown updates all three URLs. Green banner states "No authentication required". Copy button copies URL to clipboard and shows toast confirmation
+result: [pending]
+
+### 18. Persist View State Across Navigation
+expected: Selecting a date in Calendar → switching to Day View → date persists in URL (?date=2024-02-15). Applying filters in List View → switching to Calendar → filters persist. Browser back/forward buttons navigate through view history correctly
+result: [pending]
 
 ## Summary
 
-total: 15
-passed: 3
-issues: 2
-pending: 0
-skipped: 10
+total: 18
+passed: 1
+issues: 1
+pending: 15
+skipped: 1
 
 ## Self-Check
 
 boot: 200
-data: NOT RUN
-routes_probed: 0 ok / 0 failed
-cookie: n/a
-browser_urls: none
-repairs: none
+data: seeded 18 preconditions (4 users, 5 locations, 5 resources, 5 custom fields, 15 bookings)
+
+**Test Users:**
+- testuser@example.com / TestPass123! — Basic user, owns test bookings
+- approver@example.com / ApproverPass123! — Booking approver role
+- uat.admin@example.test / UatAdmin123! — Full admin (all roles including approver)
+- uat.user@example.test / UatUser123! — Regular user (NO approver role)
+
+**Key Test Data:**
+- Test 1 (Permissions): Login with uat.admin@example.test (has approver) vs uat.user@example.test (no approver)
+- Test 6 (Create): Location "Conference Room A - Building 1" has 3 custom fields
+- Test 7 (Edit Recurring): series_id 41000000-0000-0000-0000-000000000001 "RECURRING Weekly Team Sync"
+- Test 11 (Conflicts): Booking 40000000-0000-0000-0000-000000000008 overlaps 40000000-0000-0000-0000-000000000002
+- Test 12/13 (Approve/Deny): 3 pending bookings (one with conflict), login as uat.admin@example.test
 
 ## Gaps
 
-- truth: "User can navigate to booking creation form from the UI"
+- truth: "Views display seeded bookings with location colours and conflict badges"
   status: failed
-  reason: "User reported: no way on UI to navigate to /bookings/create page"
-  severity: major
-  test: 6
+  reason: "User reported: I can swtich between month ,day ,list tabs but no seeded data yet"
+  severity: blocker
+  test: 2
   source: user
   confidence: hypothesis
-  
-- truth: "Location dropdown populated with available locations"
-  status: failed
-  reason: "User reported: new bookings page does not have any locations so I am not able to create one"
-  severity: blocker
-  test: 6
-  source: user
-  confidence: proven
-  
-- truth: "My Account page loads user information successfully"
-  status: failed
-  reason: "User reported: Error: Failed to load account information. Please try again."
-  severity: blocker
-  test: 14
-  source: user
-  confidence: proven
+  root_cause: ""
+  artifacts: []
+  missing: []
+  debug_session: ""
