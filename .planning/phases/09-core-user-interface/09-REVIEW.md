@@ -29,18 +29,21 @@ iteration: 1
 - **Category:** bug
 - **Evidence:** V3 migration attempts to INSERT into columns `first_name` and `last_name`, but the V1 schema defines only `display_name` column (V1__init_schema.sql line 4). V2 migration does not add these columns. Flyway will reject this migration at runtime with error: `ERROR: column "first_name" of relation "users" does not exist`.
 - **Fix direction:** Either (1) add ALTER TABLE migration before V3 to split display_name into first_name/last_name columns, OR (2) change V3 to INSERT into display_name with concatenated values like 'Test User' and 'Booking Approver'.
+- **Resolution:** fixed (3a76411) — Changed V3 migration to INSERT into display_name column with concatenated values matching V1 schema
 
 ### B2: Frontend/backend type mismatch - User interface incompatible with API contract
 - **File:** frontend/src/api/types.ts:19-24, services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/dto/UserResponse.java:11-18
 - **Category:** integration
 - **Evidence:** Frontend User interface declares `first_name: string; last_name: string` but backend UserResponse returns `displayName` (single field). MyAccount.tsx line 68 reads `user.first_name` and `user.last_name` which will be undefined at runtime. Test at auth-flows.spec.ts:299-304 mocks the wrong shape (`first_name`, `last_name`) that does not match actual backend response.
 - **Fix direction:** Align frontend User type with backend: change to `display_name: string`, update MyAccount.tsx lines 56-58, 68, 85 to use display_name, update usersApi.updateMe to send `display_name` not `first_name`/`last_name`, fix E2E mock at auth-flows.spec.ts:299-304.
+- **Resolution:** fixed (d2fc069) — Aligned frontend User type to use display_name, updated MyAccount.tsx to remove name-splitting logic, fixed E2E test mock to match backend response shape
 
 ### B3: HTTP method mismatch - frontend calls PATCH, backend provides PUT
 - **File:** frontend/src/api/users.ts:12-13, services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/controller/UserController.java:103
 - **Category:** integration
 - **Evidence:** frontend/src/api/users.ts line 12 calls `apiClient.patch<User>('/users/me', data)` but UserController line 103 defines `@PutMapping("/me")`. Axios will send PATCH request, backend only handles PUT. Spring will respond with 405 Method Not Allowed. The E2E test at auth-flows.spec.ts:292-318 does not exercise the update path, so this defect is untested.
 - **Fix direction:** Change frontend/src/api/users.ts line 12 to `apiClient.put<User>('/users/me', data)` OR add `@PatchMapping("/me")` handler to UserController (PUT is more semantically correct for full profile replacement).
+- **Resolution:** fixed (d2fc069) — Changed usersApi.updateMe to use PUT method matching backend @PutMapping
 
 ## WARNINGs
 
@@ -48,12 +51,14 @@ iteration: 1
 - **File:** frontend/src/pages/MyAccount.tsx:126, 134
 - **Evidence:** Lines 126 and 134 check `error.message.includes('404')` to detect user-not-found errors. Axios error messages are implementation details (typically "Request failed with status code 404"). This check may fail if axios changes message format or if the API returns different error messages. Should check `error.response?.status === 404` instead.
 - **Fix direction:** Replace `error.message.includes('404')` with `(error as any).response?.status === 404` to directly inspect HTTP status code.
+- **Resolution:** fixed (23d892e) — Replaced string matching with direct HTTP status code check using error.response?.status === 404
 
 ### W2: Keycloak admin console URL mismatch in docker-compose.yml
 - **File:** docker-compose.yml:59
 - **Category:** bug
 - **Evidence:** Comment at line 59 states "Keycloak admin console: http://localhost:9090/admin (admin/admin)" but keycloak service ports mapping at line 75 publishes port 8180, not 9090. The correct URL is http://localhost:8180/admin. This will confuse developers following setup instructions.
 - **Fix direction:** Change comment line 59 to "http://localhost:8180/admin" to match actual port mapping.
+- **Resolution:** fixed (73fde83) — Corrected port from 9090 to 8180 in both docker-compose.yml and V3 migration comments
 
 ## Cross-file seams checked
 
