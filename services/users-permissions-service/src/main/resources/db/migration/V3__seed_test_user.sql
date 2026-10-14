@@ -2,7 +2,7 @@
 -- 
 -- This user's UUID MUST match the 'sub' claim in Keycloak test user's JWT token.
 -- To find the correct UUID:
--- 1. Log in to Keycloak admin console (http://localhost:9090)
+-- 1. Log in to Keycloak admin console (http://localhost:8180)
 -- 2. Navigate to Users -> View all users
 -- 3. Click on your test user (e.g., testuser@example.com)
 -- 4. Copy the user ID (UUID) from the URL or Details tab
