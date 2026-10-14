@@ -288,6 +288,34 @@ test.describe('My Account page (UI-AUTH-02)', () => {
       /\/admin\/audit\?actor=user-123/
     );
   });
+
+  test('loads successfully when user record exists', async ({ page }) => {
+    // Mock GET /users/me to return test user (matching V3 seed data)
+    await page.route('**/users/me', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: '00000000-0000-0000-0000-000000000001',
+          email: 'testuser@example.com',
+          first_name: 'Test',
+          last_name: 'User',
+          deleted_at: null,
+        }),
+      });
+    });
+
+    await gotoWithRoles(page, '/account');
+    await page.waitForSelector('[data-testid="name-display"]', { timeout: 10_000 });
+
+    // Should show user info, not error
+    await expect(page.locator('h1')).toContainText('My Account');
+    await expect(page.getByText('Test User')).toBeVisible();
+    await expect(page.getByText('testuser@example.com')).toBeVisible();
+    
+    // Should NOT show error message
+    await expect(page.getByText('Failed to load account information')).not.toBeVisible();
+  });
 });
 
 // ── Test Suite 3: Password Reset Request ─────────────────────────────────────
