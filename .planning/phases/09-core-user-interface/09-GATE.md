@@ -101,3 +101,11 @@ dist/assets/index-CedEcaN3.js   723.92 kB │ gzip: 213.17 kB
 ```
 __GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=cf33dcfd594ae44ac58991d21d7e18ee02236e6c test_files=99 skip_marks=2 shadow_files=0
 ```
+
+## Backend pre-push gate
+
+- Status: skipped
+- Result marker + failing output tail:
+```
+__GATE__ build_exit=-1 test_exit=-1 build_cmd=[none] test_cmd=[none] head=cd5e4442e54b5c1c35e04ca7b13f90b5c1207d22 test_files=100 skip_marks=2 shadow_files=0
+```
