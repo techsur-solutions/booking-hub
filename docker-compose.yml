@@ -45,6 +45,19 @@ services:
       timeout: 10s
       retries: 10
 
+  # IMPORTANT: Test user setup for development
+  # 
+  # The users-permissions-service seed data (V3 migration) creates test users with these UUIDs:
+  # - testuser@example.com: 00000000-0000-0000-0000-000000000001
+  # - approver@example.com: 00000000-0000-0000-0000-000000000002
+  #
+  # To ensure My Account page works in local dev:
+  # 1. Create these users in Keycloak with EXACT UUIDs above (via Keycloak admin console import)
+  # 2. OR update V3 migration with actual Keycloak user UUIDs after first login
+  # 3. OR wait for Phase 10 JIT user provisioning feature
+  #
+  # Keycloak admin console: http://localhost:9090/admin (admin/admin)
+
   keycloak:
     image: quay.io/keycloak/keycloak:25.0
     command: start-dev --import-realm
