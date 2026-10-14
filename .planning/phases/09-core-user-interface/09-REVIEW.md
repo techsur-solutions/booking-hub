@@ -1,175 +1,84 @@
 ---
 phase: 9
-status: clean
-blockers: 0
-warnings: 0
-files_reviewed: 100
+status: issues_found
+blockers: 3
+warnings: 2
+files_reviewed: 11
 files_reviewed_list:
-  - frontend/src/api/bookings.ts
+  - frontend/src/pages/BookingsView.tsx
   - frontend/src/api/client.ts
-  - frontend/src/api/customFields.ts
-  - frontend/src/api/feeds.ts
-  - frontend/src/api/locations.ts
-  - frontend/src/api/resources.ts
-  - frontend/src/api/settings.ts
+  - frontend/src/hooks/useLocations.ts
+  - frontend/src/components/booking/BookingForm.tsx
+  - frontend/src/pages/MyAccount.tsx
   - frontend/src/api/types.ts
   - frontend/src/api/users.ts
-  - frontend/src/auth/AuthProvider.tsx
-  - frontend/src/auth/keycloak.ts (unmodified but read for context)
-  - frontend/src/auth/ProtectedRoute.tsx (unmodified but read for context)
-  - frontend/src/App.tsx
-  - frontend/src/main.tsx
-  - frontend/src/routes/index.tsx
-  - frontend/src/components/AppShell.tsx
-  - frontend/src/components/Badge.tsx
-  - frontend/src/components/Button.tsx
-  - frontend/src/components/Card.tsx
-  - frontend/src/components/ConflictBadge.tsx
-  - frontend/src/components/ErrorBoundary.tsx
-  - frontend/src/components/Form.tsx
-  - frontend/src/components/Header.tsx
-  - frontend/src/components/Input.tsx
-  - frontend/src/components/LoadingSpinner.tsx
-  - frontend/src/components/Modal.tsx
-  - frontend/src/components/PermissionGate.tsx
-  - frontend/src/components/Select.tsx
-  - frontend/src/components/Sidebar.tsx
-  - frontend/src/components/StateConfirmationBanner.tsx
-  - frontend/src/components/Textarea.tsx
-  - frontend/src/components/Toast.tsx
-  - frontend/src/components/UserMenu.tsx
-  - frontend/src/components/approval/ApprovalTable.tsx
-  - frontend/src/components/approval/ApproveButton.tsx
-  - frontend/src/components/approval/DenyButton.tsx
-  - frontend/src/components/booking/BookingDetailModal.tsx
-  - frontend/src/components/booking/BookingForm.tsx
-  - frontend/src/components/booking/ConflictBanner.tsx
-  - frontend/src/components/booking/ConflictWarning.tsx
-  - frontend/src/components/booking/CustomFieldRenderer.tsx
-  - frontend/src/components/booking/RecurringPattern.tsx
-  - frontend/src/components/booking/RecurringScopeDialog.tsx
-  - frontend/src/components/booking/StatusBadge.tsx
-  - frontend/src/components/calendar/BookingEvent.tsx
-  - frontend/src/components/calendar/DayViewEvent.tsx
-  - frontend/src/components/calendar/FullCalendarWrapper.tsx
-  - frontend/src/components/calendar/HourlySlotGrid.tsx
-  - frontend/src/components/display/ApprovedOnlyBadge.tsx
-  - frontend/src/components/list/BookingTable.tsx
-  - frontend/src/components/list/TableFilters.tsx
-  - frontend/src/hooks/useBookings.ts
-  - frontend/src/hooks/useCustomFields.ts
-  - frontend/src/hooks/useLocations.ts
-  - frontend/src/hooks/useResources.ts
-  - frontend/src/hooks/useSettings.ts
-  - frontend/src/hooks/useViewState.ts
-  - frontend/src/pages/ApprovalQueue.tsx
-  - frontend/src/pages/BookingCreate.tsx
-  - frontend/src/pages/BookingEdit.tsx
-  - frontend/src/pages/BookingsView.tsx
-  - frontend/src/pages/CalendarView.tsx
-  - frontend/src/pages/DayView.tsx
-  - frontend/src/pages/DisplayBoard.tsx
-  - frontend/src/pages/FeedSubscription.tsx
-  - frontend/src/pages/ListView.tsx
-  - frontend/src/pages/Login.tsx
-  - frontend/src/pages/MyAccount.tsx
-  - frontend/src/pages/PasswordReset.tsx
-  - frontend/src/pages/PasswordResetComplete.tsx
-  - frontend/src/routes/index.tsx
-  - frontend/src/utils/exportBookings.ts
-  - frontend/src/utils/permissions.ts
-  - frontend/src/utils/rememberMe.ts
-  - frontend/src/index.css
-  - frontend/src/styles/components.css
-  - frontend/src/styles/layout.css
-  - frontend/src/styles/tokens.css
-  - frontend/src/test-setup.ts
-  - frontend/tsconfig.app.json
-  - frontend/vite.config.ts
-  - frontend/package.json
-  - frontend/e2e/approval-queue.spec.ts
-  - frontend/e2e/auth-flows.spec.ts
-  - frontend/e2e/auth-redirect.spec.ts
+  - services/users-permissions-service/src/main/resources/db/migration/V3__seed_test_user.sql
+  - docker-compose.yml
   - frontend/e2e/booking-create.spec.ts
-  - frontend/e2e/booking-detail.spec.ts
-  - frontend/e2e/booking-edit.spec.ts
-  - frontend/e2e/calendar-view.spec.ts
-  - frontend/e2e/conflict-detection-ui.spec.ts
-  - frontend/e2e/day-view.spec.ts
-  - frontend/e2e/display-board.spec.ts
-  - frontend/e2e/feed-subscription.spec.ts
-  - frontend/e2e/list-view.spec.ts
-  - frontend/e2e/navigation.spec.ts
-  - frontend/e2e/view-state-persistence.spec.ts
-  - frontend/src/api/client.test.ts
-  - frontend/src/components/ConflictBadge.test.tsx
-  - frontend/src/components/PermissionGate.test.tsx
-  - frontend/src/components/StateConfirmationBanner.test.tsx
-  - frontend/src/utils/exportBookings.test.ts
-  - frontend/src/pages/ListView.test.tsx
-reviewed_at: 2026-10-13T09:00:00Z
-iteration: 2
+  - frontend/e2e/auth-flows.spec.ts
+reviewed_at: 2026-10-14T18:30:00Z
+iteration: 1
 ---
 
-# Phase 9 Code Review — Iteration 2
-
-## Re-review: Verification of Iteration 1 Fixes
-
-All 3 BLOCKERs and all 5 WARNINGs from iteration 1 have been fixed and verified. No regressions introduced by the fixes.
-
-### B1 — Open redirect via unvalidated `?redirect=` (FIXED ✓)
-- `Login.tsx:20-27`: `rawRedirect` is now validated by `/^\/[^/]/` regex (blocks `//`, `https://`, etc.) plus a `!raw.includes(':')` guard (blocks scheme separators).
-- Confirmed via `URLSearchParams` decoding test: `%2F%2Fevil.com` decodes to `//evil.com` which correctly fails the regex. No bypass path found.
-
-### B2 — `rememberMe_pending` set but never consumed (FIXED ✓)
-- `AuthProvider.tsx:107-112`: After successful Keycloak init, `sessionStorage.getItem('rememberMe_pending') === 'true'` is checked; if set, the flag is removed and `saveRememberMe(keycloak.tokenParsed?.email)` is called. The `if (email)` guard prevents writing an undefined email to the cookie.
-
-### B3 — `/approvals` route has no route-level permission enforcement (FIXED ✓)
-- `routes/index.tsx:98-111`: The `/approvals` route now wraps `<AppShell><ApprovalQueue /></AppShell>` in `<PermissionGate requireRole="role_booking_approver" fallback={<Navigate to="/bookings?view=month" replace />}>`, which sits inside `<ProtectedRoute>`. `ProtectedRoute` returns `null` until `authenticated=true` (i.e., after Keycloak's `loading=false`), so `PermissionGate` only evaluates after `keycloak.realmAccess` is populated — no loading-state race.
-- The redundant `useEffect` redirect inside `ApprovalQueue` remains but is now harmless (the component will never mount for non-approvers).
-
-### W1 — Inline `BookingDetailModal` in DayView/ListView (FIXED ✓)
-- `DayView.tsx`: Local inline `BookingDetailModal` removed; now imports and uses `BookingDetailModal` from `../../components/booking/BookingDetailModal`. State changed from `Booking | null` to `string | null` (bookingId); `handleEventClick(bookingId: string)` correctly feeds the canonical component.
-- `ListView.tsx`: Same fix applied — uses imported `BookingDetailModal` with `bookingId={detailBookingId}`.
-
-### W2 — Orphaned stub `ApprovalsQueue.tsx` (FIXED ✓)
-- `frontend/src/pages/ApprovalsQueue.tsx` deleted (confirmed: `ls` returns "No such file or directory").
-
-### W3 — Phantom `role_booking_manager` in `BookingTable` (FIXED ✓)
-- `BookingTable.tsx:269`: `requireAnyRole` now contains only `['role_booking_approver']`.
-
-### W4 — Missing `confirmation-banner--warning` CSS class (FIXED ✓)
-- `styles/components.css:826-896`: Complete `.confirmation-banner` ruleset added, including `.confirmation-banner--success`, `.confirmation-banner--warning`, `.confirmation-banner--error`, and all element sub-classes (`__icon`, `__content`, `__timestamp`, `__dismiss`).
-
-### W5 — Duplicate `id="modal-title"` with concurrent modals (FIXED ✓)
-- `Modal.tsx:56`: `useId()` (React 18) is now called unconditionally at the top of the component (before the `if (!isOpen) return null` guard) and produces `titleId = \`modal-title-${instanceId}\`` — unique per Modal instance.
-
----
+# Phase 9 Code Review
 
 ## BLOCKERs
 
-_None._
+### B1: Schema mismatch - V3 migration inserts non-existent columns
+- **File:** services/users-permissions-service/src/main/resources/db/migration/V3__seed_test_user.sql:13-22, 25-34
+- **Category:** bug
+- **Evidence:** V3 migration attempts to INSERT into columns `first_name` and `last_name`, but the V1 schema defines only `display_name` column (V1__init_schema.sql line 4). V2 migration does not add these columns. Flyway will reject this migration at runtime with error: `ERROR: column "first_name" of relation "users" does not exist`.
+- **Fix direction:** Either (1) add ALTER TABLE migration before V3 to split display_name into first_name/last_name columns, OR (2) change V3 to INSERT into display_name with concatenated values like 'Test User' and 'Booking Approver'.
+
+### B2: Frontend/backend type mismatch - User interface incompatible with API contract
+- **File:** frontend/src/api/types.ts:19-24, services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/dto/UserResponse.java:11-18
+- **Category:** integration
+- **Evidence:** Frontend User interface declares `first_name: string; last_name: string` but backend UserResponse returns `displayName` (single field). MyAccount.tsx line 68 reads `user.first_name` and `user.last_name` which will be undefined at runtime. Test at auth-flows.spec.ts:299-304 mocks the wrong shape (`first_name`, `last_name`) that does not match actual backend response.
+- **Fix direction:** Align frontend User type with backend: change to `display_name: string`, update MyAccount.tsx lines 56-58, 68, 85 to use display_name, update usersApi.updateMe to send `display_name` not `first_name`/`last_name`, fix E2E mock at auth-flows.spec.ts:299-304.
+
+### B3: HTTP method mismatch - frontend calls PATCH, backend provides PUT
+- **File:** frontend/src/api/users.ts:12-13, services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/controller/UserController.java:103
+- **Category:** integration
+- **Evidence:** frontend/src/api/users.ts line 12 calls `apiClient.patch<User>('/users/me', data)` but UserController line 103 defines `@PutMapping("/me")`. Axios will send PATCH request, backend only handles PUT. Spring will respond with 405 Method Not Allowed. The E2E test at auth-flows.spec.ts:292-318 does not exercise the update path, so this defect is untested.
+- **Fix direction:** Change frontend/src/api/users.ts line 12 to `apiClient.put<User>('/users/me', data)` OR add `@PatchMapping("/me")` handler to UserController (PUT is more semantically correct for full profile replacement).
 
 ## WARNINGs
 
-_None._
+### W1: Fragile 404 error detection relies on string matching
+- **File:** frontend/src/pages/MyAccount.tsx:126, 134
+- **Evidence:** Lines 126 and 134 check `error.message.includes('404')` to detect user-not-found errors. Axios error messages are implementation details (typically "Request failed with status code 404"). This check may fail if axios changes message format or if the API returns different error messages. Should check `error.response?.status === 404` instead.
+- **Fix direction:** Replace `error.message.includes('404')` with `(error as any).response?.status === 404` to directly inspect HTTP status code.
 
----
+### W2: Keycloak admin console URL mismatch in docker-compose.yml
+- **File:** docker-compose.yml:59
+- **Category:** bug
+- **Evidence:** Comment at line 59 states "Keycloak admin console: http://localhost:9090/admin (admin/admin)" but keycloak service ports mapping at line 75 publishes port 8180, not 9090. The correct URL is http://localhost:8180/admin. This will confuse developers following setup instructions.
+- **Fix direction:** Change comment line 59 to "http://localhost:8180/admin" to match actual port mapping.
 
-## Cross-file seams checked (iteration 2)
+## Cross-file seams checked
 
-| Seam | Result |
-|------|--------|
-| `routes/index.tsx` `/approvals` → `ProtectedRoute` → `PermissionGate(role_booking_approver)` → `AppShell` → `ApprovalQueue` | OK — B3 fix applied correctly; no loading race |
-| `DayView` now uses canonical `BookingDetailModal` from `components/booking/` with `bookingId: string \| null` | OK — W1 fixed |
-| `ListView` now uses canonical `BookingDetailModal` from `components/booking/` with `bookingId: string \| null` | OK — W1 fixed |
-| `frontend/src/pages/ApprovalsQueue.tsx` (stub) | OK — deleted (W2 fixed) |
-| `BookingTable.tsx:269` `requireAnyRole` | OK — only `['role_booking_approver']` remains (W3 fixed) |
-| `styles/components.css` `.confirmation-banner--warning` | OK — class present at line 844 (W4 fixed) |
-| `Modal.tsx` `useId()` called before `if (!isOpen) return null` | OK — unique IDs per instance (W5 fixed) |
-| `AuthProvider.tsx` consumes `rememberMe_pending` after Keycloak init | OK — reads, removes, saves email via `saveRememberMe` (B2 fixed) |
-| `Login.tsx` redirect validation | OK — regex + colon guard, percent-encoding bypass confirmed blocked (B1 fixed) |
-| `UserMenu` → `useAuth()` called from `/feeds` route (public, no `ProtectedRoute`) | OK — `AuthProvider` is always an ancestor in `App.tsx`; `keycloak.tokenParsed` optional-chained gracefully shows "User" for unauthenticated state |
-| `PermissionGate` `requireRole` vs `requireAnyRole` semantics in fix for B3 | OK — `requireRole` single string dispatches to `hasRole()`, `requireAnyRole` array dispatches to `hasAnyRole()`; correct variant used |
-| `BookingDetailModal` state-resets on re-open (conflict/delete/scope states) | OK — all state is per-mount; `bookingId` prop change triggers re-render, stale state from prior open is isolated |
-| `ConflictWarning` "Save Anyway" unblock flow | OK — `onBlockChange(false)` correctly unblocks parent form; subsequent field changes re-run the debounced check effect and can re-block if conflicts persist |
+- **Plan 09-16 - BookingsView → BookingCreate navigation:**
+  - BookingsView.tsx:47 builds URL `/bookings/create?start_time=${currentDate}T09:00` → OK, routes/index.tsx:71 defines route
+  - BookingCreate.tsx:27 reads `start_time` param → OK, matches query param name
+  - E2E test booking-create.spec.ts:645-649 verifies param preservation → OK
+
+- **Plan 09-17 - JWT token refresh interceptor:**
+  - client.ts:16 calls `keycloak.updateToken(30)` → OK, Keycloak JS API documented method
+  - MyAccount.tsx:29 comment confirms centralized pattern → OK, no duplicate updateToken calls found
+  - useLocations.ts, useResources.ts, useCustomFields.ts all use apiClient → OK, inherit token refresh
+  - E2E tests mock keycloak.updateToken → OK, client.test.ts:10 verifies behavior
+
+- **Plan 09-17 - BookingForm location dropdown:**
+  - BookingForm.tsx:91 calls `useLocations()` → OK, hook returns { data, isLoading, isError }
+  - Lines 174-201 conditionally render loading/error/empty/populated states → OK
+  - E2E test booking-create.spec.ts:662-699 verifies dropdown population → OK
+
+- **Plan 09-18 - My Account user record seed:**
+  - **BLOCKED by B1, B2, B3** - integration broken at multiple layers
+  - docker-compose.yml:48-59 documents test user UUIDs → matches V3 migration UUIDs (OK on documentation side)
+  - E2E test auth-flows.spec.ts:292-318 mocks V3 seed data shape → **WRONG shape** (first_name/last_name not display_name)
+
+- **Type safety:**
+  - frontend User type vs backend UserResponse → **BLOCKER B2**
+  - V3 seed columns vs V1 schema → **BLOCKER B1**
+  - PATCH vs PUT → **BLOCKER B3**
