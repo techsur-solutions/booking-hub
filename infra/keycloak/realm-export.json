@@ -346,6 +346,110 @@
       ],
       "clientRoles": {},
       "groups": []
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "username": "testuser@example.com",
+      "email": "testuser@example.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TestPass123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "role_calendar_viewer",
+        "role_booking_creator",
+        "role_booking_viewer",
+        "role_feed_api"
+      ],
+      "clientRoles": {},
+      "groups": []
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000002",
+      "username": "approver@example.com",
+      "email": "approver@example.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Booking",
+      "lastName": "Approver",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ApproverPass123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "role_calendar_viewer",
+        "role_booking_creator",
+        "role_booking_viewer",
+        "role_booking_approver",
+        "role_feed_api"
+      ],
+      "clientRoles": {},
+      "groups": []
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000003",
+      "username": "uat.admin@example.test",
+      "email": "uat.admin@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "UAT Admin",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "UatAdmin123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "role_calendar_viewer",
+        "role_booking_creator",
+        "role_booking_viewer",
+        "role_booking_approver",
+        "role_permissions_admin",
+        "role_feed_api",
+        "role_location_admin",
+        "role_customfield_admin",
+        "role_user_admin",
+        "role_settings_admin",
+        "role_audit_viewer"
+      ],
+      "clientRoles": {},
+      "groups": []
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000004",
+      "username": "uat.user@example.test",
+      "email": "uat.user@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "UAT Regular",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "UatUser123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "role_calendar_viewer",
+        "role_booking_creator",
+        "role_booking_viewer",
+        "role_feed_api"
+      ],
+      "clientRoles": {},
+      "groups": []
     }
   ],
   "groups": [],
