@@ -10,24 +10,22 @@
 -- For now, using a placeholder UUID that should be replaced with actual Keycloak user ID.
 -- If Keycloak test user doesn't exist yet, create one with this exact UUID.
 
-INSERT INTO users (id, email, first_name, last_name, deleted_at, created_at, updated_at)
+INSERT INTO users (id, email, display_name, deleted_at, created_at, updated_at)
 VALUES 
     ('00000000-0000-0000-0000-000000000001'::uuid, 
      'testuser@example.com', 
-     'Test', 
-     'User', 
+     'Test User', 
      NULL, 
      NOW(), 
      NOW())
 ON CONFLICT (id) DO NOTHING;
 
 -- Add a second test user for approval workflow testing
-INSERT INTO users (id, email, first_name, last_name, deleted_at, created_at, updated_at)
+INSERT INTO users (id, email, display_name, deleted_at, created_at, updated_at)
 VALUES 
     ('00000000-0000-0000-0000-000000000002'::uuid,
      'approver@example.com',
-     'Booking',
-     'Approver',
+     'Booking Approver',
      NULL,
      NOW(),
      NOW())
