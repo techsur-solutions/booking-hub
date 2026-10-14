@@ -138,8 +138,7 @@ test.describe('My Account page (UI-AUTH-02)', () => {
         body: JSON.stringify({
           id: 'user-123',
           email: 'alice@example.com',
-          first_name: 'Alice',
-          last_name: 'Smith',
+          display_name: 'Alice Smith',
           deleted_at: null,
         }),
       });
@@ -175,12 +174,11 @@ test.describe('My Account page (UI-AUTH-02)', () => {
           body: JSON.stringify({
             id: 'user-123',
             email: 'alice@example.com',
-            first_name: 'Alice',
-            last_name: 'Smith',
+            display_name: 'Alice Smith',
             deleted_at: null,
           }),
         });
-      } else if (route.request().method() === 'PATCH') {
+      } else if (route.request().method() === 'PUT') {
         patchBody = JSON.parse(route.request().postData() ?? '{}') as Record<string, unknown>;
         route.fulfill({
           status: 200,
@@ -188,8 +186,7 @@ test.describe('My Account page (UI-AUTH-02)', () => {
           body: JSON.stringify({
             id: 'user-123',
             email: 'alice@example.com',
-            first_name: 'Alice',
-            last_name: 'Updated',
+            display_name: 'Alice Updated',
             deleted_at: null,
           }),
         });
@@ -217,9 +214,8 @@ test.describe('My Account page (UI-AUTH-02)', () => {
     });
     await expect(page.locator('[data-testid="state-confirmation-banner"]')).toContainText('Name updated');
 
-    // Verify PATCH was called with correct data
-    expect(patchBody.first_name).toBe('Alice');
-    expect(patchBody.last_name).toBe('Updated');
+    // Verify PUT was called with correct data
+    expect(patchBody.display_name).toBe('Alice Updated');
   });
 
   test('Cancel editing restores previous name without saving', async ({ page }) => {
@@ -230,8 +226,7 @@ test.describe('My Account page (UI-AUTH-02)', () => {
         body: JSON.stringify({
           id: 'user-123',
           email: 'alice@example.com',
-          first_name: 'Alice',
-          last_name: 'Smith',
+          display_name: 'Alice Smith',
           deleted_at: null,
         }),
       });
@@ -260,8 +255,7 @@ test.describe('My Account page (UI-AUTH-02)', () => {
         body: JSON.stringify({
           id: 'user-123',
           email: 'alice@example.com',
-          first_name: 'Alice',
-          last_name: 'Smith',
+          display_name: 'Alice Smith',
           deleted_at: null,
         }),
       });
