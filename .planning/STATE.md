@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 
 ## Current Position
 
-Phase: 9 (Core User Interface) — IN PROGRESS
-Plan: 16 of 18
-Status: Completed 09-16-PLAN.md
-Last activity: 2026-10-13 — Completed plan 09-16 (Create Booking button navigation, UAT gap #6 closure)
+Phase: 10 (Admin Interface Polish) — IN PROGRESS
+Plan: 1 of 7
+Status: Completed 10-01-PLAN.md
+Last activity: 2026-10-15 — Completed plan 10-01 (Locations Admin table, form, colour picker, soft-delete)
 
 ## Performance Metrics
 
