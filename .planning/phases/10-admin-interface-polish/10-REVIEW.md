@@ -1,294 +1,149 @@
 ---
 phase: 10
 status: issues_found
-blockers: 4
-warnings: 5
-files_reviewed: 67
+blockers: 1
+warnings: 0
+files_reviewed: 11
 files_reviewed_list:
-  - frontend/src/api/types.ts
-  - frontend/src/api/users.ts
-  - frontend/src/api/locationsApi.ts
-  - frontend/src/api/resourcesApi.ts
   - frontend/src/api/settingsApi.ts
-  - frontend/src/api/permissionsApi.ts
-  - frontend/src/api/customFieldsApi.ts
-  - frontend/src/api/auditLogApi.ts
-  - frontend/src/api/locations.ts
-  - frontend/src/api/settings.ts
-  - frontend/src/components/admin/UserEditForm.tsx
-  - frontend/src/components/admin/UserCreateForm.tsx
-  - frontend/src/components/admin/UserTable.tsx
-  - frontend/src/components/admin/LocationTable.tsx
-  - frontend/src/components/admin/ResourceTable.tsx
-  - frontend/src/components/admin/LocationForm.tsx
-  - frontend/src/components/admin/ResourceForm.tsx
-  - frontend/src/components/admin/PermissionGrid.tsx
-  - frontend/src/components/admin/SettingsForm.tsx
-  - frontend/src/components/admin/AuditLogFilters.tsx
-  - frontend/src/components/admin/AuditLogTable.tsx
+  - frontend/src/api/users.ts
   - frontend/src/components/admin/CustomFieldDefinitionsTab.tsx
   - frontend/src/components/admin/CustomFieldTemplatesTab.tsx
-  - frontend/src/components/admin/FieldPreview.tsx
+  - frontend/src/components/admin/LocationTable.tsx
+  - frontend/src/components/admin/ResourceTable.tsx
+  - frontend/src/components/admin/SettingsForm.tsx
+  - frontend/src/components/admin/UserTable.tsx
   - frontend/src/components/common/HelpTooltip.tsx
   - frontend/src/components/common/SoftDeleteDialog.tsx
-  - frontend/src/components/common/ColourPicker.tsx
-  - frontend/src/components/common/InlineHelp.tsx
-  - frontend/src/pages/admin/UserEdit.tsx
-  - frontend/src/pages/admin/UserCreate.tsx
-  - frontend/src/pages/admin/UsersAdmin.tsx
-  - frontend/src/pages/admin/LocationsAdmin.tsx
-  - frontend/src/pages/admin/LocationCreate.tsx
-  - frontend/src/pages/admin/LocationEdit.tsx
-  - frontend/src/pages/admin/ResourcesAdmin.tsx
-  - frontend/src/pages/admin/ResourceCreate.tsx
-  - frontend/src/pages/admin/ResourceEdit.tsx
-  - frontend/src/pages/admin/RolePermissionMatrix.tsx
-  - frontend/src/pages/admin/RolesAdmin.tsx
-  - frontend/src/pages/admin/SettingsAdmin.tsx
-  - frontend/src/pages/admin/AuditLogViewer.tsx
   - frontend/src/pages/admin/CustomFieldBuilder.tsx
-  - frontend/src/routes/index.tsx
-  - frontend/src/App.tsx
-  - frontend/e2e/admin/users-admin.spec.ts
-  - frontend/e2e/admin/locations-admin.spec.ts
-  - frontend/e2e/admin/resources-admin.spec.ts
-  - frontend/e2e/admin/settings-admin.spec.ts
-  - frontend/e2e/admin/audit-log-viewer.spec.ts
-  - frontend/e2e/admin/role-permission-matrix.spec.ts
-  - frontend/e2e/admin/custom-fields.spec.ts
-  - frontend/e2e/a11y/accessibility.spec.ts
-  - frontend/e2e/critical-flows/login.spec.ts
-  - frontend/e2e/critical-flows/booking-crud.spec.ts
-  - frontend/e2e/critical-flows/conflict-handling.spec.ts
-  - frontend/e2e/critical-flows/approval.spec.ts
-  - frontend/e2e/critical-flows/recurring-scope.spec.ts
-  - frontend/.github/workflows/e2e-tests.yml
-  - frontend/src/styles/a11y.css
-  - frontend/src/styles/layout.css
-  - frontend/src/index.css
-  - docs/user-guide/admin-guide.md
-  - docs/user-guide/end-user-guide.md
-  - frontend/package.json
-reviewed_at: 2026-10-15T00:00:00Z
-iteration: 1
+  # Backend files read for integration seam verification:
+  # services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/controller/UserController.java
+  # services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/service/UserService.java
+  # services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/keycloak/KeycloakAdminService.java
+  # services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/dto/UserResponse.java
+reviewed_at: 2026-10-15T13:41:38Z
+iteration: 2
 ---
 
-# Phase 10 Code Review
+# Phase 10 Code Review — Iteration 2 (Re-review after fixes)
+
+## Previous Findings Resolution Summary
+
+| Finding | Fix commit | Verdict |
+|---|---|---|
+| B1: `CustomFieldTemplatesTab` wrong locationsApi import | 32cf5e4 | ✅ Fixed |
+| B2: `handleToggleActive` no-op / missing backend endpoint | a223cc6 | ❌ Still broken — see new B1 below |
+| B3: ARIA tabs missing aria-controls / aria-labelledby / keyboard nav | ab444f9 | ✅ Fixed |
+| B4: `HelpTooltip` inline `outline:none` suppresses focus indicator | 47f2a99 | ✅ Fixed |
+| W1: `htmlFor` targeting a `<button>` | fdbd109 | ✅ Fixed |
+| W2: Duplicate `Settings` interface in settingsApi.ts | a2288b7 | ✅ Fixed |
+| W3: SoftDeleteDialog confirm button not disabled during delete | 2b22bd4 | ✅ Fixed |
+| W4: Mutation errors swallowed in custom field tabs | 44cafb1 | ✅ Fixed |
+| W5: No UI error on toggle failure | a223cc6 | ✅ Fixed (surface code is correct) |
+
+---
 
 ## BLOCKERs
 
-### B1: `CustomFieldTemplatesTab` imports from wrong module — `locationsApi.getLocations()` will fail at runtime
-- **File:** `frontend/src/components/admin/CustomFieldTemplatesTab.tsx:6,35`
-- **Category:** bug (integration)
+### B1: `usersApi.setEnabled()` calls a backend endpoint that does not exist — Deactivate/Activate will always fail with 404
+
+- **File:** `frontend/src/api/users.ts:55-57` (frontend), `services/users-permissions-service/src/main/java/com/bookinghub/userspermissions/controller/UserController.java` (backend — missing endpoint)
+- **Category:** integration (bug)
 - **Evidence:**
+
+  The B2 fix added this to `users.ts`:
   ```ts
-  // Line 6
-  import { locationsApi } from '../../api/locations';
-  // Line 35
-  queryFn: () => locationsApi.getLocations().then(r => r.data),
+  /** PATCH /users/:id/enabled — admin-only enable/disable (Keycloak enabled flag) */
+  setEnabled: (id: string, enabled: boolean) =>
+    apiClient.patch<UserWithRoles>(`/users/${id}/enabled`, { enabled }),
   ```
-  There are **two separate `locationsApi` modules** in the codebase:
-  - `src/api/locations.ts` — the old hook-compatible version with `getLocations()`, used by `useLocations` hook
-  - `src/api/locationsApi.ts` — the admin-facing version with `getAll()`, used by every other admin screen (`LocationsAdmin`, `ResourcesAdmin`, `ResourceForm`, `LocationTable`)
-
-  Every other admin component in Phase 10 imports from `../../api/locationsApi` and calls `.getAll()`. This file is the only one still calling the legacy `.getLocations()` method from the old module. TypeScript passes because both modules export a valid `locationsApi` symbol and `locations.ts` genuinely exports `getLocations`. At runtime, the `context (Location)` dropdown in the Field Templates form will render correctly because the old `src/api/locations.ts` does make a real network call to the same `/locations` endpoint. **However**, the template tab silently bypasses the canonical admin-API module: it does not apply the `deleted_at === null` filter visible in all other admin screens (filtered in `ResourcesAdmin` and `ResourceForm`, but not here), meaning soft-deleted locations appear in the template context dropdown. Worse, if `src/api/locations.ts` is ever removed as part of cleanup, this breaks with no TypeScript warning.
-
-  Immediate risk: soft-deleted locations are presented as valid `context_id` choices when creating/editing field templates. A template saved with a deleted location's `context_id` will silently reference a non-existent entity.
-- **Fix direction:** Change the import to `import { locationsApi } from '../../api/locationsApi';` and the call from `.getLocations()` to `.getAll()`. Apply the same `filter(l => !l.deleted_at)` guard used by other admin screens.
-
-**Resolution:** fixed (32cf5e4) — updated import to `../../api/locationsApi` and call to `.getAll()`; the `filter(l => !l.deleted_at)` guard was already present in the JSX dropdown (line 185).
-
----
-
-### B2: `handleToggleActive` in `UserTable` sends a no-op PUT — Deactivate/Activate buttons have no effect
-- **File:** `frontend/src/components/admin/UserTable.tsx:52-66`
-- **Category:** bug (logic error)
-- **Evidence:**
+  And `handleToggleActive` now calls:
   ```ts
-  async function handleToggleActive(user: UserWithRoles) {
-    setTogglingId(user.id);
-    try {
-      await usersApi.update(user.id, { email: user.email });   // ← only sends email, not enabled
+  await usersApi.setEnabled(user.id, !user.enabled);
   ```
-  `UserUpdateRequest` is typed as `{ email?: string; display_name?: string; roles?: string[] }` — there is no `enabled` field. The call `usersApi.update(user.id, { email: user.email })` sends the same email that is already stored, producing a trivial no-op PATCH/PUT to the backend that changes nothing.
 
-  The Activate/Deactivate button renders in the UI (with correct `aria-label`, disabled-during-call state) and displays a spinner — but the user's `enabled` status is never toggled. The UI re-fetches and shows the same Active/Inactive badge as before. A user with `role_user_manager` clicking "Deactivate" will believe they have disabled a user who remains active.
+  **The backend `UserController` has no such endpoint.** Reading the full `UserController.java`, its complete mapping set is:
+  - `GET /users` — `listUsers()`
+  - `POST /users` — `createUser()`
+  - `GET /users/{id}` — `getUser()`
+  - `PUT /users/{id}` — `updateUser()`
+  - `PUT /users/{id}/roles` — `assignRoles()`
+  - `GET /users/me` — `getOwnProfile()`
+  - `PUT /users/me` — `updateOwnProfile()`
 
-  The correct call is either `usersApi.updateRoles()` combined with a Keycloak-enable endpoint, or a dedicated `/users/:id/enabled` endpoint. Since the backend's Phase 3 `UserUpdateRequest` type also lacks `enabled`, this requires a backend fix too — but the frontend silently swallows the mismatch and gives false confirmation by refreshing the list.
-- **Fix direction:** Either wire up the correct Keycloak-enable/disable backend endpoint (e.g., `PUT /users/:id/enabled`), or — if Keycloak `enabled` cannot be toggled via the current API — remove the Deactivate/Activate button entirely and show a note instead. Do not leave a button that claims to do something it cannot do.
+  There is **no `@PatchMapping("/{id}/enabled")`**. Confirmed by `grep -rn "PatchMapping|@Patch|PATCH" services/users-permissions-service/src/main/java/` — zero results.
 
-**Resolution:** fixed (a223cc6) — added `usersApi.setEnabled(id, enabled)` calling `PATCH /users/:id/enabled`; `handleToggleActive` now calls `setEnabled(user.id, !user.enabled)`. Error state surfaced to user inline (W5 addressed in same commit).
+  `UserService.java` also has no `setEnabled`/`enableUser`/`disableUser` method. `KeycloakAdminService.java` has no enable/disable operation (only `createUser`, `resetPassword`, `updateUserRealmRoles`, `logoutUser`, `findUserIdByEmail`).
 
----
-
-### B3: ARIA tabs pattern in `CustomFieldBuilder` is broken — single `tabpanel` has no `aria-labelledby`, tabs have no `aria-controls`
-- **File:** `frontend/src/pages/admin/CustomFieldBuilder.tsx:14-39`
-- **Category:** bug (accessibility / WCAG 4.1.2)
-- **Evidence:**
-  ```tsx
-  <nav className="tab-nav" aria-label="Custom field sections" role="tablist">
-    <button role="tab" aria-selected={activeTab === 'definitions'} ...>
-      Field Definitions
-    </button>
-    <button role="tab" aria-selected={activeTab === 'templates'} ...>
-      Field Templates
-    </button>
-  </nav>
-
-  <div className="tab-content" role="tabpanel">   {/* ← no id, no aria-labelledby */}
+  Furthermore, the backend `UserResponse` DTO is:
+  ```java
+  public record UserResponse(
+      String id, String email, String displayName, List<String> roles,
+      Instant createdAt, Instant updatedAt
+  ) {}
   ```
-  Per WAI-ARIA 1.1/1.2 tabs pattern, each `role="tab"` element **must** have `aria-controls` pointing to its associated `role="tabpanel"` element, and each `tabpanel` **must** have `aria-labelledby` pointing to its controlling tab. Neither is present:
-  - The `tabpanel` div has no `id` attribute.
-  - The tab buttons have no `aria-controls`.
-  - There is only one `role="tabpanel"` element wrapping both tab contents (they share it), so the panel ID cannot even be associated with a single tab.
+  There is **no `enabled` field**. The frontend `UserWithRoles.enabled: boolean` receives `undefined` from `GET /users` at runtime. `handleToggleActive` therefore calls `usersApi.setEnabled(user.id, !undefined)` → `setEnabled(user.id, true)` — always attempting to **enable** regardless of current status.
 
-  Additionally, the ARIA tabs keyboard pattern requires the arrow keys (Left/Right) to move between tabs, and `tabIndex={-1}` on unselected tabs. The current implementation uses standard buttons that are all reachable via Tab separately, which violates the expected keyboard interaction pattern for `role="tablist"` (WCAG 4.1.2). Screen readers will announce tabs without being able to navigate to their associated panel by ID.
-- **Fix direction:** Add a stable `id` to the tabpanel div, add `aria-controls="<panelId>"` to each tab button, and `aria-labelledby="<tabId>"` to the tabpanel. Add `tabIndex` management: `tabIndex={0}` on the active tab, `tabIndex={-1}` on inactive tabs, and keyboard arrow-key handling in `onKeyDown`.
+  **Effect:** Every click of Deactivate/Activate will send `PATCH /users/:id/enabled` to a non-existent route, receive a 404, and render the `toggleError` banner: `"Failed to deactivate <name>. Please try again."` This is worse than the original no-op — the button now always shows a visible error. The Deactivate/Activate feature remains completely non-functional.
 
-**Resolution:** fixed (ab444f9) — rewrote `CustomFieldBuilder` with `id="custom-field-tabpanel"` on panel, `aria-controls`, per-tab `id`s, `aria-labelledby` pointing to active tab's id, `tabIndex` management, and ArrowLeft/ArrowRight/Home/End keyboard navigation.
-
----
-
-### B4: `HelpTooltip` button sets `outline: 'none'` inline — keyboard focus indicator suppressed
-- **File:** `frontend/src/components/common/HelpTooltip.tsx:87`
-- **Category:** bug (accessibility / WCAG 2.4.7)
-- **Evidence:**
-  ```tsx
-  style={{
-    ...
-    outline: 'none',      // ← line 87 — removes browser focus ring
-    boxShadow: 'none',   // ← line 88 — also removes box-shadow ring
-    ...
-  }}
-  ```
-  The global `:focus-visible` CSS in `src/styles/a11y.css` sets `outline: 2px solid #0066CC` for all interactive elements. However, inline `style` has higher specificity than any CSS class or `:focus-visible` pseudo-selector for the same `outline` property — the inline `outline: none` will override it entirely. Testing confirms no CSS in `src/styles/a11y.css` specifically targets `.help-tooltip__trigger:focus-visible` with `!important`, so the inline style wins.
-
-  `HelpTooltip` is embedded in every admin form (LocationForm, ResourceForm, UserCreateForm, SettingsForm, CustomFieldForm) — this affects keyboard discoverability across the entire admin interface. A keyboard user tabbing through any form will land on these help buttons and see no visible focus indicator. This is a WCAG 2.4.7 (Focus Visible) Level AA failure.
-- **Fix direction:** Remove the `outline: 'none'` and `boxShadow: 'none'` inline style properties from the button, and rely on the global `:focus-visible` CSS. If the native outline is cosmetically undesirable, add a `.help-tooltip__trigger:focus-visible` rule in `a11y.css` with a styled outline instead.
-
-**Resolution:** fixed (47f2a99) — removed `outline: 'none'` and `boxShadow: 'none'` from inline style; global `button:focus-visible` rule in a11y.css now applies.
+- **Fix direction:** The fix requires a backend change — **not** just a frontend change. Add `@PatchMapping("/{id}/enabled")` to `UserController.java`, a `setEnabled(UUID id, boolean enabled)` method to `UserService.java`, and a `setUserEnabled(String keycloakUserId, boolean enabled)` method to `KeycloakAdminService.java` (using `UserRepresentation.setEnabled()` + `keycloak.realm(realm).users().get(id).update(rep)`). Also add `enabled` to `UserResponse`. Until then, the button should either remain hidden or display a "not yet supported" notice rather than a permanent error.
 
 ---
 
 ## WARNINGs
 
-### W1: `approve-booking-toggle` label uses `htmlFor` targeting a `<button>` — invalid HTML association
-- **File:** `frontend/src/components/admin/SettingsForm.tsx:403-415`
-- **Category:** bug (accessibility / HTML validity)
-- **Evidence:**
-  ```tsx
-  <label htmlFor="approve-booking-toggle" ...>
-    Auto-approve bookings
-    ...
-  </label>
-
-  <button id="approve-booking-toggle" role="switch" aria-label="Auto-approve bookings" ...>
-  ```
-  `<label>` with `htmlFor` is only valid for [labelable elements](https://html.spec.whatwg.org/multipage/forms.html#category-label): `input`, `select`, `textarea`, `meter`, `progress`, `output`. `<button>` is not a labelable element. Browsers silently ignore the association; clicking the label text does NOT activate the toggle (it only works via the button itself). The `aria-label="Auto-approve bookings"` on the button partially compensates for AT, but the `htmlFor` association is broken. A screen reader will read both the label text and `aria-label`, potentially announcing the name twice.
-- **Fix direction:** Remove `htmlFor` from the `<label>` and either: (a) wrap both the label text and the button in the label element (implicit labelling), or (b) use `aria-labelledby` on the button pointing at the label's `id`. Remove the redundant `aria-label` if implicit or `aria-labelledby` labelling is used.
-
-**Resolution:** fixed (fdbd109) — replaced `<label htmlFor>` with `<span id="approve-booking-label">`; button now uses `aria-labelledby="approve-booking-label"` and redundant `aria-label` removed.
+*No new warnings introduced by the fixes. All W1–W5 from iteration 1 are resolved.*
 
 ---
 
-### W2: Two conflicting `Settings` type definitions will diverge silently
-- **File:** `frontend/src/api/settingsApi.ts:7` vs `frontend/src/api/types.ts:48`
-- **Category:** integration
-- **Evidence:**
-  Both files independently export `interface Settings { id, approve_booking, calendar_slot_size, calendar_min_time, calendar_max_time }`. Currently they are structurally identical.
+## Fix Correctness Detail
 
-  `SettingsForm.tsx` imports from `settingsApi.ts`; `useSettings.ts` imports from `types.ts` (via `src/api/settings.ts`). These are two separate copies of the same entity type:
-  - `src/api/settings.ts` (old) → `src/api/types.ts` `Settings` → `useSettings.ts`
-  - `src/api/settingsApi.ts` (new phase 10) → `SettingsForm.tsx`
+### B1 Fix (32cf5e4) — ✅ Correct
+`CustomFieldTemplatesTab` now imports `locationsApi` from `../../api/locationsApi` (line 6) and calls `.getAll()` (line 36). The `deleted_at` filter was already present in the JSX dropdown (line 196: `locations?.filter(l => !l.deleted_at)`). Import path verified against `locationsApi.ts` which exports `locationsApi.getAll()`.
 
-  Any future field added to one will silently not exist in the other, causing a runtime mismatch. The `src/api/settings.ts` old API calls `PUT /settings` (without `/1` suffix) while `src/api/settingsApi.ts` calls `PUT /settings/1` — if both are active in the same runtime, they hit different backend URLs.
-- **Fix direction:** Consolidate to a single source of truth: re-export `Settings` from `types.ts` into `settingsApi.ts` rather than redefining it, or move `Settings` solely into `settingsApi.ts` and import from there. Deprecate and remove `src/api/settings.ts`.
+### B3 Fix (ab444f9) — ✅ Correct
+`CustomFieldBuilder` now has:
+- `id={`tab-${tab.id}`}` on each button → generates `tab-definitions` and `tab-templates`
+- `aria-controls={PANEL_ID}` on each button (both tabs legitimately control the shared panel — this is valid per WAI-ARIA 1.2 §3.5)
+- `tabIndex={activeTab === tab.id ? 0 : -1}` for roving tabindex
+- `const PANEL_ID = 'custom-field-tabpanel'` with `id={PANEL_ID}` on the div
+- `aria-labelledby={`tab-${TABS[activeTabIndex].id}`}` — `activeTabIndex` is recomputed each render from `activeTab` state, so always tracks the active tab
+- `tabIndex={0}` on the panel div (correct per WAI-ARIA pattern)
+- ArrowLeft, ArrowRight, Home, End keys all handled; `e.preventDefault()` called before focus move
 
-**Resolution:** fixed (a2288b7) — removed duplicate `interface Settings` from `settingsApi.ts`; now imports and re-exports from `./types`. Single source of truth is `types.ts`. `src/api/settings.ts` kept (still used by `useSettings` hook) but no longer defines a conflicting type.
+### B4 Fix (47f2a99) — ✅ Correct
+Both `outline: 'none'` and `boxShadow: 'none'` removed from the inline `style` object. The remaining button style has `background: 'transparent'`, `border: '1.5px solid currentColor'`, etc. — none of which suppress focus. `a11y.css` line 87–91 has `button:focus-visible { outline: 2px solid #0066CC; outline-offset: 2px; }` which will now apply cleanly.
 
----
+### W1 Fix (fdbd109) — ✅ Correct
+`SettingsForm.tsx` now has `<span id="approve-booking-label">` (not `<label htmlFor>`), and the switch button has `aria-labelledby="approve-booking-label"` with no redundant `aria-label`. Verified in diff and in-file at lines 403–418.
 
-### W3: `SoftDeleteDialog` confirm button is not disabled during delete — double-click risk
-- **File:** `frontend/src/components/admin/LocationTable.tsx:105`, `frontend/src/components/admin/ResourceTable.tsx:137`
-- **Category:** bug
-- **Evidence:**
-  ```tsx
-  <SoftDeleteDialog
-    onConfirm={deleteLoading ? () => {} : handleDeleteConfirm}
-    ...
-  />
-  ```
-  While loading, `onConfirm` is replaced with a no-op `() => {}` rather than disabling the button. The `SoftDeleteDialog` component renders the confirm button as:
-  ```tsx
-  <button type="button" onClick={onConfirm} ...>Delete</button>
-  ```
-  There is no `disabled` prop, no `aria-disabled`, and no visual loading state on the confirm button itself. A user who clicks "Delete" twice quickly will call `handleDeleteConfirm()` twice: the first call sets `deleteLoading = true` (swapping to no-op), but React state updates are asynchronous — the second click may fire before `setDeleteLoading(true)` propagates, resulting in two concurrent `locationsApi.delete()` / `resourcesApi.delete()` calls for the same entity ID. The second call will get a 404 from the backend, but the error is silently caught (`console.error` only) with no user feedback.
-- **Fix direction:** Add a `loading` prop to `SoftDeleteDialog` and apply `disabled={loading}` to the confirm button, so the button is visually and functionally disabled during the delete operation. Pass `deleteLoading` from both `LocationTable` and `ResourceTable`.
+### W2 Fix (a2288b7) — ✅ Correct
+`settingsApi.ts` now has `import type { Settings } from './types'` and `export type { Settings }` — no local `interface Settings`. TypeScript confirms zero errors (`tsc --noEmit` exits 0).
 
-**Resolution:** fixed (2b22bd4) — added `loading?: boolean` prop to `SoftDeleteDialog`; confirm button now has `disabled={loading}` and `aria-disabled`; shows "Deleting…" text during operation. Both `LocationTable` and `ResourceTable` pass `loading={deleteLoading}` and use `onConfirm={handleDeleteConfirm}` directly.
+### W3 Fix (2b22bd4) — ✅ Correct
+`SoftDeleteDialog` accepts `loading?: boolean` (default `false`). Confirm button has `disabled={loading}` and `aria-disabled={loading}`. Text is `{loading ? 'Deleting…' : 'Delete'}`. Both `LocationTable` and `ResourceTable` pass `loading={deleteLoading}` and `onConfirm={handleDeleteConfirm}` directly (no more `() => {}`).
+
+### W4 Fix (44cafb1) — ✅ Correct
+`CustomFieldDefinitionsTab`: `onError` on `deleteMutation` sets `deleteError` state, rendered as `<div role="alert">`. `deleteError` is cleared on success (`setDeleteError(null)` in `onSuccess`).  
+`CustomFieldTemplatesTab`: `onError` on `createMutation` and `updateMutation` both set `formError`. `onError` on `deleteMutation` sets `deleteError`. Both are displayed, cleared appropriately.
+
+### W5 Fix (a223cc6) — ✅ Code is correct, but only partially effective
+`toggleError` state renders inline `role="alert"` div. `setToggleError(null)` called at start of each toggle attempt. Error message is descriptive and references user name. The surface code is correctly implemented. However, since B1 (this iteration) means `setEnabled()` always 404s, users will always see the error. The W5 surface is correct; the failure mode is the B2/B1 backend gap.
 
 ---
 
-### W4: Mutation errors in `CustomFieldDefinitionsTab` and `CustomFieldTemplatesTab` are silently swallowed
-- **File:** `frontend/src/components/admin/CustomFieldDefinitionsTab.tsx:21-32`, `frontend/src/components/admin/CustomFieldTemplatesTab.tsx:57-64`
-- **Category:** bug
-- **Evidence:**
-  The `deleteMutation` in both tabs has no `onError` handler:
-  ```ts
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => customFieldsApi.deleteDefinition(id),
-    onSuccess: (_data, id) => { ... setBanner(...) },
-    // NO onError handler
-  });
-  ```
-  When delete fails (403 Forbidden, 404 Not Found, network error), the mutation silently fails. No error message is shown to the user, and no `console.error` is logged. The user clicks "Delete", the `window.confirm` dialog passes, and the form appears to do nothing. The same applies to `createMutation` and `updateMutation` in `CustomFieldTemplatesTab`, which also lack `onError` handlers.
-- **Fix direction:** Add `onError` handlers to all three mutations in both tabs that display an error state to the user (either via a state variable rendered as an error message, or via the existing `formError` / banner pattern).
-
-**Resolution:** fixed (44cafb1) — `onError` added to `deleteMutation` in `CustomFieldDefinitionsTab` (renders `deleteError` alert); `onError` added to `createMutation`, `updateMutation`, and `deleteMutation` in `CustomFieldTemplatesTab` (create/update set `formError`, delete sets `deleteError`).
-
----
-
-### W5: `UserTable` `handleToggleActive` calls update with the same email — no UI error on failure
-- **File:** `frontend/src/components/admin/UserTable.tsx:52-66`
-- **Category:** bug
-- **Evidence:** (see B2 for the full no-op analysis)
-  Beyond the no-op behavior documented in B2, when the API call fails (e.g., 403), the error is caught with `console.error` only:
-  ```ts
-  } catch (err) {
-    console.error('[UserTable] Failed to toggle user status:', err);
-  }
-  ```
-  No error message is surfaced to the user. Combined with the no-op nature of the call, an admin user who clicks Deactivate will see a brief spinner, then the same Active badge — with no way to distinguish "deactivation succeeded" from "deactivation silently failed." This is a secondary consequence of B2 but worth noting separately as a UX error-handling gap that exists regardless of B2's fix.
-- **Fix direction:** Add an `error` state to the component and render an inline error message when the activate/deactivate call fails. (This is secondary to fixing the actual no-op in B2.)
-
-**Resolution:** fixed (a223cc6) — addressed alongside B2: `toggleError` state renders inline `role="alert"` div; `catch` block sets descriptive error message.
-
----
-
-## Cross-file seams checked
+## Cross-file seams checked (iteration 2)
 
 | Seam | Status |
 |---|---|
-| `UserEdit.tsx` → `usersApi.updateSelf()` for self-edit (isSelf=true) → `PUT /users/me` | OK — correctly routes to `/users/me` only when `currentUserId === user.id` |
-| `UserEditForm` isSelf detection (`currentUserId === user.id`) | OK — comparison is string equality between Keycloak `sub` and `user.id` |
-| `UserEditForm` self-edit: roles field absent, only `display_name` submitted | OK — `UserSelfUpdateRequest` type has no roles/password fields |
-| `LocationsAdmin` → `locationsApi.getAll()` → `locationsApi.delete(id)` soft-delete pattern | OK — uses `locationsApi` from `locationsApi.ts`, not the legacy `locations.ts` |
-| `ResourcesAdmin` → `resourcesApi.getAll()` + `locationsApi.getAll()` for resolve | OK — both from correct modules |
-| `LocationTable` soft-delete → `SoftDeleteDialog` → `locationsApi.delete()` | OK — performs backend soft-delete; `deleted_at` filter in `LocationsAdmin` hides row |
-| `ResourceTable` soft-delete → `SoftDeleteDialog` → `resourcesApi.delete()` | OK — same pattern as Location; consistent |
-| `CustomFieldTemplatesTab` → `locationsApi.getLocations()` from wrong module | **BLOCKER B1** — wrong import, exposes soft-deleted locations |
-| `PermissionGrid` → `permissionsApi.getMatrix()` → `GET /permissions` | OK — read-only; no write surface; fallback to PERMISSION_FLAGS if API empty |
-| `PermissionMatrix.PermissionFlag` (camelCase) vs `types.ts Permission` (snake_case `allow_*`) | Note: Two incompatible permission schemas coexist. `PermissionGrid` uses camelCase flags from `permissionsApi.ts`; `users.ts` uses snake_case from `types.ts`. They are different APIs (matrix vs per-user). No active conflict at present. |
-| `SettingsForm` → `settingsApi.getCurrent()` → `GET /settings/current` | OK — correct endpoint per Phase 4 plan |
-| `SettingsForm` → `settingsApi.update()` → `PUT /settings/1` | OK — singleton pattern consistent with Phase 4 |
-| `useSettings` hook (used by `DayView`) → old `settingsApi.getSettings()` → `GET /settings` | Note: different endpoint (`/settings` vs `/settings/current`). May hit a different backend route. See W2. |
-| `AuditLogViewer` deep-link URL params → `AuditLogFilters` initialFilters → `fetchEntries` | OK — deep-link filters are passed as `initialFilters` and applied on mount |
-| `AuditLogViewer` CSV export → backend fallback to client-side generation | OK — double-try pattern is correct; fallback generates from current `entries` state |
-| `HelpTooltip` keyboard: Tab to focus (shows tooltip), Enter/Space toggles, Escape closes | Partial — Escape correctly closes and returns focus via `buttonRef.current?.focus()`. But `onBlur` immediately hides tooltip, so after pressing Escape the button re-blurs if focus goes elsewhere before `focus()` call. Low risk. See also B4 (focus indicator suppressed). |
-| `SoftDeleteDialog` Escape key closes | OK — `useEffect` adds/removes keydown listener correctly |
-| `SoftDeleteDialog` focus management on open | WARNING: no `autoFocus` or initial focus management; focus is not moved into dialog on open (WCAG 2.4.3 partial failure) |
-| Admin routes in `routes/index.tsx` — all 7 admin screens registered | OK — all routes present with correct path patterns |
-| Admin routes — `PermissionGate` used only on `/approvals`; admin routes use only `ProtectedRoute` | Note: admin routes (`/admin/*`) have no role-based gate at the route level (relying on sidebar permission gating only). Pre-existing pattern, not introduced in phase 10. |
-| `ColourPicker` hardcoded `id="colour-picker-text"` | Note: only one `ColourPicker` instance exists currently (LocationForm). Not a current collision, but will duplicate IDs if a second ColourPicker is added. |
-| `UserCreateForm` password sent in `usersApi.create()` call | OK — `UserCreateRequest` includes `password`; only create has password, edit does not |
-| `StateConfirmationBanner` passed `data-testid` prop from parent pages | Note: `StateConfirmationBanner` doesn't accept `data-testid` in its props interface; the prop is silently ignored. The component hard-codes `data-testid="state-confirmation-banner"`, so E2E tests work correctly via that fixed ID. No user impact. |
+| `CustomFieldTemplatesTab` → `locationsApi.getAll()` from `../../api/locationsApi` | ✅ Fixed (was B1 iter-1) |
+| `usersApi.setEnabled()` → `PATCH /users/:id/enabled` ↔ `UserController.java` | **BLOCKER B1** — endpoint absent in backend |
+| `UserWithRoles.enabled` ↔ `UserResponse` backend DTO | **BLOCKER B1** — `enabled` field absent from backend DTO; runtime value is `undefined` |
+| `CustomFieldBuilder` ARIA tabs: `aria-controls`, `aria-labelledby`, `tabIndex`, keyboard | ✅ Fixed (was B3 iter-1) |
+| `HelpTooltip` button: `outline`/`boxShadow` inline removed, `:focus-visible` unblocked | ✅ Fixed (was B4 iter-1) |
+| `SettingsForm` `approve-booking-label` → `aria-labelledby` on switch button | ✅ Fixed (was W1 iter-1) |
+| `settingsApi.ts` `Settings` type → single source from `types.ts` | ✅ Fixed (was W2 iter-1) |
+| `SoftDeleteDialog` `loading` prop → `disabled` on confirm → `LocationTable`, `ResourceTable` | ✅ Fixed (was W3 iter-1) |
+| `CustomFieldDefinitionsTab` / `CustomFieldTemplatesTab` mutation `onError` handlers | ✅ Fixed (was W4 iter-1) |
+| `UserTable` `toggleError` → `role="alert"` div | ✅ Fixed (was W5 iter-1) |
+| TypeScript compilation (`tsc --noEmit`) | ✅ Clean (exit 0) — TypeScript cannot detect the missing backend endpoint |
