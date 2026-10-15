@@ -46,6 +46,9 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchanges -> exchanges
+                        // Actuator endpoints - must be publicly accessible for health checks
+                        .pathMatchers("/actuator/**").permitAll()
+                        
                         // Public routes - no authentication required
                         // NOTE: /feeds/** bypasses gateway-level auth - feeds-service is responsible
                         // for any authorization logic (e.g. if admin endpoints are added under /feeds/admin/**)
