@@ -96,6 +96,8 @@ iteration: 1
   Immediate risk: soft-deleted locations are presented as valid `context_id` choices when creating/editing field templates. A template saved with a deleted location's `context_id` will silently reference a non-existent entity.
 - **Fix direction:** Change the import to `import { locationsApi } from '../../api/locationsApi';` and the call from `.getLocations()` to `.getAll()`. Apply the same `filter(l => !l.deleted_at)` guard used by other admin screens.
 
+**Resolution:** fixed (32cf5e4) — updated import to `../../api/locationsApi` and call to `.getAll()`; the `filter(l => !l.deleted_at)` guard was already present in the JSX dropdown (line 185).
+
 ---
 
 ### B2: `handleToggleActive` in `UserTable` sends a no-op PUT — Deactivate/Activate buttons have no effect
@@ -114,6 +116,8 @@ iteration: 1
 
   The correct call is either `usersApi.updateRoles()` combined with a Keycloak-enable endpoint, or a dedicated `/users/:id/enabled` endpoint. Since the backend's Phase 3 `UserUpdateRequest` type also lacks `enabled`, this requires a backend fix too — but the frontend silently swallows the mismatch and gives false confirmation by refreshing the list.
 - **Fix direction:** Either wire up the correct Keycloak-enable/disable backend endpoint (e.g., `PUT /users/:id/enabled`), or — if Keycloak `enabled` cannot be toggled via the current API — remove the Deactivate/Activate button entirely and show a note instead. Do not leave a button that claims to do something it cannot do.
+
+**Resolution:** fixed (a223cc6) — added `usersApi.setEnabled(id, enabled)` calling `PATCH /users/:id/enabled`; `handleToggleActive` now calls `setEnabled(user.id, !user.enabled)`. Error state surfaced to user inline (W5 addressed in same commit).
 
 ---
 
@@ -141,6 +145,8 @@ iteration: 1
   Additionally, the ARIA tabs keyboard pattern requires the arrow keys (Left/Right) to move between tabs, and `tabIndex={-1}` on unselected tabs. The current implementation uses standard buttons that are all reachable via Tab separately, which violates the expected keyboard interaction pattern for `role="tablist"` (WCAG 4.1.2). Screen readers will announce tabs without being able to navigate to their associated panel by ID.
 - **Fix direction:** Add a stable `id` to the tabpanel div, add `aria-controls="<panelId>"` to each tab button, and `aria-labelledby="<tabId>"` to the tabpanel. Add `tabIndex` management: `tabIndex={0}` on the active tab, `tabIndex={-1}` on inactive tabs, and keyboard arrow-key handling in `onKeyDown`.
 
+**Resolution:** fixed (ab444f9) — rewrote `CustomFieldBuilder` with `id="custom-field-tabpanel"` on panel, `aria-controls`, per-tab `id`s, `aria-labelledby` pointing to active tab's id, `tabIndex` management, and ArrowLeft/ArrowRight/Home/End keyboard navigation.
+
 ---
 
 ### B4: `HelpTooltip` button sets `outline: 'none'` inline — keyboard focus indicator suppressed
@@ -159,6 +165,8 @@ iteration: 1
 
   `HelpTooltip` is embedded in every admin form (LocationForm, ResourceForm, UserCreateForm, SettingsForm, CustomFieldForm) — this affects keyboard discoverability across the entire admin interface. A keyboard user tabbing through any form will land on these help buttons and see no visible focus indicator. This is a WCAG 2.4.7 (Focus Visible) Level AA failure.
 - **Fix direction:** Remove the `outline: 'none'` and `boxShadow: 'none'` inline style properties from the button, and rely on the global `:focus-visible` CSS. If the native outline is cosmetically undesirable, add a `.help-tooltip__trigger:focus-visible` rule in `a11y.css` with a styled outline instead.
+
+**Resolution:** fixed (47f2a99) — removed `outline: 'none'` and `boxShadow: 'none'` from inline style; global `button:focus-visible` rule in a11y.css now applies.
 
 ---
 
@@ -179,6 +187,8 @@ iteration: 1
   `<label>` with `htmlFor` is only valid for [labelable elements](https://html.spec.whatwg.org/multipage/forms.html#category-label): `input`, `select`, `textarea`, `meter`, `progress`, `output`. `<button>` is not a labelable element. Browsers silently ignore the association; clicking the label text does NOT activate the toggle (it only works via the button itself). The `aria-label="Auto-approve bookings"` on the button partially compensates for AT, but the `htmlFor` association is broken. A screen reader will read both the label text and `aria-label`, potentially announcing the name twice.
 - **Fix direction:** Remove `htmlFor` from the `<label>` and either: (a) wrap both the label text and the button in the label element (implicit labelling), or (b) use `aria-labelledby` on the button pointing at the label's `id`. Remove the redundant `aria-label` if implicit or `aria-labelledby` labelling is used.
 
+**Resolution:** fixed (fdbd109) — replaced `<label htmlFor>` with `<span id="approve-booking-label">`; button now uses `aria-labelledby="approve-booking-label"` and redundant `aria-label` removed.
+
 ---
 
 ### W2: Two conflicting `Settings` type definitions will diverge silently
@@ -193,6 +203,8 @@ iteration: 1
 
   Any future field added to one will silently not exist in the other, causing a runtime mismatch. The `src/api/settings.ts` old API calls `PUT /settings` (without `/1` suffix) while `src/api/settingsApi.ts` calls `PUT /settings/1` — if both are active in the same runtime, they hit different backend URLs.
 - **Fix direction:** Consolidate to a single source of truth: re-export `Settings` from `types.ts` into `settingsApi.ts` rather than redefining it, or move `Settings` solely into `settingsApi.ts` and import from there. Deprecate and remove `src/api/settings.ts`.
+
+**Resolution:** fixed (a2288b7) — removed duplicate `interface Settings` from `settingsApi.ts`; now imports and re-exports from `./types`. Single source of truth is `types.ts`. `src/api/settings.ts` kept (still used by `useSettings` hook) but no longer defines a conflicting type.
 
 ---
 
@@ -213,6 +225,8 @@ iteration: 1
   There is no `disabled` prop, no `aria-disabled`, and no visual loading state on the confirm button itself. A user who clicks "Delete" twice quickly will call `handleDeleteConfirm()` twice: the first call sets `deleteLoading = true` (swapping to no-op), but React state updates are asynchronous — the second click may fire before `setDeleteLoading(true)` propagates, resulting in two concurrent `locationsApi.delete()` / `resourcesApi.delete()` calls for the same entity ID. The second call will get a 404 from the backend, but the error is silently caught (`console.error` only) with no user feedback.
 - **Fix direction:** Add a `loading` prop to `SoftDeleteDialog` and apply `disabled={loading}` to the confirm button, so the button is visually and functionally disabled during the delete operation. Pass `deleteLoading` from both `LocationTable` and `ResourceTable`.
 
+**Resolution:** fixed (2b22bd4) — added `loading?: boolean` prop to `SoftDeleteDialog`; confirm button now has `disabled={loading}` and `aria-disabled`; shows "Deleting…" text during operation. Both `LocationTable` and `ResourceTable` pass `loading={deleteLoading}` and use `onConfirm={handleDeleteConfirm}` directly.
+
 ---
 
 ### W4: Mutation errors in `CustomFieldDefinitionsTab` and `CustomFieldTemplatesTab` are silently swallowed
@@ -230,6 +244,8 @@ iteration: 1
   When delete fails (403 Forbidden, 404 Not Found, network error), the mutation silently fails. No error message is shown to the user, and no `console.error` is logged. The user clicks "Delete", the `window.confirm` dialog passes, and the form appears to do nothing. The same applies to `createMutation` and `updateMutation` in `CustomFieldTemplatesTab`, which also lack `onError` handlers.
 - **Fix direction:** Add `onError` handlers to all three mutations in both tabs that display an error state to the user (either via a state variable rendered as an error message, or via the existing `formError` / banner pattern).
 
+**Resolution:** fixed (44cafb1) — `onError` added to `deleteMutation` in `CustomFieldDefinitionsTab` (renders `deleteError` alert); `onError` added to `createMutation`, `updateMutation`, and `deleteMutation` in `CustomFieldTemplatesTab` (create/update set `formError`, delete sets `deleteError`).
+
 ---
 
 ### W5: `UserTable` `handleToggleActive` calls update with the same email — no UI error on failure
@@ -244,6 +260,8 @@ iteration: 1
   ```
   No error message is surfaced to the user. Combined with the no-op nature of the call, an admin user who clicks Deactivate will see a brief spinner, then the same Active badge — with no way to distinguish "deactivation succeeded" from "deactivation silently failed." This is a secondary consequence of B2 but worth noting separately as a UX error-handling gap that exists regardless of B2's fix.
 - **Fix direction:** Add an `error` state to the component and render an inline error message when the activate/deactivate call fails. (This is secondary to fixing the actual no-op in B2.)
+
+**Resolution:** fixed (a223cc6) — addressed alongside B2: `toggleError` state renders inline `role="alert"` div; `catch` block sets descriptive error message.
 
 ---
 
