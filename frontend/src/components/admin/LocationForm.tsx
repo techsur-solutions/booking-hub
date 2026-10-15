@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Location } from '../../api/types';
 import { ColourPicker } from '../common/ColourPicker';
+import { HelpTooltip } from '../common/HelpTooltip';
 
 export interface LocationFormValues {
   name: string;
@@ -154,6 +155,12 @@ export function LocationForm({
 
       {/* colour — ColourPicker with hex input + swatch */}
       <div className="form-group">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35em', marginBottom: '0.25em' }}>
+          <span style={{ fontWeight: 'var(--font-weight-medium, 500)', fontSize: 'var(--font-size-sm)' }}>Colour</span>
+          <HelpTooltip
+            content="Choose a colour for this location. It will be used to colour-code bookings on the calendar so users can quickly identify which room a booking is in. Enter a hex value (e.g. #4A90D9) or use the colour picker."
+          />
+        </div>
         <ColourPicker
           value={colour}
           onChange={(hex) => {
@@ -179,7 +186,12 @@ export function LocationForm({
 
       {/* building — text input, grouping metadata */}
       <div className="form-group">
-        <label htmlFor="location-building">Building</label>
+        <label htmlFor="location-building" style={{ display: 'flex', alignItems: 'center', gap: '0.35em' }}>
+          Building
+          <HelpTooltip
+            content="Optional grouping metadata for the location. Use this to categorise rooms by building or campus (e.g., 'Main Campus', 'Building B'). Useful for filtering when you have many locations."
+          />
+        </label>
         <input
           id="location-building"
           type="text"
@@ -191,7 +203,12 @@ export function LocationForm({
 
       {/* layouts — free-text, NOT a dropdown (F0 audit BF-048) */}
       <div className="form-group">
-        <label htmlFor="location-layouts">Layouts</label>
+        <label htmlFor="location-layouts" style={{ display: 'flex', alignItems: 'center', gap: '0.35em' }}>
+          Layouts
+          <HelpTooltip
+            content="Free-text description of the room's physical layout (e.g., 'Boardroom style, 12 seats', 'Theatre style, 50 seats', 'Open collaboration space'). This information is shown to users when choosing a location for their booking."
+          />
+        </label>
         <input
           id="location-layouts"
           type="text"

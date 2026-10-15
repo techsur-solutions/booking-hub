@@ -3,6 +3,7 @@ import type { CustomField } from '../../api/types';
 import { customFieldsApi } from '../../api/customFieldsApi';
 import type { CustomFieldCreateRequest } from '../../api/customFieldsApi';
 import { FieldPreview } from './FieldPreview';
+import { HelpTooltip } from '../common/HelpTooltip';
 
 export interface CustomFieldFormProps {
   mode: 'create' | 'edit';
@@ -127,7 +128,12 @@ export function CustomFieldForm({ mode, initialData, onSaved, onCancel }: Custom
         </div>
 
         <div className="form-group">
-          <label htmlFor="cf-field-type">Field Type</label>
+          <label htmlFor="cf-field-type" style={{ display: 'flex', alignItems: 'center', gap: '0.35em' }}>
+            Field Type
+            <HelpTooltip
+              content="Choose the input type: textfield (short text), textarea (long text), select (dropdown — one choice), radio (radio buttons — one choice), checkbox (checkboxes — multiple choices). Select/radio/checkbox types require you to define options below."
+            />
+          </label>
           {/* F0-confirmed 5-value field_type enum: textfield | select | textarea | radio | checkbox */}
           <select
             id="cf-field-type"
@@ -144,15 +150,20 @@ export function CustomFieldForm({ mode, initialData, onSaved, onCancel }: Custom
         </div>
 
         <div className="form-group form-group--checkbox">
-          <label>
-            <input
-              type="checkbox"
-              checked={required}
-              onChange={(e) => setRequired(e.target.checked)}
-              data-testid="cf-required"
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35em' }}>
+              <input
+                type="checkbox"
+                checked={required}
+                onChange={(e) => setRequired(e.target.checked)}
+                data-testid="cf-required"
+              />
+              Required
+            </label>
+            <HelpTooltip
+              content="When checked, users must fill in this field before saving a booking. Leave unchecked to make the field optional."
             />
-            {' '}Required
-          </label>
+          </div>
         </div>
 
         {/* Options textarea: shown ONLY for select, radio, checkbox.
@@ -160,7 +171,12 @@ export function CustomFieldForm({ mode, initialData, onSaved, onCancel }: Custom
             textfield/textarea: options MUST NOT be set (textarea hidden entirely). */}
         {isChoiceType(fieldType) && (
           <div className="form-group" data-testid="cf-options-group">
-            <label htmlFor="cf-options">Options (one per line) *</label>
+            <label htmlFor="cf-options" style={{ display: 'flex', alignItems: 'center', gap: '0.35em' }}>
+              Options (one per line) *
+              <HelpTooltip
+                content="Enter each option on its own line. At least one option is required for select, radio, and checkbox field types. Maximum 100 options."
+              />
+            </label>
             <textarea
               id="cf-options"
               value={optionsText}

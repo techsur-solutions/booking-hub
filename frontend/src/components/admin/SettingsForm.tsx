@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { settingsApi } from '../../api/settingsApi';
 import type { Settings, SettingsUpdateRequest } from '../../api/settingsApi';
 import { StateConfirmationBanner } from '../StateConfirmationBanner';
+import { HelpTooltip } from '../common/HelpTooltip';
 
 // Feed URL helpers (same base as feedsApi, but inlined to avoid circular import)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -401,9 +402,12 @@ export function SettingsForm({ className }: SettingsFormProps) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
               <label
                 htmlFor="approve-booking-toggle"
-                style={{ ...labelStyle, cursor: 'pointer', userSelect: 'none' }}
+                style={{ ...labelStyle, cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', gap: '0.35em' }}
               >
                 Auto-approve bookings
+                <HelpTooltip
+                  content="When ON, new bookings are automatically approved immediately upon creation. When OFF, new bookings enter Pending status and require manual approval from a user with the booking_approver role."
+                />
               </label>
 
               {/* Toggle switch — approveBooking toggle */}
@@ -516,8 +520,11 @@ export function SettingsForm({ className }: SettingsFormProps) {
 
           {/* slot_size: time slot size in minutes */}
           <div style={fieldGroupStyle}>
-            <label htmlFor="slot-size" style={labelStyle}>
+            <label htmlFor="slot-size" style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '0.35em' }}>
               Time slot size (minutes)
+              <HelpTooltip
+                content="Controls the granularity of the calendar grid. 15 minutes shows fine-grained slots; 60 minutes shows one slot per hour. Smaller slot sizes give more flexibility for precise booking times."
+              />
             </label>
             <select
               id="slot-size"
@@ -535,8 +542,11 @@ export function SettingsForm({ className }: SettingsFormProps) {
 
           {/* min_time: calendar start time */}
           <div style={fieldGroupStyle}>
-            <label htmlFor="min-time" style={labelStyle}>
+            <label htmlFor="min-time" style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '0.35em' }}>
               Calendar start time
+              <HelpTooltip
+                content="The earliest time slot shown in Calendar and Day views. Bookings before this time still exist but are not visible in the slot grid. Typical values: 07:00 or 08:00."
+              />
             </label>
             <input
               id="min-time"
@@ -551,8 +561,11 @@ export function SettingsForm({ className }: SettingsFormProps) {
 
           {/* max_time: calendar end time */}
           <div style={fieldGroupStyle}>
-            <label htmlFor="max-time" style={labelStyle}>
+            <label htmlFor="max-time" style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '0.35em' }}>
               Calendar end time
+              <HelpTooltip
+                content="The latest time slot shown in Calendar and Day views. Bookings after this time still exist but are not visible in the slot grid. Typical values: 18:00 or 22:00."
+              />
             </label>
             <input
               id="max-time"

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { HelpTooltip } from '../common/HelpTooltip';
 
 export interface UserCreateFormValues {
   display_name: string;
@@ -175,7 +176,12 @@ export function UserCreateForm({ onSubmit, onCancel, loading = false }: UserCrea
 
       {/* Roles multi-select (all 17 v1.0 Keycloak roles) */}
       <fieldset className="form-field form-field--fieldset" data-testid="roles-fieldset">
-        <legend className="form-field__label">Roles</legend>
+        <legend className="form-field__label" style={{ display: 'flex', alignItems: 'center', gap: '0.35em' }}>
+          Roles
+          <HelpTooltip
+            content="Assign one or more roles to control what this user can see and do. role_calendar_viewer allows viewing bookings; role_room_booking allows creating bookings; role_booking_approver allows approving/denying bookings; admin roles allow access to admin sections. Roles can be changed later by an admin."
+          />
+        </legend>
         <div className="role-checkboxes">
           {KEYCLOAK_ROLES.map((role) => (
             <label key={role} className="role-checkbox-label" data-testid={`role-label-${role}`}>

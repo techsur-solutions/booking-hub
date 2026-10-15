@@ -6,6 +6,7 @@ import { resourcesApi } from '../../api/resourcesApi';
 import type { ResourceCreateRequest, ResourceUpdateRequest } from '../../api/resourcesApi';
 import { locationsApi } from '../../api/locationsApi';
 import { StateConfirmationBanner } from '../StateConfirmationBanner';
+import { HelpTooltip } from '../common/HelpTooltip';
 
 export interface ResourceFormProps {
   /** If provided, the form is in edit mode; otherwise create mode. */
@@ -186,24 +187,22 @@ export function ResourceForm({ initialData }: ResourceFormProps) {
 
         {/* Is Unique — checkbox with tooltip */}
         <div className="form-field form-field--checkbox">
-          <label className="checkbox-label">
-            <input
-              id="resource-is-unique"
-              type="checkbox"
-              checked={isUnique}
-              onChange={(e) => setIsUnique(e.target.checked)}
-              data-testid="resource-is-unique-checkbox"
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+            <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35em' }}>
+              <input
+                id="resource-is-unique"
+                type="checkbox"
+                checked={isUnique}
+                onChange={(e) => setIsUnique(e.target.checked)}
+                data-testid="resource-is-unique-checkbox"
+              />
+              Is Unique
+            </label>
+            <HelpTooltip
+              content="When checked, this resource can only be used by one booking at a time. Enables resource-level conflict detection. Example: a conference phone is unique (only one group can use it at a time), but whiteboards are not (every room has one)."
+              data-testid="resource-is-unique-tooltip"
             />
-            {' '}Is Unique
-          </label>
-          <span
-            className="field-tooltip"
-            title="When checked, this resource can only be used by one booking at a time. Enables resource-level conflict detection."
-            aria-label="When checked, this resource can only be used by one booking at a time. Enables resource-level conflict detection."
-            data-testid="resource-is-unique-tooltip"
-          >
-            ⓘ
-          </span>
+          </div>
           <p className="field-hint">
             When checked, this resource can only be used by one booking at a time. Enables
             resource-level conflict detection.
@@ -213,8 +212,11 @@ export function ResourceForm({ initialData }: ResourceFormProps) {
         {/* Restrict Locations — multi-select via checkboxes */}
         <div className="form-field" data-testid="restrict-locations-field">
           <fieldset className="restrict-locations-fieldset">
-            <legend className="restrict-locations-legend">
+            <legend className="restrict-locations-legend" style={{ display: 'flex', alignItems: 'center', gap: '0.35em' }}>
               Restrict Locations
+              <HelpTooltip
+                content="Select specific locations where this resource is available. Leave all unchecked to make the resource available in all locations. Useful for location-specific equipment (e.g., a built-in projector available only in the Conference Room)."
+              />
               <span className="field-hint-inline">
                 {' '}— Leave all unchecked to allow this resource in all locations
               </span>
