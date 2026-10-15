@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFieldsApi } from '../../api/customFieldsApi';
 import type { FieldTemplateCreateRequest } from '../../api/customFieldsApi';
 import type { FieldTemplate } from '../../api/types';
-import { locationsApi } from '../../api/locations';
+import { locationsApi } from '../../api/locationsApi';
 import { StateConfirmationBanner } from '../StateConfirmationBanner';
 
 type FormMode = 'none' | 'create' | 'edit';
@@ -32,7 +32,7 @@ export function CustomFieldTemplatesTab() {
 
   const { data: locations } = useQuery({
     queryKey: ['locations'],
-    queryFn: () => locationsApi.getLocations().then(r => r.data),
+    queryFn: () => locationsApi.getAll().then(r => r.data),
   });
 
   const createMutation = useMutation({
