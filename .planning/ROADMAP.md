@@ -12,7 +12,7 @@ Phase numbering continues from v1.0 (ended at Phase 8), so v2.0 runs Phases 9–
 - Phases 9-10: v2.0 UI Implementation  
 - Continues from v1.0 (Phases 1-8: backend APIs)
 
-- [ ] **Phase 9: Core User Interface** - App shell, navigation, API client, booking calendar/day/list views, booking create/edit/detail, approval queue, display board, authentication flows, shared UI patterns
+- [x] **Phase 9: Core User Interface** - App shell, navigation, API client, booking calendar/day/list views, booking create/edit/detail, approval queue, display board, authentication flows, shared UI patterns (completed 2026-10-15)
 - [ ] **Phase 10: Admin Interface & Polish** - Admin CRUD screens (locations, resources, custom fields, users, roles, settings), audit log viewer, responsive design, accessibility, E2E tests, documentation
 
 ## Phase Details
@@ -20,7 +20,7 @@ Phase numbering continues from v1.0 (ended at Phase 8), so v2.0 runs Phases 9–
 ### Phase 9: Core User Interface
 **Goal**: Build the complete end-user booking experience with calendar/day/list views, booking creation/editing with conflict detection, approval workflow, public display board, and authentication flows, so users can discover, create, manage, and approve bookings with full feature parity to the legacy system.
 
-**Status**: Failed
+**Status**: Complete (2026-10-15)
 
 **Depends on**: v1.0 Phase 2 (SPA shell with routing + Keycloak exists)
 
@@ -106,7 +106,7 @@ Phases execute in numeric order: 9 → 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 9. Core User Interface | 0/15 | Failed | — |
+| 9. Core User Interface | 15/15 | Complete | — |
 | 10. Admin Interface & Polish | 0/14 | Not started | — |
 
 ---
