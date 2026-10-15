@@ -68,7 +68,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}
+          # Use jwk-set-uri directly to validate signatures without issuer check
+          # This allows tokens issued by the external Pivota preview URL to work
+          jwk-set-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}/protocol/openid-connect/certs
 
 management:
   endpoints:

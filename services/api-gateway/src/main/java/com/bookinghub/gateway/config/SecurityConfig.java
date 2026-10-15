@@ -37,8 +37,8 @@ import java.util.Map;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuerUri;
+    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+    private String jwkSetUri;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -46,6 +46,9 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchanges -> exchanges
+                        // CORS preflight requests - must be public (OPTIONS with no auth header)
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        
                         // Actuator endpoints - must be publicly accessible for health checks
                         .pathMatchers("/actuator/**").permitAll()
                         
@@ -137,9 +140,8 @@ public class SecurityConfig {
      */
     @Bean
     public ReactiveJwtDecoder failClosedJwtDecoder() {
-        // Lazy initialization: construct JWK Set URI but do NOT fetch yet
-        String jwkSetUri = issuerUri + "/protocol/openid-connect/certs";
-        
+        // Lazy initialization: use JWK Set URI directly without issuer validation
+        // This allows tokens from external Pivota preview URLs to work
         NimbusReactiveJwtDecoder decoder = NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build();
         
         // Wrap with fail-closed error handling: JWKS fetch failures → 503
