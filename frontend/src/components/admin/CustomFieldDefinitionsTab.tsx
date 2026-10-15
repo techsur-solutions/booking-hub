@@ -12,6 +12,7 @@ export function CustomFieldDefinitionsTab() {
   const [formMode, setFormMode] = useState<FormMode>('none');
   const [editingField, setEditingField] = useState<CustomField | null>(null);
   const [banner, setBanner] = useState<{ action: string; entity: string; timestamp: Date } | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const { data: fields, isLoading, isError } = useQuery({
     queryKey: ['custom-fields'],
@@ -21,6 +22,7 @@ export function CustomFieldDefinitionsTab() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => customFieldsApi.deleteDefinition(id),
     onSuccess: (_data, id) => {
+      setDeleteError(null);
       queryClient.invalidateQueries({ queryKey: ['custom-fields'] });
       const deleted = fields?.find(f => f.id === id);
       setBanner({
@@ -28,6 +30,9 @@ export function CustomFieldDefinitionsTab() {
         entity: deleted?.name ?? '',
         timestamp: new Date(),
       });
+    },
+    onError: () => {
+      setDeleteError('Failed to delete field definition. Please try again.');
     },
   });
 
@@ -100,6 +105,10 @@ export function CustomFieldDefinitionsTab() {
             }}
           />
         </div>
+      )}
+
+      {deleteError && (
+        <div className="error" role="alert" data-testid="delete-field-error">{deleteError}</div>
       )}
 
       {isLoading && <p>Loading field definitions…</p>}

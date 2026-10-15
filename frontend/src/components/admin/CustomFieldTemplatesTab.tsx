@@ -19,6 +19,7 @@ export function CustomFieldTemplatesTab() {
   const [formContextId, setFormContextId] = useState<string>('');
   const [formFieldIds, setFormFieldIds] = useState<string[]>([]);
   const [formError, setFormError] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const { data: templates, isLoading: loadingTemplates, isError: errorTemplates } = useQuery({
     queryKey: ['field-templates'],
@@ -42,6 +43,9 @@ export function CustomFieldTemplatesTab() {
       setBanner({ action: 'Field template created', entity: response.data.name, timestamp: new Date() });
       resetForm();
     },
+    onError: () => {
+      setFormError('Failed to create field template. Please try again.');
+    },
   });
 
   const updateMutation = useMutation({
@@ -52,14 +56,21 @@ export function CustomFieldTemplatesTab() {
       setBanner({ action: 'Field template updated', entity: response.data.name, timestamp: new Date() });
       resetForm();
     },
+    onError: () => {
+      setFormError('Failed to update field template. Please try again.');
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => customFieldsApi.deleteTemplate(id),
     onSuccess: (_data, id) => {
+      setDeleteError(null);
       queryClient.invalidateQueries({ queryKey: ['field-templates'] });
       const deleted = templates?.find(t => t.id === id);
       setBanner({ action: 'Field template deleted', entity: deleted?.name ?? '', timestamp: new Date() });
+    },
+    onError: () => {
+      setDeleteError('Failed to delete field template. Please try again.');
     },
   });
 
@@ -228,6 +239,10 @@ export function CustomFieldTemplatesTab() {
             </div>
           </form>
         </div>
+      )}
+
+      {deleteError && (
+        <div className="error" role="alert" data-testid="delete-template-error">{deleteError}</div>
       )}
 
       {loadingTemplates && <p>Loading field templates…</p>}
