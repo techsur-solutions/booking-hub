@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 10-11-PLAN.md
-last_updated: "2026-10-15T03:01:16.582Z"
+stopped_at: Completed 10-12-PLAN.md
+last_updated: "2026-10-15T03:22:28.002Z"
 last_activity: 2026-10-15 — Completed plan 10-01 (Locations Admin table, form, colour picker, soft-delete)
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 32
-  completed_plans: 29
+  completed_plans: 30
 ---
 
 # Project State
@@ -121,6 +121,7 @@ Last activity: 2026-10-15 — Completed plan 10-01 (Locations Admin table, form,
 | Phase 10-admin-interface-polish P10 | 15min | 1 tasks | 0 files |
 | Phase 10-admin-interface-polish P08 | 15min | 1 tasks | 0 files |
 | Phase 10-admin-interface-polish P11 | 14min | 2 tasks | 14 files |
+| Phase 10-admin-interface-polish P12 | 18min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -271,6 +272,8 @@ Recent decisions affecting current work:
 - [Phase 10-admin-interface-polish]: Desktop layout at >1024px confirmed via human verification: sidebar always-visible, full calendar month grid, admin tables all columns, two-column forms
 - [Phase 10-admin-interface-polish]: FullCalendar .fc DOM excluded from axe scans — #b3d0ee decorative markers can't be overridden without replacing entire FullCalendar CSS theme
 - [Phase 10-admin-interface-polish]: Active sidebar/tab colors darkened in a11y.css for WCAG 4.5:1 contrast: --color-active-text #0d47a1, tabs #4b5563/#1d4ed8
+- [Phase 10-12]: Single catch-all route handler for Playwright API mocking to avoid route ordering issues
+- [Phase 10-12]: window.__E2E_USER_ID__ injection required alongside __E2E_ROLES__ for BookingDetailModal delete button (canEdit = owner_id === keycloak.subject)
 
 ### Pending Todos
 
@@ -343,6 +346,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-15T03:01:16.580Z
-Stopped at: Completed 10-11-PLAN.md
+Last session: 2026-10-15T03:22:28.000Z
+Stopped at: Completed 10-12-PLAN.md
 Resume file: None
