@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 10-12-PLAN.md
-last_updated: "2026-10-15T03:22:28.002Z"
+stopped_at: Completed 10-13-PLAN.md
+last_updated: "2026-10-15T03:30:41.122Z"
 last_activity: 2026-10-15 — Completed plan 10-01 (Locations Admin table, form, colour picker, soft-delete)
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 32
-  completed_plans: 30
+  completed_plans: 31
 ---
 
 # Project State
@@ -122,6 +122,7 @@ Last activity: 2026-10-15 — Completed plan 10-01 (Locations Admin table, form,
 | Phase 10-admin-interface-polish P08 | 15min | 1 tasks | 0 files |
 | Phase 10-admin-interface-polish P11 | 14min | 2 tasks | 14 files |
 | Phase 10-admin-interface-polish P12 | 18min | 3 tasks | 6 files |
+| Phase 10-admin-interface-polish P13 | 6min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -274,6 +275,8 @@ Recent decisions affecting current work:
 - [Phase 10-admin-interface-polish]: Active sidebar/tab colors darkened in a11y.css for WCAG 4.5:1 contrast: --color-active-text #0d47a1, tabs #4b5563/#1d4ed8
 - [Phase 10-12]: Single catch-all route handler for Playwright API mocking to avoid route ordering issues
 - [Phase 10-12]: window.__E2E_USER_ID__ injection required alongside __E2E_ROLES__ for BookingDetailModal delete button (canEdit = owner_id === keycloak.subject)
+- [Phase 10-13]: HelpTooltip uses pure CSS/Unicode (no icon library) to avoid new dependencies
+- [Phase 10-13]: 15 tooltips across 6 components; InlineHelp companion for always-visible descriptions
 
 ### Pending Todos
 
@@ -346,6 +349,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-15T03:22:28.000Z
-Stopped at: Completed 10-12-PLAN.md
+Last session: 2026-10-15T03:30:41.120Z
+Stopped at: Completed 10-13-PLAN.md
 Resume file: None
