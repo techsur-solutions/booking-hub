@@ -52,6 +52,10 @@ export const usersApi = {
   /** DELETE /users/:id */
   deleteUser: (id: string) => apiClient.delete(`/users/${id}`),
 
+  /** PATCH /users/:id/enabled — admin-only enable/disable (Keycloak enabled flag) */
+  setEnabled: (id: string, enabled: boolean) =>
+    apiClient.patch<UserWithRoles>(`/users/${id}/enabled`, { enabled }),
+
   /** PUT /users/:id/roles — admin-only role assignment */
   updateRoles: (id: string, roles: string[]) =>
     apiClient.put(`/users/${id}/roles`, { roles }),

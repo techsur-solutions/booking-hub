@@ -15,6 +15,7 @@ export function UserTable({ users: propUsers, onRefresh }: UserTableProps) {
   const [loading, setLoading] = useState(!propUsers);
   const [error, setError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [toggleError, setToggleError] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -51,8 +52,9 @@ export function UserTable({ users: propUsers, onRefresh }: UserTableProps) {
   // Toggle user active/inactive (admin-only action)
   async function handleToggleActive(user: UserWithRoles) {
     setTogglingId(user.id);
+    setToggleError(null);
     try {
-      await usersApi.update(user.id, { email: user.email });
+      await usersApi.setEnabled(user.id, !user.enabled);
       if (onRefresh) {
         onRefresh();
       } else {
@@ -60,6 +62,9 @@ export function UserTable({ users: propUsers, onRefresh }: UserTableProps) {
       }
     } catch (err) {
       console.error('[UserTable] Failed to toggle user status:', err);
+      setToggleError(
+        `Failed to ${user.enabled ? 'deactivate' : 'activate'} ${user.display_name || user.email}. Please try again.`
+      );
     } finally {
       setTogglingId(null);
     }
@@ -74,6 +79,12 @@ export function UserTable({ users: propUsers, onRefresh }: UserTableProps) {
   }
 
   return (
+    <>
+      {toggleError && (
+        <div className="user-table__toggle-error" role="alert" data-testid="user-toggle-error">
+          {toggleError}
+        </div>
+      )}
     <table className="user-table" data-testid="user-table" aria-label="Users">
         <thead>
           <tr>
@@ -131,5 +142,6 @@ export function UserTable({ users: propUsers, onRefresh }: UserTableProps) {
         )}
       </tbody>
     </table>
+    </>
   );
 }
