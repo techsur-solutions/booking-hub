@@ -37,8 +37,8 @@ import java.util.Map;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuerUri;
+    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+    private String jwkSetUri;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -47,6 +47,8 @@ public class SecurityConfig {
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchanges -> exchanges
                         // Public routes - no authentication required
+                        // Health/info endpoints must be public for Docker healthcheck and monitoring
+                        .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
                         // NOTE: /feeds/** bypasses gateway-level auth - feeds-service is responsible
                         // for any authorization logic (e.g. if admin endpoints are added under /feeds/admin/**)
                         .pathMatchers("/feeds/**").permitAll()
@@ -131,12 +133,15 @@ public class SecurityConfig {
      * This allows the Gateway to start even when Keycloak is temporarily unavailable.
      * At request time: if Keycloak's JWKS endpoint is unreachable, returns 503 SERVICE_UNAVAILABLE
      * rather than treating unverifiable tokens as valid (fail-closed posture).
+     * 
+     * IMPORTANT: Uses jwk-set-uri (internal Docker address) to fetch keys efficiently,
+     * but does NOT validate issuer claim. This allows tokens issued by Keycloak accessed
+     * via localhost:8180 (from browser) to be validated by Gateway inside Docker.
+     * Issuer validation is delegated to individual services if needed.
      */
     @Bean
     public ReactiveJwtDecoder failClosedJwtDecoder() {
         // Lazy initialization: construct JWK Set URI but do NOT fetch yet
-        String jwkSetUri = issuerUri + "/protocol/openid-connect/certs";
-        
         NimbusReactiveJwtDecoder decoder = NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build();
         
         // Wrap with fail-closed error handling: JWKS fetch failures → 503

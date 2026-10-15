@@ -65,7 +65,10 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8180}/realms/${KEYCLOAK_REALM:bookinghub}
+          # Use jwk-set-uri instead of issuer-uri to avoid metadata fetch issues
+          # Frontend accesses Keycloak at localhost:8180, so tokens contain iss=http://localhost:8180/realms/bookinghub
+          # Gateway fetches JWKS from internal Docker address for efficiency
+          jwk-set-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/realms/${KEYCLOAK_REALM:bookinghub}/protocol/openid-connect/certs
 
 management:
   endpoints:
