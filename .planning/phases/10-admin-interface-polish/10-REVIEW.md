@@ -88,6 +88,8 @@ iteration: 2
 
 - **Fix direction:** The fix requires a backend change — **not** just a frontend change. Add `@PatchMapping("/{id}/enabled")` to `UserController.java`, a `setEnabled(UUID id, boolean enabled)` method to `UserService.java`, and a `setUserEnabled(String keycloakUserId, boolean enabled)` method to `KeycloakAdminService.java` (using `UserRepresentation.setEnabled()` + `keycloak.realm(realm).users().get(id).update(rep)`). Also add `enabled` to `UserResponse`. Until then, the button should either remain hidden or display a "not yet supported" notice rather than a permanent error.
 
+**Resolution:** fixed (cc1c24b) — Added `UserEnabledUpdateRequest` DTO, `@PatchMapping("/{id}/enabled")` with `@PreAuthorize("hasRole('role_user_admin')")` in `UserController`, `setEnabled(UUID, boolean)` + outbox event in `UserService`, `setUserEnabled()`/`getUserEnabled()` in `KeycloakAdminService`, and `enabled` field to `UserResponse`. `toUserResponse()` now fetches the flag from Keycloak (safe default `true` on error). Verified: `mvn compile` BUILD SUCCESS, `npm run build` clean, `CI=true npm test` 74/74 passed.
+
 ---
 
 ## WARNINGs
