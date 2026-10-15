@@ -39,7 +39,7 @@ Phase numbering continues from v1.0 (ended at Phase 8), so v2.0 runs Phases 9–
   
   6. **Authentication**: Login redirects to Keycloak PKCE flow with "Remember me". My Account allows self-editing (name/view roles/change password). Password Reset flows work end-to-end with proper token validation.
 
-**Plans**: 15 plans
+**Plans**: 18 plans
 
 Plans:
 - [ ] 09-01-PLAN.md — App shell layout: sidebar navigation with permission-gated sections, header with user menu, logout, responsive structure
@@ -57,6 +57,9 @@ Plans:
 - [ ] 09-13-PLAN.md — Approval Queue: table with inline conflicts, Approve/Deny actions, optimistic UI updates
 - [ ] 09-14-PLAN.md — Display Board & Feed Subscription: full-screen kiosk mode, approved-only guarantee, RSS2/iCal/JSON URLs
 - [ ] 09-15-PLAN.md — Authentication flows: Login (Keycloak redirect), My Account (self-edit), Password Reset (request/complete)
+- [ ] 09-16-PLAN.md — [GAP] Add Create Booking button to BookingsView for navigation (UAT #6 - major)
+- [ ] 09-17-PLAN.md — [GAP] Fix location dropdown data loading in BookingCreate (UAT #6 - blocker)
+- [ ] 09-18-PLAN.md — [GAP] Add test user seed data and enhance error handling for My Account (UAT #14 - blocker)
 
 ### Phase 10: Admin Interface & Polish
 **Goal**: Implement all administrative screens for managing locations, resources, custom fields, users, roles, and settings, plus audit log viewer, responsive design for all screen sizes, accessibility compliance, E2E tests for critical flows, and user documentation, so the application is production-ready with full admin capabilities and verified quality.

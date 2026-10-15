@@ -1,17 +1,16 @@
 ---
 pivota_spec_state_version: 1.0
 milestone: v2.0
-milestone_name: UI Implementation
-current_plan: 0
-status: ready_to_plan
-stopped_at: Roadmap created
-last_updated: "2026-10-13"
+milestone_name: milestone
+status: completed
+stopped_at: Completed 09-18-PLAN.md
+last_updated: "2026-10-14T14:19:12.041Z"
+last_activity: "2026-10-13 — Completed plan 09-16 (Create Booking button navigation, UAT gap #6 closure)"
 progress:
   total_phases: 2
-  completed_phases: 0
-  total_plans: 29
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 18
+  completed_plans: 18
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 
 ## Current Position
 
-Phase: 9 (Core User Interface) — NOT STARTED
-Plan: 0 of 15
-Status: Ready to plan
-Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
+Phase: 9 (Core User Interface) — IN PROGRESS
+Plan: 16 of 18
+Status: Completed 09-16-PLAN.md
+Last activity: 2026-10-13 — Completed plan 09-16 (Create Booking button navigation, UAT gap #6 closure)
 
 ## Performance Metrics
 
@@ -93,6 +92,24 @@ Last activity: 2026-10-13 — Roadmap consolidated (2 phases, 29 plans)
 | Phase 08-regression-verification-test-traceability P01 | 5min | 3 tasks | 4 files |
 | Phase 08-regression-verification-test-traceability P02 | 7min | 2 tasks | 3 files |
 | Phase 08-regression-verification-test-traceability P04 | 6min | 3 tasks | 7 files |
+| Phase 09-core-user-interface P04 | 5min | 3 tasks | 13 files |
+| Phase 09-core-user-interface P02 | 6min | 3 tasks | 18 files |
+| Phase 09-core-user-interface P03 | 4min | 3 tasks | 11 files |
+| Phase 09-core-user-interface P01 | 9min | 3 tasks | 15 files |
+| Phase 09-core-user-interface P06 | 19min | 2 tasks | 7 files |
+| Phase 09-core-user-interface P07 | 21min | 3 tasks | 9 files |
+| Phase 09-core-user-interface P05 | 22min | 3 tasks | 8 files |
+| Phase 09-core-user-interface P14 | 24min | 3 tasks | 12 files |
+| Phase 09-core-user-interface P15 | 29min | 4 tasks | 8 files |
+| Phase 09-core-user-interface P08 | 9min | 3 tasks | 8 files |
+| Phase 09-core-user-interface P11 | 14min | 3 tasks | 10 files |
+| Phase 09-core-user-interface P09 | 13min | 4 tasks | 8 files |
+| Phase 09-core-user-interface P10 | 15min | 3 tasks | 7 files |
+| Phase 09-core-user-interface P13 | 6min | 4 tasks | 6 files |
+| Phase 09-core-user-interface P12 | 9min | 2 tasks | 5 files |
+| Phase 09-core-user-interface P16 | 5min | 2 tasks | 2 files |
+| Phase 09-core-user-interface P17 | 3min | 2 tasks | 4 files |
+| Phase 09 P18 | 6min | 4 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -190,6 +207,42 @@ Recent decisions affecting current work:
 - [Phase 08-regression-verification-test-traceability]: Gap report is regenerable (not static): run analyze-coverage.sh after each test addition
 - [Phase 08-regression-verification-test-traceability]: Test stubs for all 13 OQ provide 2-3 option skeletons; product owner selects option and fills decision-specific logic when resolving
 - [Phase 08-regression-verification-test-traceability]: OQ-07 feed-access stub notes Phase 7 already chose fully-public — formal product sign-off still required to confirm or override the implementation
+- [Phase 09-core-user-interface]: All component styles use CSS custom properties from tokens.css — no raw values in component files
+- [Phase 09-core-user-interface]: BadgeLocation with --location-color CSS custom property implements UI-CAL-04 location colour-coding
+- [Phase 09-core-user-interface]: Modal uses React portal to document.body; Toast uses ToastProvider + useToast hook pattern
+- [Phase 09-core-user-interface]: Named export keycloak (not default) from keycloak.ts — client.ts imports { keycloak } for token access
+- [Phase 09-core-user-interface]: import type used throughout API layer — required by verbatimModuleSyntax in tsconfig
+- [Phase 09-core-user-interface]: useSettings staleTime=5min — settings change infrequently, cache aggressively to reduce gateway load
+- [Phase 09-core-user-interface]: Vitest chosen over Jest for frontend unit testing — native Vite integration, no transform config
+- [Phase 09-core-user-interface]: PermissionGate uses structural absence (returns null) not disabled state — deny-by-default UI-PATTERN-03
+- [Phase 09-core-user-interface]: Permission-gated sidebar: structural absence (not disabled) via keycloak.realmAccess.roles[] — Approvals needs role_booking_approver, Admin section needs any admin role
+- [Phase 09-core-user-interface]: E2E role injection: window.__E2E_ROLES__ set via page.addInitScript() enables per-test permission profiles without dev server restart
+- [Phase 09-core-user-interface]: Unified /bookings?view= routing: single route with useSearchParams() replaces separate /calendar, /list, /day routes; legacy routes redirect
+- [Phase 09-core-user-interface]: page.route('http://localhost:8080/**') instead of glob patterns for Playwright API mocks — avoids glob collision with Vite navigation URLs
+- [Phase 09-core-user-interface]: QueryClientProvider added to App.tsx root — required for all React Query hooks, was missing causing white-screen in DayView E2E mode
+- [Phase 09-core-user-interface]: Client-side status filter applied for all selections (not just multi-select) in ListView for defensive correctness when API returns unfiltered data
+- [Phase 09-core-user-interface]: E2E API route interception uses full base URL (http://localhost:8080/path**) not wildcard (**/path**) to avoid intercepting SPA page navigation
+- [Phase 09-core-user-interface]: FullCalendarWrapper exposes onDateClick/onEventClick props for modal integration in later plans
+- [Phase 09-14]: Playwright route mock uses regex not glob — **/locations** intercepted Vite JS module paths causing MIME-type error preventing React mounting
+- [Phase 09-14]: ApprovedOnlyBadge pointerEvents:none — badge does not block booking card interactions; FeedSubscription replaces FeedsLanding stub at /feeds route
+- [Phase 09-core-user-interface]: window.__E2E_LOGIN_TEST__ flag added to Login.tsx: suppresses auth redirect in Playwright login page tests
+- [Phase 09-core-user-interface]: ToastProvider added to App.tsx (required by PasswordResetComplete useToast() hook)
+- [Phase 09-core-user-interface]: Password reset request always returns identical success message regardless of email existence (T-09-15-01 information disclosure prevention, FRD §6.3)
+- [Phase 09-core-user-interface]: useViewState locationId validator accepts [\w-]+ (not UUID-only) — actual IDs use both UUIDs and short strings like loc-a
+- [Phase 09-core-user-interface]: TableFilters.syncFilters preserves ?date= and ?view= when syncing list filter state — avoids dropping cross-view date on List View mount
+- [Phase 09-core-user-interface]: BookingsView.switchView() merges view param into existing URL params — preserves date and filter state across view switches
+- [Phase 09-11]: keycloak.subject used for owner_id comparison; Conflict click opens nested modal; getById alias added to bookingsApi
+- [Phase 09-core-user-interface]: BookingForm fetches locations/resources internally via hooks (not passed as props) — simpler API; ConflictWarning embedded inside form with onBlockChange callback; E2E tests match concurrent 09-10/09-11 component testids
+- [Phase 09-core-user-interface]: Non-dismissible scope dialog pattern: no X/Escape/backdrop-close — user must select scope before editing recurring bookings (UI-BOOK-02 design principle)
+- [Phase 09-core-user-interface]: ApprovalQueue uses direct fetch over useBookings hook for optimistic UI control
+- [Phase 09-core-user-interface]: Approval components scoped to components/approval/ subdirectory
+- [Phase 09-12]: ConflictBanner accepts pre-fetched conflicts[] (renderer); ConflictWarning remains fetcher and delegates — clean separation matching component responsibilities
+- [Phase 09-12]: ConflictBadge reused inside ConflictBanner for inline badge display per UI-PATTERN-02 conflict visibility everywhere
+- [Phase 09-16]: Create Booking button positioned right of view tabs in BookingsView header — establishes pattern for action buttons in workspace headers
+- [Phase 09-16]: Button navigation pre-fills ?start_time=<date>T09:00 when ?date param exists — user-friendly default (9am) while preserving user context
+- [Phase 09-17]: JWT token refresh centralized in apiClient request interceptor using keycloak.updateToken(30) — applies to ALL API calls app-wide, not per-hook duplication
+- [Phase 09-17]: useLocations enhanced with retry: 2 and staleTime: 5min as secondary defense against transient failures (primary fix is centralized token refresh)
+- [Phase 09-17]: BookingForm location dropdown uses structural absence pattern for loading/error/empty states (conditional rendering) instead of disabled select
 
 ### Pending Todos
 
@@ -262,6 +315,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-13T04:30:21.250Z
-Stopped at: Completed 08-04-PLAN.md
+Last session: 2026-10-14T14:19:12.040Z
+Stopped at: Completed 09-18-PLAN.md
 Resume file: None

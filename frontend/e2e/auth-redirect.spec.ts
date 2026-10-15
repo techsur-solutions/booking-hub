@@ -53,8 +53,8 @@ test.describe('Auth Redirect', () => {
     // Verify NO Keycloak auth request was made
     expect(keycloakRequests.length).toBe(0);
     
-    // Verify the Feeds content rendered directly
-    await expect(page.locator('h1')).toContainText('Public Feeds Landing');
+    // Verify the Feed Subscription content rendered directly
+    await expect(page.locator('h1')).toContainText('Feed Subscription');
   });
 
   test('should allow public routes without redirect - display board', async ({ page }) => {

@@ -1,0 +1,159 @@
+import { useState, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { BookingForm } from '../components/booking/BookingForm';
+import type { BookingFormValues } from '../components/booking/BookingForm';
+import { StateConfirmationBanner } from '../components/StateConfirmationBanner';
+import { bookingsApi } from '../api/bookings';
+import { useToast } from '../components/Toast';
+
+/**
+ * Booking Create Page
+ *
+ * Reads pre-fill params from URL:
+ *   ?title=...&location_id=<uuid>&start_time=ISO&end_time=ISO&resource_ids=id1,id2
+ *
+ * Renders BookingForm with all fields, handles save flow including
+ * StateConfirmationBanner with status (approved/pending) and redirect
+ * to Calendar View with date=start_time date.
+ */
+export function BookingCreate() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  // ── Pre-fill from URL params ──────────────────────────────────────────────────
+  const prefillTitle = searchParams.get('title') ?? '';
+  const prefillLocationId = searchParams.get('location_id') ?? '';
+  const prefillStartTime = searchParams.get('start_time') ?? '';
+  const prefillEndTime = (() => {
+    const end = searchParams.get('end_time');
+    if (end) return end;
+    if (prefillStartTime) {
+      // Default end time = start + 1 hour
+      const start = new Date(prefillStartTime);
+      start.setHours(start.getHours() + 1);
+      return toDatetimeLocal(start);
+    }
+    return '';
+  })();
+  const prefillResourceIds = (searchParams.get('resource_ids') ?? '')
+    .split(',')
+    .filter(Boolean);
+
+  const initialValues = useMemo<Partial<BookingFormValues>>(
+    () => ({
+      title: prefillTitle,
+      location_id: prefillLocationId,
+      start_time: prefillStartTime,
+      end_time: prefillEndTime,
+      resource_ids: prefillResourceIds,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  // ── State ─────────────────────────────────────────────────────────────────────
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmationBanner, setConfirmationBanner] = useState<{
+    action: string;
+    variant: 'success' | 'warning';
+    timestamp: Date;
+  } | null>(null);
+
+  // ── Save handler ──────────────────────────────────────────────────────────────
+  async function handleSubmit(values: BookingFormValues) {
+    setIsSubmitting(true);
+    try {
+      // Build the POST /bookings payload
+      const payload = {
+        title: values.title,
+        location_id: values.location_id,
+        start_time: toIso(values.start_time),
+        end_time: toIso(values.end_time),
+        resource_ids: values.resource_ids,
+        description: values.description || null,
+        custom_field_values: Object.entries(values.custom_field_values)
+          .filter(([, v]) => v !== '')
+          .map(([field_id, value]) => ({ field_id, value })),
+        recurrence_pattern: values.recurrence_pattern ?? undefined,
+        // Required fields for the Booking type — backend sets these
+        status: 'pending' as const,
+        series_id: null,
+        owner_id: '',
+        conflict_flags: [],
+      };
+
+      const response = await bookingsApi.createBooking(payload);
+      const booking = response.data;
+
+      // Show status confirmation banner
+      const isApproved = booking.status === 'approved';
+      setConfirmationBanner({
+        action: isApproved
+          ? 'Booking approved'
+          : 'Booking submitted for approval',
+        variant: isApproved ? 'success' : 'warning',
+        timestamp: new Date(),
+      });
+
+      // Redirect to Calendar View with date=booking.start_time date after a short delay
+      const date = booking.start_time.split('T')[0];
+      setTimeout(() => {
+        navigate(`/bookings?view=month&date=${date}`);
+      }, 2000);
+    } catch (err: unknown) {
+      const error = err as { response?: { status?: number } };
+      if (error.response?.status === 409) {
+        showToast('Conflict detected. Please refresh and try again.', { variant: 'danger' });
+      } else {
+        showToast('Failed to create booking. Please try again.', { variant: 'danger' });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function handleCancel() {
+    navigate('/bookings');
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────────
+  return (
+    <div className="booking-create" data-testid="booking-create">
+      <h1 className="booking-create__title">New Booking</h1>
+
+      {confirmationBanner && (
+        <StateConfirmationBanner
+          action={confirmationBanner.action}
+          timestamp={confirmationBanner.timestamp}
+          variant={confirmationBanner.variant}
+          onDismiss={() => setConfirmationBanner(null)}
+        />
+      )}
+
+      <BookingForm
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        mode="create"
+        isLoading={isSubmitting}
+      />
+    </div>
+  );
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+
+/** Convert datetime-local (YYYY-MM-DDTHH:mm) to ISO-8601 with seconds */
+function toIso(dtLocal: string): string {
+  if (!dtLocal) return '';
+  return dtLocal.length === 16 ? `${dtLocal}:00` : dtLocal;
+}
+
+function toDatetimeLocal(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  );
+}
