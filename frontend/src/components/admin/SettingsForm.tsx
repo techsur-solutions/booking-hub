@@ -400,22 +400,22 @@ export function SettingsForm({ className }: SettingsFormProps) {
           <div style={fieldGroupStyle}>
             {/* approveBooking toggle switch */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
-              <label
-                htmlFor="approve-booking-toggle"
-                style={{ ...labelStyle, cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', gap: '0.35em' }}
+              <span
+                id="approve-booking-label"
+                style={{ ...labelStyle, userSelect: 'none', display: 'flex', alignItems: 'center', gap: '0.35em' }}
               >
                 Auto-approve bookings
                 <HelpTooltip
                   content="When ON, new bookings are automatically approved immediately upon creation. When OFF, new bookings enter Pending status and require manual approval from a user with the booking_approver role."
                 />
-              </label>
+              </span>
 
               {/* Toggle switch — approveBooking toggle */}
               <button
-                id="approve-booking-toggle"
                 type="button"
                 role="switch"
                 aria-checked={approveBooking}
+                aria-labelledby="approve-booking-label"
                 data-testid="approve-booking-toggle"
                 onClick={() => setApproveBooking((prev) => !prev)}
                 style={{
@@ -429,7 +429,6 @@ export function SettingsForm({ className }: SettingsFormProps) {
                   transition: 'background var(--transition-base)',
                   flexShrink: 0,
                 }}
-                aria-label="Auto-approve bookings"
               >
                 <span
                   style={{
