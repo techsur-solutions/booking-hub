@@ -20,6 +20,8 @@ export interface FieldTemplateCreateRequest {
 
 export type FieldTemplateUpdateRequest = Partial<FieldTemplateCreateRequest>;
 
+// custom_fields endpoint: GET /custom-fields, POST /custom-fields, PUT /custom-fields/:id, DELETE /custom-fields/:id
+// custom_field_templates endpoint: GET /field-templates, POST /field-templates, etc.
 export const customFieldsApi = {
   // Field Definitions
   getDefinitions: (params?: { context_id?: string }) =>
