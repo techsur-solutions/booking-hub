@@ -99,6 +99,21 @@ public class UserController {
     }
 
     /**
+     * Enables or disables a user account (admin only, never self).
+     * PATCH /users/{id}/enabled
+     *
+     * Sets the Keycloak enabled flag. A disabled user cannot log in but their
+     * data is preserved and the account can be re-enabled at any time.
+     * Publishes a user.enabled outbox event.
+     */
+    @PatchMapping("/{id}/enabled")
+    @PreAuthorize("hasRole('role_user_admin')")
+    public UserResponse setEnabled(@PathVariable String id, @RequestBody UserEnabledUpdateRequest request) {
+        UUID targetId = UUID.fromString(id);
+        return userService.setEnabled(targetId, request.enabled());
+    }
+
+    /**
      * Assigns roles to a user (admin only, never self).
      * PUT /users/{id}/roles
      * 

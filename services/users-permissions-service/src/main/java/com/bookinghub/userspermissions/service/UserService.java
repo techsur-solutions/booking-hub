@@ -198,6 +198,42 @@ public class UserService {
     }
 
     /**
+     * Enables or disables a Keycloak user account (admin only — enforced at controller layer).
+     *
+     * Delegates the flag update to {@link KeycloakAdminService#setUserEnabled} and writes a
+     * {@code user.enabled} outbox event for downstream services (e.g., notifications, audit log).
+     *
+     * @param targetId the user's UUID (= Keycloak sub)
+     * @param enabled  {@code true} to activate the account, {@code false} to deactivate it
+     * @return updated {@link UserResponse} reflecting the new enabled state
+     * @throws UserNotFoundException if the local user row does not exist
+     */
+    @Transactional
+    public UserResponse setEnabled(UUID targetId, boolean enabled) {
+        User user = userRepository.findById(targetId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + targetId));
+
+        keycloakAdminService.setUserEnabled(targetId.toString(), enabled);
+
+        // Write outbox event (enabled state change notification for downstream consumers)
+        String payload = buildEventPayload(Map.of(
+                "id", user.getId().toString(),
+                "email", user.getEmail(),
+                "enabled", enabled
+        ));
+        OutboxEvent event = new OutboxEvent(
+                "user",
+                user.getId(),
+                "user.events",
+                "user.enabled",
+                payload
+        );
+        outboxEventRepository.save(event);
+
+        return toUserResponse(user);
+    }
+
+    /**
      * Assigns roles to a user (admin only — enforced at controller layer).
      * Replaces the full role set in Keycloak, then writes role.assigned outbox event.
      * 
@@ -232,7 +268,8 @@ public class UserService {
     /**
      * Converts User entity to UserResponse DTO.
      * Fetches roles from CurrentUserProvider (reads from JWT) for the response.
-     * 
+     * Fetches the enabled flag from Keycloak — defaults to {@code true} on lookup error.
+     *
      * IMPORTANT: This assumes the caller's roles are being used for the response.
      * For admin listing users, this will need to be enhanced to fetch each user's
      * roles from Keycloak. For now (MVP), returns empty roles list when building
@@ -251,13 +288,17 @@ public class UserService {
             // TODO: For admin user-listing, fetch roles from Keycloak per user
         }
 
+        // Fetch enabled status from Keycloak (defaults to true on transient errors)
+        boolean enabled = keycloakAdminService.getUserEnabled(user.getId().toString());
+
         return new UserResponse(
                 user.getId().toString(),
                 user.getEmail(),
                 user.getDisplayName(),
                 roles,
                 user.getCreatedAt(),
-                user.getUpdatedAt()
+                user.getUpdatedAt(),
+                enabled
         );
     }
 
