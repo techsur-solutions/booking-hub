@@ -12,8 +12,12 @@ import { LocationsAdmin } from '../pages/admin/LocationsAdmin';
 import { LocationCreate } from '../pages/admin/LocationCreate';
 import { LocationEdit } from '../pages/admin/LocationEdit';
 import { ResourcesAdmin } from '../pages/admin/ResourcesAdmin';
+import { ResourceCreate } from '../pages/admin/ResourceCreate';
+import { ResourceEdit } from '../pages/admin/ResourceEdit';
 import { CustomFieldBuilder } from '../pages/admin/CustomFieldBuilder';
 import { UsersAdmin } from '../pages/admin/UsersAdmin';
+import { UserCreate } from '../pages/admin/UserCreate';
+import { UserEdit } from '../pages/admin/UserEdit';
 import { RolesAdmin } from '../pages/admin/RolesAdmin';
 import { SettingsAdmin } from '../pages/admin/SettingsAdmin';
 import { AuditLogViewer } from '../pages/admin/AuditLogViewer';
@@ -181,6 +185,26 @@ export const routes: RouteObject[] = [
       <ProtectedRoute>
         <AppShell>
           <UsersAdmin />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/users/new',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <UserCreate />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/users/:id/edit',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <UserEdit />
         </AppShell>
       </ProtectedRoute>
     ),
