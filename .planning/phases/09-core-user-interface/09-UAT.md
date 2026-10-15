@@ -2,13 +2,13 @@
 status: complete
 phase: 09-core-user-interface
 source: 09-01-SUMMARY.md, 09-02-SUMMARY.md, 09-03-SUMMARY.md, 09-04-SUMMARY.md, 09-05-SUMMARY.md, 09-06-SUMMARY.md, 09-07-SUMMARY.md, 09-08-SUMMARY.md, 09-09-SUMMARY.md, 09-10-SUMMARY.md, 09-11-SUMMARY.md, 09-12-SUMMARY.md, 09-13-SUMMARY.md, 09-14-SUMMARY.md, 09-15-SUMMARY.md, 09-16-SUMMARY.md, 09-17-SUMMARY.md, 09-18-SUMMARY.md
-started: 2026-10-14T15:00:00Z
-updated: 2026-10-14T18:45:00Z
+started: 2026-10-15T00:58:00Z
+updated: 2026-10-15T00:58:00Z
 ---
 
 ## Current Test
 
-[testing paused - investigating data visibility issue]
+[testing paused - blocker found in Test 2, diagnosis in progress]
 
 ## Tests
 
@@ -19,13 +19,12 @@ result: pass
 ### 2. Switch Between Booking Views (Calendar/Day/List)
 expected: Clicking Month/Day/List tabs switches views while preserving filters and date parameters in URL. Each view shows bookings with location colour-coding and conflict badges
 result: issue
-reported: "I can swtich between month ,day ,list tabs but no seeded data yet"
+reported: "Getting this err: Failed to load bookings. Please try again."
 severity: blocker
 
 ### 3. View Bookings in Calendar View
 expected: Calendar View shows month grid with booking events colour-coded by location. Events with conflicts display conflict badge (⚠ icon). Clicking date opens Create Form, clicking event opens Detail Modal
-result: skipped
-reason: "Waiting for data visibility issue (Test 2) to be resolved first"
+result: [pending]
 
 ### 4. View Bookings in Day View
 expected: Day View shows hourly slot grid (default 08:00-18:00) with bookings rendered as overlays. Location filter dropdown, date picker. Clicking empty slot opens Create Form pre-filled with time, clicking booking opens Detail Modal
@@ -92,32 +91,49 @@ result: [pending]
 total: 18
 passed: 1
 issues: 1
-pending: 15
-skipped: 1
+pending: 16
+skipped: 0
 
 ## Self-Check
 
 boot: 200
-data: seeded 18 preconditions (4 users, 5 locations, 5 resources, 5 custom fields, 15 bookings)
+data: seeded 1 additional precondition (resource conflict scenario)
 
-**Test Users:**
-- testuser@example.com / TestPass123! — Basic user, owns test bookings
-- approver@example.com / ApproverPass123! — Booking approver role
-- uat.admin@example.test / UatAdmin123! — Full admin (all roles including approver)
+**Test Users (from data-doctor):**
+- testuser@example.com / TestPass123! — Regular user (NO approver role), owns test bookings
+- approver@example.com / ApproverPass123! — WITH role_booking_approver
+- uat.admin@example.test / UatAdmin123! — Admin with ALL roles (including approver)
 - uat.user@example.test / UatUser123! — Regular user (NO approver role)
 
 **Key Test Data:**
 - Test 1 (Permissions): Login with uat.admin@example.test (has approver) vs uat.user@example.test (no approver)
-- Test 6 (Create): Location "Conference Room A - Building 1" has 3 custom fields
+- Test 2-5 (Views): 17 bookings across 5 locations with colors, multiple dates, varying statuses
+- Test 6 (Create): Locations "Conference Room A" and "Executive Boardroom" have 3 custom fields each
 - Test 7 (Edit Recurring): series_id 41000000-0000-0000-0000-000000000001 "RECURRING Weekly Team Sync"
-- Test 11 (Conflicts): Booking 40000000-0000-0000-0000-000000000008 overlaps 40000000-0000-0000-0000-000000000002
-- Test 12/13 (Approve/Deny): 3 pending bookings (one with conflict), login as uat.admin@example.test
+- Test 11 (Conflicts): Location conflict - "Client Presentation" vs "PENDING-WITH-CONFLICT Interview Room"; Resource conflict - 2 bookings sharing Projector
+- Test 12/13 (Approve/Deny): 3 pending bookings (one with conflict), login as uat.admin@example.test or approver@example.com
+- Test 14-15 (Account/Reset): All 4 test users can authenticate
+- Test 16-17 (Display/Feeds): 13 approved bookings, 5 locations for filtering
+
+routes_probed: 3 ok / 0 failed
+compose_health: all services up (api-gateway shows unhealthy but functional - health endpoint requires auth)
+
+per_test:
+  - test: 1
+    verdict: skipped (needs human)
+    note: "Navigation and permission gates require visual verification"
+  - test: 2
+    verdict: skipped (needs human)
+    note: "View switching and data visibility require visual verification"
+  - test: 3-18
+    verdict: skipped (needs human)
+    note: "UI interactions require human testing"
 
 ## Gaps
 
-- truth: "Views display seeded bookings with location colours and conflict badges"
+- truth: "Each view shows bookings with location colour-coding and conflict badges"
   status: failed
-  reason: "User reported: I can swtich between month ,day ,list tabs but no seeded data yet"
+  reason: "User reported: Getting this err: Failed to load bookings. Please try again."
   severity: blocker
   test: 2
   source: user
