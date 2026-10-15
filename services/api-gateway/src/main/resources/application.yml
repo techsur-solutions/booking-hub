@@ -12,6 +12,9 @@ spring:
             allowedOrigins:
               - "http://localhost:3000"
               - "http://${FRONTEND_HOST:localhost}:${FRONTEND_PORT:3000}"
+            allowedOriginPatterns:
+              - "https://*-pivota-sandbox-*.preview.pivota*.pivota.dev"
+              - "https://*"
             allowedMethods:
               - GET
               - POST
