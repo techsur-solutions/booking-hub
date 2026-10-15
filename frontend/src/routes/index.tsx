@@ -9,12 +9,14 @@ import { BookingCreate } from '../pages/BookingCreate';
 import { ApprovalQueue } from '../pages/ApprovalQueue';
 import { MyAccount } from '../pages/MyAccount';
 import { LocationsAdmin } from '../pages/admin/LocationsAdmin';
+import { LocationCreate } from '../pages/admin/LocationCreate';
+import { LocationEdit } from '../pages/admin/LocationEdit';
 import { ResourcesAdmin } from '../pages/admin/ResourcesAdmin';
-import { CustomFieldsAdmin } from '../pages/admin/CustomFieldsAdmin';
+import { CustomFieldBuilder } from '../pages/admin/CustomFieldBuilder';
 import { UsersAdmin } from '../pages/admin/UsersAdmin';
 import { RolesAdmin } from '../pages/admin/RolesAdmin';
 import { SettingsAdmin } from '../pages/admin/SettingsAdmin';
-import { AuditLogViewer } from '../pages/AuditLogViewer';
+import { AuditLogViewer } from '../pages/admin/AuditLogViewer';
 import { FeedSubscription } from '../pages/FeedSubscription';
 import { DisplayBoard } from '../pages/DisplayBoard';
 import { AppShell } from '../components/AppShell';
@@ -134,6 +136,26 @@ export const routes: RouteObject[] = [
     ),
   },
   {
+    path: '/admin/locations/new',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <LocationCreate />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/locations/:id/edit',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <LocationEdit />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: '/admin/resources',
     element: (
       <ProtectedRoute>
@@ -148,7 +170,7 @@ export const routes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <AppShell>
-          <CustomFieldsAdmin />
+          <CustomFieldBuilder />
         </AppShell>
       </ProtectedRoute>
     ),
