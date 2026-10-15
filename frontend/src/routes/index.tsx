@@ -170,6 +170,26 @@ export const routes: RouteObject[] = [
     ),
   },
   {
+    path: '/admin/resources/new',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <ResourceCreate />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/resources/:id/edit',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <ResourceEdit />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: '/admin/custom-fields',
     element: (
       <ProtectedRoute>
