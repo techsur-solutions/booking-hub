@@ -460,12 +460,16 @@ export function SettingsForm({ className }: SettingsFormProps) {
               approval.
             </p>
 
-            {/* Propagation indicator — appears after save, addresses JRN-03.2 concern */}
+            {/* Propagation indicator — appears after save, auto-dismisses after 5s.
+                Addresses JRN-03.2: "Did the approval setting actually propagate?"
+                Phase 4 Plan 06 decision: no in-memory cache, getCurrent() reads DB directly,
+                so approve_booking changes ARE immediate — this badge makes that explicit. */}
             {showPropagationIndicator && (
               <div
                 data-testid="propagation-indicator"
                 role="status"
                 aria-live="polite"
+                aria-label="Approval setting change propagation status"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
