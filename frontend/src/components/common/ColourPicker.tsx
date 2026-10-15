@@ -61,7 +61,15 @@ export function ColourPicker({ value, onChange, label = 'Colour', error }: Colou
         {/* Visual swatch */}
         <span
           className="colour-picker__swatch"
-          style={{ backgroundColor: swatchColour }}
+          style={{
+            backgroundColor: swatchColour,
+            display: 'inline-block',
+            width: '2rem',
+            height: '2rem',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            verticalAlign: 'middle',
+          }}
           aria-label={`Selected colour: ${value}`}
           data-testid="colour-swatch-preview"
         />

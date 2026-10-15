@@ -54,7 +54,15 @@ export function LocationTable({ locations, onRefresh }: LocationTableProps) {
                 <td>
                   <span
                     className="colour-swatch"
-                    style={{ backgroundColor: location.colour }}
+                    style={{
+                      backgroundColor: location.colour,
+                      display: 'inline-block',
+                      width: '1.5rem',
+                      height: '1.5rem',
+                      border: '1px solid #ccc',
+                      borderRadius: '3px',
+                      verticalAlign: 'middle',
+                    }}
                     title={location.colour}
                     aria-label={`Colour: ${location.colour}`}
                     data-testid={`location-colour-swatch-${location.id}`}
