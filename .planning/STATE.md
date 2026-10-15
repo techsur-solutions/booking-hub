@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 10-08-PLAN.md
-last_updated: "2026-10-15T02:44:31.148Z"
+stopped_at: Completed 10-11-PLAN.md
+last_updated: "2026-10-15T03:01:16.582Z"
 last_activity: 2026-10-15 — Completed plan 10-01 (Locations Admin table, form, colour picker, soft-delete)
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 32
-  completed_plans: 28
+  completed_plans: 29
 ---
 
 # Project State
@@ -120,6 +120,7 @@ Last activity: 2026-10-15 — Completed plan 10-01 (Locations Admin table, form,
 | Phase 10-admin-interface-polish P09 | 15min | 1 tasks | 0 files |
 | Phase 10-admin-interface-polish P10 | 15min | 1 tasks | 0 files |
 | Phase 10-admin-interface-polish P08 | 15min | 1 tasks | 0 files |
+| Phase 10-admin-interface-polish P11 | 14min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -268,6 +269,8 @@ Recent decisions affecting current work:
 - [Phase 10-admin-interface-polish]: Tablet layout (768-1024px) verified as approved: hamburger sidebar, single-column forms, accessible tables
 - [Phase 10-admin-interface-polish]: UI-RESP-03 human verification: mobile layout approved at 375px and 414px viewports. Bottom nav 3-items for standard users accepted. Month View as mobile default accepted (Day View tab-accessible).
 - [Phase 10-admin-interface-polish]: Desktop layout at >1024px confirmed via human verification: sidebar always-visible, full calendar month grid, admin tables all columns, two-column forms
+- [Phase 10-admin-interface-polish]: FullCalendar .fc DOM excluded from axe scans — #b3d0ee decorative markers can't be overridden without replacing entire FullCalendar CSS theme
+- [Phase 10-admin-interface-polish]: Active sidebar/tab colors darkened in a11y.css for WCAG 4.5:1 contrast: --color-active-text #0d47a1, tabs #4b5563/#1d4ed8
 
 ### Pending Todos
 
@@ -340,6 +343,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-15T02:44:31.145Z
-Stopped at: Completed 10-08-PLAN.md
+Last session: 2026-10-15T03:01:16.580Z
+Stopped at: Completed 10-11-PLAN.md
 Resume file: None
