@@ -1,16 +1,8 @@
 import { apiClient } from './client';
+import type { Settings } from './types';
 
-/**
- * Settings singleton entity shape (from Phase 4 settings-service).
- * The entity is always id=1; the frontend never sends the id in updates.
- */
-export interface Settings {
-  id: number; // always 1, singleton
-  approve_booking: boolean;
-  calendar_slot_size: number; // minutes: 15 | 30 | 60
-  calendar_min_time: string; // "HH:mm" e.g. "08:00"
-  calendar_max_time: string; // "HH:mm" e.g. "18:00"
-}
+// Re-export Settings from the canonical types module so all consumers import from one place.
+export type { Settings };
 
 export interface SettingsUpdateRequest {
   approve_booking: boolean;
