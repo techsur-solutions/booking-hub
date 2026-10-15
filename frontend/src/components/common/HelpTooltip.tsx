@@ -83,9 +83,6 @@ export function HelpTooltip({ content, position = 'right', className }: HelpTool
           padding: 0,
           lineHeight: 1,
           flexShrink: 0,
-          /* Remove default button styles */
-          outline: 'none',
-          boxShadow: 'none',
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
