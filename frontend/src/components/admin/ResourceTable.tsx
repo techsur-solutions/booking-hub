@@ -134,10 +134,11 @@ export function ResourceTable({ resources, locations, onRefresh }: ResourceTable
 
       <SoftDeleteDialog
         open={deleteTarget !== null}
-        onConfirm={deleteLoading ? () => {} : handleDeleteConfirm}
+        onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
         entityName={deleteTarget?.name ?? ''}
         contextMessage="Existing bookings will keep this resource reference"
+        loading={deleteLoading}
       />
     </>
   );

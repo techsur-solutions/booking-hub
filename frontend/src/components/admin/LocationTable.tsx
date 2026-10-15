@@ -102,10 +102,11 @@ export function LocationTable({ locations, onRefresh }: LocationTableProps) {
 
       <SoftDeleteDialog
         open={deleteTarget !== null}
-        onConfirm={deleteLoading ? () => {} : handleDeleteConfirm}
+        onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
         entityName={deleteTarget?.name ?? ''}
         contextMessage="Existing bookings will keep this location reference"
+        loading={deleteLoading}
       />
     </>
   );

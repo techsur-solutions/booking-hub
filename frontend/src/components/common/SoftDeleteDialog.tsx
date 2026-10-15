@@ -6,6 +6,8 @@ export interface SoftDeleteDialogProps {
   onCancel: () => void;
   entityName: string;
   contextMessage?: string;
+  /** When true, the confirm button is disabled to prevent double-submission */
+  loading?: boolean;
 }
 
 export function SoftDeleteDialog({
@@ -14,6 +16,7 @@ export function SoftDeleteDialog({
   onCancel,
   entityName,
   contextMessage,
+  loading = false,
 }: SoftDeleteDialogProps) {
   // Close on Escape key (WCAG 2.1.1 — keyboard navigation)
   const handleKeyDown = useCallback(
@@ -78,8 +81,10 @@ export function SoftDeleteDialog({
             className="soft-delete-dialog__confirm soft-delete-dialog__confirm--danger"
             data-testid="soft-delete-confirm"
             aria-label={`Confirm deletion of ${entityName}`}
+            disabled={loading}
+            aria-disabled={loading}
           >
-            Delete
+            {loading ? 'Deleting…' : 'Delete'}
           </button>
         </div>
       </div>
