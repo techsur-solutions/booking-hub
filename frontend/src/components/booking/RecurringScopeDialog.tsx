@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { Button } from '../Button';
+import { HelpTooltip } from '../common/HelpTooltip';
 
 export type RecurringScope = 'this-only' | 'entire-series';
 
@@ -41,25 +42,37 @@ export function RecurringScopeDialog({ onScopeSelect }: RecurringScopeDialogProp
           </p>
 
           <div className="recurring-scope-dialog__options">
-            <Button
-              variant="secondary"
-              size="large"
-              className="recurring-scope-dialog__option"
-              onClick={() => onScopeSelect('this-only')}
-              data-testid="scope-this-only"
-            >
-              This occurrence only
-            </Button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+              <Button
+                variant="secondary"
+                size="large"
+                className="recurring-scope-dialog__option"
+                onClick={() => onScopeSelect('this-only')}
+                data-testid="scope-this-only"
+              >
+                This occurrence only
+              </Button>
+              <HelpTooltip
+                content="Your changes apply ONLY to the occurrence you clicked. All other occurrences in the recurring series remain unchanged."
+                position="right"
+              />
+            </div>
 
-            <Button
-              variant="secondary"
-              size="large"
-              className="recurring-scope-dialog__option"
-              onClick={() => onScopeSelect('entire-series')}
-              data-testid="scope-entire-series"
-            >
-              Entire series
-            </Button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+              <Button
+                variant="secondary"
+                size="large"
+                className="recurring-scope-dialog__option"
+                onClick={() => onScopeSelect('entire-series')}
+                data-testid="scope-entire-series"
+              >
+                Entire series
+              </Button>
+              <HelpTooltip
+                content="Your changes apply to ALL future occurrences of this recurring series, including the one you clicked. Past occurrences are not affected."
+                position="right"
+              />
+            </div>
           </div>
         </div>
 

@@ -1,0 +1,123 @@
+name: E2E Tests — Critical Flows
+
+# Runs on every PR targeting main or develop, and on push to main.
+# Tests cover 5 critical user flows:
+#   1. Login (Keycloak PKCE)
+#   2. Booking CRUD (create / edit / delete)
+#   3. Conflict handling (hard-block vs soft-warning by role)
+#   4. Approval workflow (approve / deny)
+#   5. Recurring scope selection (this occurrence vs entire series)
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+
+jobs:
+  e2e:
+    name: Critical Flow E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      # ── Checkout ─────────────────────────────────────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── Node.js setup ────────────────────────────────────────────────────────
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # ── Install frontend dependencies ─────────────────────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Install Playwright browsers ───────────────────────────────────────────
+      # Install Chromium only (sufficient for E2E test matrix in CI).
+      # Do NOT run `npx playwright install --with-deps` for other browsers
+      # unless cross-browser testing is explicitly enabled.
+      - name: Install Playwright browsers (Chromium)
+        run: npx playwright install --with-deps chromium
+
+      # ── Start backend services ────────────────────────────────────────────────
+      # E2E tests run with VITE_E2E_MODE=true which mocks all API calls at the
+      # Playwright route level. No real backend is required for critical-flow tests.
+      # This step starts docker-compose for smoke-testing non-mocked scenarios.
+      - name: Start backend services (docker compose)
+        working-directory: .
+        run: docker compose up -d
+        continue-on-error: true  # Non-fatal: E2E tests use API mocks
+
+      - name: Wait for services to be healthy
+        working-directory: .
+        run: |
+          echo "Waiting for services…"
+          timeout 60 bash -c 'until docker compose ps 2>/dev/null | grep -q healthy; do sleep 2; done' || echo "Services not healthy (continuing — E2E tests use API mocks)"
+        continue-on-error: true  # Non-fatal: E2E tests use API mocks
+
+      # ── Run critical-flow E2E tests ───────────────────────────────────────────
+      # VITE_E2E_MODE=true: AuthProvider bypasses Keycloak, roles injected via
+      # window.__E2E_ROLES__, API calls intercepted via page.route().
+      # --workers=1: ensures sequential execution for deterministic results.
+      - name: Run E2E tests — Login flow
+        env:
+          VITE_E2E_MODE: 'true'
+        run: npx playwright test e2e/critical-flows/login.spec.ts --workers=1 --reporter=list
+
+      - name: Run E2E tests — Booking CRUD
+        env:
+          VITE_E2E_MODE: 'true'
+        run: npx playwright test e2e/critical-flows/booking-crud.spec.ts --workers=1 --reporter=list
+
+      - name: Run E2E tests — Conflict handling
+        env:
+          VITE_E2E_MODE: 'true'
+        run: npx playwright test e2e/critical-flows/conflict-handling.spec.ts --workers=1 --reporter=list
+
+      - name: Run E2E tests — Approval workflow
+        env:
+          VITE_E2E_MODE: 'true'
+        run: npx playwright test e2e/critical-flows/approval.spec.ts --workers=1 --reporter=list
+
+      - name: Run E2E tests — Recurring scope selection
+        env:
+          VITE_E2E_MODE: 'true'
+        run: npx playwright test e2e/critical-flows/recurring-scope.spec.ts --workers=1 --reporter=list
+
+      # ── Upload test results on failure ────────────────────────────────────────
+      - name: Upload Playwright test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-critical-flows
+          path: frontend/playwright-report/
+          retention-days: 7
+
+      # ── Shutdown services ─────────────────────────────────────────────────────
+      - name: Shutdown backend services
+        if: always()
+        working-directory: .
+        run: docker compose down
+        continue-on-error: true
+
+# ── Branch Protection Rule ────────────────────────────────────────────────────
+# To enforce merge blocking when E2E tests fail, configure branch protection in
+# GitHub repository settings:
+#
+#   Settings → Branches → Branch protection rules → Edit/Add rule for main:
+#   ✓ Require status checks to pass before merging
+#     → Add: "Critical Flow E2E Tests" (this workflow's job name)
+#
+# This ensures every PR that fails critical-flow E2E tests cannot be merged.

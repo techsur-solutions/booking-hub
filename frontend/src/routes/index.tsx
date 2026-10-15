@@ -9,12 +9,18 @@ import { BookingCreate } from '../pages/BookingCreate';
 import { ApprovalQueue } from '../pages/ApprovalQueue';
 import { MyAccount } from '../pages/MyAccount';
 import { LocationsAdmin } from '../pages/admin/LocationsAdmin';
+import { LocationCreate } from '../pages/admin/LocationCreate';
+import { LocationEdit } from '../pages/admin/LocationEdit';
 import { ResourcesAdmin } from '../pages/admin/ResourcesAdmin';
-import { CustomFieldsAdmin } from '../pages/admin/CustomFieldsAdmin';
+import { ResourceCreate } from '../pages/admin/ResourceCreate';
+import { ResourceEdit } from '../pages/admin/ResourceEdit';
+import { CustomFieldBuilder } from '../pages/admin/CustomFieldBuilder';
 import { UsersAdmin } from '../pages/admin/UsersAdmin';
+import { UserCreate } from '../pages/admin/UserCreate';
+import { UserEdit } from '../pages/admin/UserEdit';
 import { RolesAdmin } from '../pages/admin/RolesAdmin';
 import { SettingsAdmin } from '../pages/admin/SettingsAdmin';
-import { AuditLogViewer } from '../pages/AuditLogViewer';
+import { AuditLogViewer } from '../pages/admin/AuditLogViewer';
 import { FeedSubscription } from '../pages/FeedSubscription';
 import { DisplayBoard } from '../pages/DisplayBoard';
 import { AppShell } from '../components/AppShell';
@@ -134,6 +140,26 @@ export const routes: RouteObject[] = [
     ),
   },
   {
+    path: '/admin/locations/new',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <LocationCreate />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/locations/:id/edit',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <LocationEdit />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: '/admin/resources',
     element: (
       <ProtectedRoute>
@@ -144,11 +170,31 @@ export const routes: RouteObject[] = [
     ),
   },
   {
+    path: '/admin/resources/new',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <ResourceCreate />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/resources/:id/edit',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <ResourceEdit />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: '/admin/custom-fields',
     element: (
       <ProtectedRoute>
         <AppShell>
-          <CustomFieldsAdmin />
+          <CustomFieldBuilder />
         </AppShell>
       </ProtectedRoute>
     ),
@@ -159,6 +205,26 @@ export const routes: RouteObject[] = [
       <ProtectedRoute>
         <AppShell>
           <UsersAdmin />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/users/new',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <UserCreate />
+        </AppShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/users/:id/edit',
+    element: (
+      <ProtectedRoute>
+        <AppShell>
+          <UserEdit />
         </AppShell>
       </ProtectedRoute>
     ),

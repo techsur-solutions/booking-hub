@@ -83,6 +83,13 @@ export interface Permission {
   [key: string]: boolean | string;
 }
 
+export interface FieldTemplate {
+  id: string;
+  name: string;
+  context_id: string | null; // null = global, otherwise specific Location id
+  field_ids: string[]; // array of CustomField ids
+}
+
 export interface FeedBooking {
   id: string;
   title: string;

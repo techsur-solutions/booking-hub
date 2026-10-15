@@ -26,6 +26,10 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <ToastProvider>
+            {/* Skip link — keyboard users can bypass navigation (WCAG 2.4.1) */}
+            <a href="#main-content" className="skip-link">
+              Skip to main content
+            </a>
             <RouteRenderer />
           </ToastProvider>
         </AuthProvider>

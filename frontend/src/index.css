@@ -11,6 +11,9 @@
 /* 3. Component styles */
 @import './styles/components.css';
 
+/* 4. Accessibility enhancements (WCAG AA) */
+@import './styles/a11y.css';
+
 /* ---------------------------------------------------------------------------
    Reset & Normalize
    --------------------------------------------------------------------------- */

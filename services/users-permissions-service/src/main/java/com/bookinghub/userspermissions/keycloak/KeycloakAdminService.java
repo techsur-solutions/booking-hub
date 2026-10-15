@@ -177,6 +177,41 @@ public class KeycloakAdminService {
     }
 
     /**
+     * Sets the enabled/disabled flag for a Keycloak user.
+     *
+     * Uses Keycloak's PUT /admin/realms/{realm}/users/{id} with {@code enabled} set.
+     * Disabled users cannot log in but their data is preserved.
+     *
+     * @param keycloakUserId Keycloak user ID
+     * @param enabled        {@code true} to activate, {@code false} to deactivate
+     */
+    public void setUserEnabled(String keycloakUserId, boolean enabled) {
+        UserRepresentation rep = new UserRepresentation();
+        rep.setEnabled(enabled);
+        keycloak.realm(realm).users().get(keycloakUserId).update(rep);
+    }
+
+    /**
+     * Returns whether a Keycloak user account is enabled (active).
+     *
+     * Fetches a fresh {@link UserRepresentation} from Keycloak.
+     * Returns {@code true} as a safe default if the lookup fails (e.g., user not yet
+     * synced), so the UI does not inadvertently show a healthy user as inactive.
+     *
+     * @param keycloakUserId Keycloak user ID
+     * @return {@code true} if enabled, {@code false} if disabled
+     */
+    public boolean getUserEnabled(String keycloakUserId) {
+        try {
+            UserRepresentation rep = keycloak.realm(realm).users().get(keycloakUserId).toRepresentation();
+            return Boolean.TRUE.equals(rep.isEnabled());
+        } catch (Exception e) {
+            // Safe default — do not hide users from admin listing on transient Keycloak errors
+            return true;
+        }
+    }
+
+    /**
      * Finds a Keycloak user ID by email address.
      * 
      * @param email User email to search (exact match)

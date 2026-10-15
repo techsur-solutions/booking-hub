@@ -62,7 +62,7 @@ export function AppShell({ children }: AppShellProps) {
       )}
 
       {/* ── Main Content ────────────────────────────── */}
-      <main className="app-main" onClick={sidebarOpen ? closeSidebar : undefined}>
+      <main id="main-content" className="app-main" onClick={sidebarOpen ? closeSidebar : undefined}>
         {children}
       </main>
 

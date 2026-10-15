@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-last_updated: "2026-10-15T02:12:21.807Z"
-last_activity: "2026-10-15 — Phase 9 complete"
+stopped_at: Completed 10-14-PLAN.md
+last_updated: "2026-10-15T13:23:46.243Z"
+last_activity: 2026-10-15 — Completed plan 10-01 (Locations Admin table, form, colour picker, soft-delete)
 progress:
   total_phases: 2
-  completed_phases: 8
-  total_plans: 79
-  completed_plans: 64
-  percent: 100
+  completed_phases: 2
+  total_plans: 32
+  completed_plans: 32
 ---
 
 # Project State
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 
 ## Current Position
 
-Phase: 9 (Core User Interface) — IN PROGRESS
-Plan: 16 of 18
-Status: Completed 09-16-PLAN.md
-Last activity: 2026-10-13 — Completed plan 09-16 (Create Booking button navigation, UAT gap #6 closure)
+Phase: 10 (Admin Interface Polish) — IN PROGRESS
+Plan: 1 of 7
+Status: Completed 10-01-PLAN.md
+Last activity: 2026-10-15 — Completed plan 10-01 (Locations Admin table, form, colour picker, soft-delete)
 
 ## Performance Metrics
 
@@ -110,6 +110,20 @@ Last activity: 2026-10-13 — Completed plan 09-16 (Create Booking button naviga
 | Phase 09-core-user-interface P16 | 5min | 2 tasks | 2 files |
 | Phase 09-core-user-interface P17 | 3min | 2 tasks | 4 files |
 | Phase 09 P18 | 6min | 4 tasks | 4 files |
+| Phase 10-admin-interface-polish P05 | 3min | 3 tasks | 5 files |
+| Phase 10-admin-interface-polish P06 | 4min | 3 tasks | 4 files |
+| Phase 10-admin-interface-polish P02 | 5min | 3 tasks | 8 files |
+| Phase 10-admin-interface-polish P04 | 5 min | 4 tasks | 9 files |
+| Phase 10-admin-interface-polish P01 | 7 min | 3 tasks | 10 files |
+| Phase 10-admin-interface-polish P07 | 6min | 3 tasks | 6 files |
+| Phase 10-admin-interface-polish P03 | 10min | 3 tasks | 11 files |
+| Phase 10-admin-interface-polish P09 | 15min | 1 tasks | 0 files |
+| Phase 10-admin-interface-polish P10 | 15min | 1 tasks | 0 files |
+| Phase 10-admin-interface-polish P08 | 15min | 1 tasks | 0 files |
+| Phase 10-admin-interface-polish P11 | 14min | 2 tasks | 14 files |
+| Phase 10-admin-interface-polish P12 | 18min | 3 tasks | 6 files |
+| Phase 10-admin-interface-polish P13 | 6min | 3 tasks | 10 files |
+| Phase 10-admin-interface-polish P14 | 590min | 1 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -243,6 +257,28 @@ Recent decisions affecting current work:
 - [Phase 09-17]: JWT token refresh centralized in apiClient request interceptor using keycloak.updateToken(30) — applies to ALL API calls app-wide, not per-hook duplication
 - [Phase 09-17]: useLocations enhanced with retry: 2 and staleTime: 5min as secondary defense against transient failures (primary fix is centralized token refresh)
 - [Phase 09-17]: BookingForm location dropdown uses structural absence pattern for loading/error/empty states (conditional rendering) instead of disabled select
+- [Phase 10-admin-interface-polish]: RolesAdmin re-exports RolePermissionMatrix to keep routes/index.tsx import unchanged; keycloakAdminUrl constructed inline for grep-compatible verify check; data-granted attribute dual-purpose for CSS and Playwright
+- [Phase 10-admin-interface-polish]: settingsApi.getCurrent() calls GET /settings/current; update() calls PUT /settings/1 (Phase 4 singleton pattern)
+- [Phase 10-admin-interface-polish]: Propagation indicator implements JRN-03.2: Phase 4 no-cache decision means approve_booking changes ARE immediate — badge communicates this explicitly
+- [Phase 10-admin-interface-polish]: restrict_locations implemented as checkbox list (no react-select) — native HTML, no new deps, stores UUIDs
+- [Phase 10-admin-interface-polish]: ResourceTable receives locations[] as prop from ResourcesAdmin parent — avoids duplicate API calls
+- [Phase 10-admin-interface-polish]: isSelfEdit via keycloak.tokenParsed.sub === userId route param: frontend mirror of Phase 3 CurrentUserProvider.isSelf(); roles/password structurally absent in self-edit (not disabled)
+- [Phase 10-admin-interface-polish]: ColourPicker dual-input (hex text + native picker) with inline styles for visibility; SoftDeleteDialog contextMessage for data-retention context
+- [Phase 10-admin-interface-polish]: locationsApi.ts separate from locations.ts — plan's method names (getAll/create/update/delete) differ from pre-existing (getLocations/createLocation etc.)
+- [Phase 10-admin-interface-polish]: Client-side CSV fallback: if /audit-log/export backend endpoint unavailable, generateCsvBlob() converts getFiltered() JSON response to CSV
+- [Phase 10-admin-interface-polish]: Before/After columns show N/A by default: Phase 6 Plan 04 stores null before_values (interim default, no before-snapshot in publishers)
+- [Phase 10-admin-interface-polish]: FieldPreview is purely presentational (disabled inputs) — live visual feedback only, not interactive
+- [Phase 10-admin-interface-polish]: [Phase 10-03]: Options validation error: 'Options required for {field_type} type' — matches F0-confirmed rule that select/radio/checkbox MUST have options, textfield/textarea MUST NOT
+- [Phase 10-admin-interface-polish]: Tablet layout (768-1024px) verified as approved: hamburger sidebar, single-column forms, accessible tables
+- [Phase 10-admin-interface-polish]: UI-RESP-03 human verification: mobile layout approved at 375px and 414px viewports. Bottom nav 3-items for standard users accepted. Month View as mobile default accepted (Day View tab-accessible).
+- [Phase 10-admin-interface-polish]: Desktop layout at >1024px confirmed via human verification: sidebar always-visible, full calendar month grid, admin tables all columns, two-column forms
+- [Phase 10-admin-interface-polish]: FullCalendar .fc DOM excluded from axe scans — #b3d0ee decorative markers can't be overridden without replacing entire FullCalendar CSS theme
+- [Phase 10-admin-interface-polish]: Active sidebar/tab colors darkened in a11y.css for WCAG 4.5:1 contrast: --color-active-text #0d47a1, tabs #4b5563/#1d4ed8
+- [Phase 10-12]: Single catch-all route handler for Playwright API mocking to avoid route ordering issues
+- [Phase 10-12]: window.__E2E_USER_ID__ injection required alongside __E2E_ROLES__ for BookingDetailModal delete button (canEdit = owner_id === keycloak.subject)
+- [Phase 10-13]: HelpTooltip uses pure CSS/Unicode (no icon library) to avoid new dependencies
+- [Phase 10-13]: 15 tooltips across 6 components; InlineHelp companion for always-visible descriptions
+- [Phase 10-admin-interface-polish]: Human confirmed production-ready status — BookingHub v2.0 approved for deployment after full-stack smoke test, cross-browser testing, performance benchmarks, and UAT passed
 
 ### Pending Todos
 
@@ -315,6 +351,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-14T14:19:12.040Z
-Stopped at: Completed 09-18-PLAN.md
+Last session: 2026-10-15T13:23:46.241Z
+Stopped at: Completed 10-14-PLAN.md
 Resume file: None
