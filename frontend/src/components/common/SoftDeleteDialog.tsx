@@ -1,3 +1,5 @@
+import { useEffect, useCallback } from 'react';
+
 export interface SoftDeleteDialogProps {
   open: boolean;
   onConfirm: () => void;
@@ -13,6 +15,25 @@ export function SoftDeleteDialog({
   entityName,
   contextMessage,
 }: SoftDeleteDialogProps) {
+  // Close on Escape key (WCAG 2.1.1 — keyboard navigation)
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+    },
+    [onCancel],
+  );
+
+  useEffect(() => {
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [open, handleKeyDown]);
+
   if (!open) return null;
 
   return (
@@ -47,6 +68,7 @@ export function SoftDeleteDialog({
             onClick={onCancel}
             className="soft-delete-dialog__cancel"
             data-testid="soft-delete-cancel"
+            aria-label="Cancel deletion"
           >
             Cancel
           </button>
@@ -55,6 +77,7 @@ export function SoftDeleteDialog({
             onClick={onConfirm}
             className="soft-delete-dialog__confirm soft-delete-dialog__confirm--danger"
             data-testid="soft-delete-confirm"
+            aria-label={`Confirm deletion of ${entityName}`}
           >
             Delete
           </button>

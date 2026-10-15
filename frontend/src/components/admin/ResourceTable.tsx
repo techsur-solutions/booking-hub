@@ -46,15 +46,15 @@ export function ResourceTable({ resources, locations, onRefresh }: ResourceTable
 
   return (
     <>
-      <table className="resource-table" data-testid="resource-table">
+      <table className="resource-table" data-testid="resource-table" aria-label="Resources">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Is Unique</th>
-            <th>Restrict Locations</th>
-            <th>Actions</th>
+            <th scope="col">Name</th>
+            <th scope="col">Type</th>
+            <th scope="col">Description</th>
+            <th scope="col">Is Unique</th>
+            <th scope="col">Restrict Locations</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>

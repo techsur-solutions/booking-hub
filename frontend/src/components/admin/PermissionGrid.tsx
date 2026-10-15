@@ -97,7 +97,7 @@ export function PermissionGrid({ matrixOverride }: PermissionGridProps) {
   return (
     <div className="permission-grid-wrapper" data-testid="permission-grid">
       <div className="permission-grid-scroll">
-        <table className="permission-grid-table" data-testid="permission-matrix-table">
+        <table className="permission-grid-table" data-testid="permission-matrix-table" aria-label="Role permission matrix">
           <thead>
             <tr>
               {/* Top-left corner cell */}

@@ -16,7 +16,7 @@
   --color-text: #212121;
   --color-text-secondary: #757575;
   --color-active-bg: #e3f2fd;
-  --color-active-text: #1976d2;
+  --color-active-text: #0d47a1; /* Darkened from #1976d2 for WCAG AA 4.5:1 contrast on #e3f2fd */
   --color-hover-bg: #f0f4f8;
   --sidebar-transition: transform 0.25s ease;
 }

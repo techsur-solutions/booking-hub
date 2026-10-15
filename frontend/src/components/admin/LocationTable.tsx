@@ -30,14 +30,14 @@ export function LocationTable({ locations, onRefresh }: LocationTableProps) {
 
   return (
     <>
-      <table className="location-table" data-testid="location-table">
+      <table className="location-table" data-testid="location-table" aria-label="Locations">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Colour</th>
-            <th>Building</th>
-            <th>Layout</th>
-            <th>Actions</th>
+            <th scope="col">Name</th>
+            <th scope="col">Colour</th>
+            <th scope="col">Building</th>
+            <th scope="col">Layout</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -54,6 +54,7 @@ export function LocationTable({ locations, onRefresh }: LocationTableProps) {
                 <td>
                   <span
                     className="colour-swatch"
+                    role="img"
                     style={{
                       backgroundColor: location.colour,
                       display: 'inline-block',
@@ -63,7 +64,6 @@ export function LocationTable({ locations, onRefresh }: LocationTableProps) {
                       borderRadius: '3px',
                       verticalAlign: 'middle',
                     }}
-                    title={location.colour}
                     aria-label={`Colour: ${location.colour}`}
                     data-testid={`location-colour-swatch-${location.id}`}
                   />

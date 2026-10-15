@@ -74,16 +74,16 @@ export function UserTable({ users: propUsers, onRefresh }: UserTableProps) {
   }
 
   return (
-    <table className="user-table" data-testid="user-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Roles</th>
-          <th>Active</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+    <table className="user-table" data-testid="user-table" aria-label="Users">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Roles</th>
+            <th scope="col">Active</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
       <tbody>
         {users.length === 0 ? (
           <tr>
