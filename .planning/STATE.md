@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 10-02-PLAN.md
-last_updated: "2026-10-15T02:21:20.505Z"
+stopped_at: Completed 10-04-PLAN.md
+last_updated: "2026-10-15T02:21:59.978Z"
 last_activity: "2026-10-13 — Completed plan 09-16 (Create Booking button navigation, UAT gap #6 closure)"
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 32
-  completed_plans: 21
+  completed_plans: 22
 ---
 
 # Project State
@@ -113,6 +113,7 @@ Last activity: 2026-10-13 — Completed plan 09-16 (Create Booking button naviga
 | Phase 10-admin-interface-polish P05 | 3min | 3 tasks | 5 files |
 | Phase 10-admin-interface-polish P06 | 4min | 3 tasks | 4 files |
 | Phase 10-admin-interface-polish P02 | 5min | 3 tasks | 8 files |
+| Phase 10-admin-interface-polish P04 | 5 min | 4 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -251,6 +252,7 @@ Recent decisions affecting current work:
 - [Phase 10-admin-interface-polish]: Propagation indicator implements JRN-03.2: Phase 4 no-cache decision means approve_booking changes ARE immediate — badge communicates this explicitly
 - [Phase 10-admin-interface-polish]: restrict_locations implemented as checkbox list (no react-select) — native HTML, no new deps, stores UUIDs
 - [Phase 10-admin-interface-polish]: ResourceTable receives locations[] as prop from ResourcesAdmin parent — avoids duplicate API calls
+- [Phase 10-admin-interface-polish]: isSelfEdit via keycloak.tokenParsed.sub === userId route param: frontend mirror of Phase 3 CurrentUserProvider.isSelf(); roles/password structurally absent in self-edit (not disabled)
 
 ### Pending Todos
 
@@ -323,6 +325,6 @@ Per FRD F13 and PRD Section 7 release metrics, Phase 8 is complete when:
 
 ## Session Continuity
 
-Last session: 2026-10-15T02:21:20.503Z
-Stopped at: Completed 10-02-PLAN.md
+Last session: 2026-10-15T02:21:59.976Z
+Stopped at: Completed 10-04-PLAN.md
 Resume file: None
