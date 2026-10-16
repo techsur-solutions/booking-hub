@@ -4,10 +4,27 @@ version: '3.8'
 # 12 services: postgres, rabbitmq, keycloak, 8 business services, api-gateway, frontend
 # Network isolation enforced: only Gateway/Keycloak/RabbitMQ-mgmt/frontend/Postgres(dev-only) publish host ports
 
+# Containers resolve each other by compose service name through Docker's embedded
+# DNS. Inside Pivota's sandbox (Docker running in a Kubernetes pod) every container
+# also inherits the pod's resolv.conf: search domains `develop.svc.cluster.local`,
+# `svc.cluster.local`, `cluster.local` and `ndots:5`. For a bare name the resolver
+# tries those suffixes first. The cluster has a Kubernetes namespace called
+# `keycloak`, so `keycloak.svc.cluster.local` answers "exists, no address" and the
+# Alpine (musl) resolver stops there: `keycloak` never resolves, the gateway cannot
+# fetch Keycloak's signing keys, and every token is rejected (observed 2026-10-16:
+# login succeeded, then every /api call returned 401 and the app bounced back to
+# Keycloak). `postgres` worked only because no namespace shares its name.
+#
+# Disabling search domains (`.`) makes bare names go straight to Docker's DNS, on
+# every host. Applied to every service so inter-service calls behave the same.
+x-dns: &dns
+  dns_search: ["."]
+
 services:
   # Infrastructure Services
   
   postgres:
+    <<: *dns
     image: postgres:16
     environment:
       # MANDATORY: postgres:16 image refuses to initialize without POSTGRES_PASSWORD or POSTGRES_HOST_AUTH_METHOD
@@ -32,6 +49,7 @@ services:
       retries: 30
 
   rabbitmq:
+    <<: *dns
     image: rabbitmq:3.13-management
     volumes:
       - ./infra/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
@@ -59,6 +77,7 @@ services:
   # Keycloak admin console: http://localhost:8180/admin (admin/admin)
 
   keycloak:
+    <<: *dns
     image: quay.io/keycloak/keycloak:25.0
     command: start-dev --import-realm
     environment:
@@ -83,6 +102,7 @@ services:
   # Business Services - NO ports: published (ClusterIP-only equivalent)
   
   booking-service:
+    <<: *dns
     build: ./services/booking-service
     depends_on:
       postgres:
@@ -109,6 +129,7 @@ services:
       retries: 30
 
   locations-resources-service:
+    <<: *dns
     build: ./services/locations-resources-service
     depends_on:
       postgres:
@@ -135,6 +156,7 @@ services:
       retries: 30
 
   custom-field-service:
+    <<: *dns
     build: ./services/custom-field-service
     depends_on:
       postgres:
@@ -161,6 +183,7 @@ services:
       retries: 30
 
   users-permissions-service:
+    <<: *dns
     build: ./services/users-permissions-service
     depends_on:
       postgres:
@@ -187,6 +210,7 @@ services:
       retries: 30
 
   notifications-service:
+    <<: *dns
     build: ./services/notifications-service
     depends_on:
       postgres:
@@ -213,6 +237,7 @@ services:
       retries: 30
 
   feeds-service:
+    <<: *dns
     build: ./services/feeds-service
     depends_on:
       postgres:
@@ -236,6 +261,7 @@ services:
       retries: 30
 
   settings-service:
+    <<: *dns
     build: ./services/settings-service
     depends_on:
       postgres:
@@ -262,6 +288,7 @@ services:
       retries: 30
 
   audit-log-service:
+    <<: *dns
     build: ./services/audit-log-service
     depends_on:
       postgres:
@@ -296,6 +323,7 @@ services:
   # Runs AFTER audit-log-service healthy (Flyway has created audit_log_entries)
   # Applies SELECT/INSERT-only grant to audit_svc, explicitly REVOKEs UPDATE/DELETE
   audit-grants:
+    <<: *dns
     image: postgres:16
     depends_on:
       audit-log-service:
@@ -308,6 +336,7 @@ services:
 
   # Gateway - single external ingress point
   api-gateway:
+    <<: *dns
     build: ./services/api-gateway
     depends_on:
       keycloak:
@@ -343,6 +372,7 @@ services:
 
   # Frontend
   frontend:
+    <<: *dns
     build: ./frontend
     depends_on:
       - api-gateway
