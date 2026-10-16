@@ -11,10 +11,13 @@ spring:
           '[/**]':
             allowedOrigins:
               - "http://localhost:3000"
+              - "http://localhost:5173" # Vite dev server (`npm run dev`), which calls the gateway directly
               - "http://${FRONTEND_HOST:localhost}:${FRONTEND_PORT:3000}"
+            # The built frontend calls the gateway on its own origin via nginx (/api/), so
+            # the preview needs no CORS entry. The `https://*` wildcard that used to sit here
+            # allowed any site to call this API with the user's credentials.
             allowedOriginPatterns:
               - "https://*-pivota-sandbox-*.preview.pivota*.pivota.dev"
-              - "https://*"
             allowedMethods:
               - GET
               - POST

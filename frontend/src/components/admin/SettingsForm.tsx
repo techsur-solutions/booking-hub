@@ -3,12 +3,11 @@ import { settingsApi } from '../../api/settingsApi';
 import type { Settings, SettingsUpdateRequest } from '../../api/settingsApi';
 import { StateConfirmationBanner } from '../StateConfirmationBanner';
 import { HelpTooltip } from '../common/HelpTooltip';
+import { absoluteApiUrl } from '../../api/baseUrl';
 
-// Feed URL helpers (same base as feedsApi, but inlined to avoid circular import)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-
+// Feed links are copied into other apps, so they must be absolute (see baseUrl.ts).
 function buildFeedUrl(path: string): string {
-  return `${API_BASE_URL}${path}`;
+  return absoluteApiUrl(path).toString();
 }
 
 interface FeedLinksModalProps {

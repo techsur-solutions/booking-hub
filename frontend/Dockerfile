@@ -24,6 +24,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY keycloak-proxy.inc /etc/nginx/conf.d/keycloak-proxy.inc
+COPY gateway-proxy.inc /etc/nginx/conf.d/gateway-proxy.inc
 
 # Expose port 80
 EXPOSE 80

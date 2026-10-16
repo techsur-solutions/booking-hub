@@ -1,7 +1,6 @@
 import { apiClient } from './client';
 import type { FeedBooking } from './types';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+import { absoluteApiUrl } from './baseUrl';
 
 export const feedsApi = {
   /** Fetch approved bookings for the Display Board kiosk (public, no auth required). */
@@ -15,24 +14,24 @@ export const feedsApi = {
     apiClient.get<FeedBooking[]>('/feeds/json', { params }),
 
   getJsonFeedUrl: (params?: { location_id?: string }) => {
-    const url = new URL(`${API_BASE_URL}/feeds/json`);
+    const url = absoluteApiUrl('/feeds/json');
     if (params?.location_id) url.searchParams.set('location_id', params.location_id);
     return url.toString();
   },
 
   getICalFeedUrl: (params?: { location_id?: string }) => {
-    const url = new URL(`${API_BASE_URL}/feeds/ical`);
+    const url = absoluteApiUrl('/feeds/ical');
     if (params?.location_id) url.searchParams.set('location_id', params.location_id);
     return url.toString();
   },
 
   getRss2FeedUrl: (params?: { location_id?: string }) => {
-    const url = new URL(`${API_BASE_URL}/feeds/rss2`);
+    const url = absoluteApiUrl('/feeds/rss2');
     if (params?.location_id) url.searchParams.set('location_id', params.location_id);
     return url.toString();
   },
 
   /** @deprecated Use getRss2FeedUrl. Kept for backward compat. */
   getRssFeedUrl: (apiToken: string) =>
-    `${API_BASE_URL}/feeds/rss?api_token=${apiToken}`,
+    absoluteApiUrl(`/feeds/rss?api_token=${apiToken}`).toString(),
 };
